@@ -1,21 +1,26 @@
-error[E0191]: the value of the associated type `Output` (from trait `Base`) must be specified
-  --> $DIR/with-self-in-projection-output-bad.rs:45:21
+error[E0271]: type mismatch resolving `<u32 as Base>::Output == <u32 as ConstI32>::Out`
+  --> $DIR/with-self-in-projection-output-bad.rs:39:6
    |
-LL |     type Output;
-   |     ----------- `Output` defined here
-...
-LL |     let _x: Box<dyn Helper<Target=i32>> = Box::new(2u32);
-   |                     ^^^^^^^^^^^^^^^^^^ help: specify the associated type: `Helper<Target=i32, Output = Type>`
-
-error[E0191]: the value of the associated type `Output` (from trait `Base`) must be specified
-  --> $DIR/with-self-in-projection-output-bad.rs:48:21
+LL | impl NormalizableHelper for u32
+   |      ^^^^^^^^^^^^^^^^^^ type mismatch resolving `<u32 as Base>::Output == <u32 as ConstI32>::Out`
    |
-LL |     type Output;
-   |     ----------- `Output` defined here
-...
-LL |     let _y: Box<dyn NormalizableHelper<Target=i32>> = Box::new(2u32);
-   |                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: specify the associated type: `NormalizableHelper<Target=i32, Output = Type>`
+note: expected this to be `<u32 as ConstI32>::Out`
+  --> $DIR/with-self-in-projection-output-bad.rs:15:19
+   |
+LL |     type Output = i32;
+   |                   ^^^
+   = note: expected associated type `<u32 as ConstI32>::Out`
+                         found type `i32`
+   = help: consider constraining the associated type `<u32 as ConstI32>::Out` to `i32`
+   = note: for more information, visit https://doc.rust-lang.org/book/ch19-03-advanced-traits.html
+note: required by a bound in `NormalizableHelper`
+  --> $DIR/with-self-in-projection-output-bad.rs:34:10
+   |
+LL | trait NormalizableHelper:
+   |       ------------------ required by a bound in this trait
+LL |     Base<Output=<Self as ConstI32>::Out>
+   |          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `NormalizableHelper`
 
-error: aborting due to 2 previous errors
+error: aborting due to previous error
 
-For more information about this error, try `rustc --explain E0191`.
+For more information about this error, try `rustc --explain E0271`.

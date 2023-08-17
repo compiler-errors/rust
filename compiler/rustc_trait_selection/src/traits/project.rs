@@ -1745,7 +1745,7 @@ fn assemble_candidates_from_impls<'cx, 'tcx>(
                     specialization_graph::assoc_def(selcx.tcx(), impl_data.impl_def_id, obligation.predicate.def_id)
                         .map_err(|ErrorGuaranteed { .. }| ())?;
 
-                if node_item.is_final() {
+                if node_item.is_final() && !selcx.tcx().impl_may_be_shadowed_by_trait_object(impl_data.impl_def_id) {
                     // Non-specializable items are always projectable.
                     true
                 } else {

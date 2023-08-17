@@ -840,6 +840,10 @@ rustc_queries! {
         desc { |tcx| "computing implementation polarity of `{}`", tcx.def_path_str(impl_id) }
         separate_provide_extern
     }
+    query impl_may_be_shadowed_by_trait_object(impl_id: DefId) -> bool {
+        desc { |tcx| "determining if `{}` is allowed to be shadowed by a `dyn Trait` object", tcx.def_path_str(impl_id) }
+        cache_on_disk_if { true }
+    }
 
     query issue33140_self_ty(key: DefId) -> Option<ty::EarlyBinder<ty::Ty<'tcx>>> {
         desc { |tcx| "computing Self type wrt issue #33140 `{}`", tcx.def_path_str(key) }

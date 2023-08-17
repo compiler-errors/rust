@@ -1,11 +1,13 @@
-error[E0391]: cycle detected when computing layout of `core::option::Option<S>`
+error[E0277]: the size for values of type `<S as Mirror>::It` cannot be known at compilation time
+  --> $DIR/issue-26548-recursion-via-normalize.rs:14:10
    |
-   = note: ...which requires computing layout of `S`...
-   = note: ...which requires computing layout of `core::option::Option<<S as Mirror>::It>`...
-   = note: ...which again requires computing layout of `core::option::Option<S>`, completing the cycle
-   = note: cycle used when computing layout of `core::option::Option<<S as Mirror>::It>`
-   = note: see https://rustc-dev-guide.rust-lang.org/overview.html#queries and https://rustc-dev-guide.rust-lang.org/query.html for more information
+LL | struct S(Option<<S as Mirror>::It>);
+   |          ^^^^^^^^^^^^^^^^^^^^^^^^^ doesn't have a size known at compile-time
+   |
+   = help: the trait `Sized` is not implemented for `<S as Mirror>::It`
+note: required by a bound in `Option`
+  --> $SRC_DIR/core/src/option.rs:LL:COL
 
 error: aborting due to previous error
 
-For more information about this error, try `rustc --explain E0391`.
+For more information about this error, try `rustc --explain E0277`.

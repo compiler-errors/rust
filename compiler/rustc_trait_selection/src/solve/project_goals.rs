@@ -601,22 +601,23 @@ fn fetch_eligible_assoc_item_def<'tcx>(
     let node_item = specialization_graph::assoc_def(ecx.tcx(), impl_def_id, trait_assoc_def_id)
         .map_err(|ErrorGuaranteed { .. }| NoSolution)?;
 
-    let eligible = if node_item.is_final() {
-        // Non-specializable items are always projectable.
-        true
-    } else {
-        // Only reveal a specializable default if we're past type-checking
-        // and the obligation is monomorphic, otherwise passes such as
-        // transmute checking and polymorphic MIR optimizations could
-        // get a result which isn't correct for all monomorphizations.
-        if param_env.reveal() == Reveal::All {
-            let poly_trait_ref = ecx.resolve_vars_if_possible(goal_trait_ref);
-            !poly_trait_ref.still_further_specializable()
+    let eligible =
+        if node_item.is_final() && !ecx.tcx().impl_may_be_shadowed_by_trait_object(impl_def_id) {
+            // Non-specializable items are always projectable.
+            true
         } else {
-            debug!(?node_item.item.def_id, "not eligible due to default");
-            false
-        }
-    };
+            // Only reveal a specializable default if we're past type-checking
+            // and the obligation is monomorphic, otherwise passes such as
+            // transmute checking and polymorphic MIR optimizations could
+            // get a result which isn't correct for all monomorphizations.
+            if param_env.reveal() == Reveal::All {
+                let poly_trait_ref = ecx.resolve_vars_if_possible(goal_trait_ref);
+                !poly_trait_ref.still_further_specializable()
+            } else {
+                debug!(?node_item.item.def_id, "not eligible due to default");
+                false
+            }
+        };
 
     if eligible { Ok(Some(node_item)) } else { Ok(None) }
 }

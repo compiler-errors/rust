@@ -13,6 +13,7 @@ extern crate rustc_middle;
 mod codegen;
 mod dropck_outlives;
 mod evaluate_obligation;
+mod impl_shadow;
 mod implied_outlives_bounds;
 mod normalize_erasing_regions;
 mod normalize_projection_ty;
@@ -31,4 +32,5 @@ pub fn provide(p: &mut Providers) {
     normalize_erasing_regions::provide(p);
     type_op::provide(p);
     p.codegen_select_candidate = codegen::codegen_select_candidate;
+    p.impl_may_be_shadowed_by_trait_object = impl_shadow::impl_may_be_shadowed_by_trait_object;
 }
