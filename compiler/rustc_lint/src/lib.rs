@@ -50,6 +50,7 @@ extern crate rustc_session;
 extern crate tracing;
 
 mod array_into_iter;
+mod async_fn_in_trait;
 pub mod builtin;
 mod context;
 mod deref_into_dyn_supertrait;
@@ -100,6 +101,7 @@ use rustc_span::symbol::Ident;
 use rustc_span::Span;
 
 use array_into_iter::ArrayIntoIter;
+use async_fn_in_trait::AsyncFnInTrait;
 use builtin::*;
 use deref_into_dyn_supertrait::*;
 use drop_forget_useless::*;
@@ -238,6 +240,7 @@ late_lint_methods!(
             MapUnitFn: MapUnitFn,
             MissingDebugImplementations: MissingDebugImplementations,
             MissingDoc: MissingDoc,
+            AsyncFnInTrait: AsyncFnInTrait,
         ]
     ]
 );
