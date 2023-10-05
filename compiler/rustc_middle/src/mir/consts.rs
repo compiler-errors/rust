@@ -402,30 +402,6 @@ impl<'tcx> Const<'tcx> {
         let ty = tcx.type_of(def).instantiate_identity();
         debug!(?ty);
 
-        // FIXME(const_generics): We currently have to special case parameters because `min_const_generics`
-        // does not provide the parents generics to anonymous constants. We still allow generic const
-        // parameters by themselves however, e.g. `N`. These constants would cause an ICE if we were to
-        // ever try to substitute the generic parameters in their bodies.
-        //
-        // While this doesn't happen as these constants are always used as `ty::ConstKind::Param`, it does
-        // cause issues if we were to remove that special-case and try to evaluate the constant instead.
-        use hir::{def::DefKind::ConstParam, def::Res, ExprKind, Path, QPath};
-        match expr.kind {
-            ExprKind::Path(QPath::Resolved(_, &Path { res: Res::Def(ConstParam, def_id), .. })) => {
-                // Find the name and index of the const parameter by indexing the generics of
-                // the parent item and construct a `ParamConst`.
-                let item_def_id = tcx.parent(def_id);
-                let generics = tcx.generics_of(item_def_id);
-                let index = generics.param_def_id_to_index[&def_id];
-                let name = tcx.item_name(def_id);
-                let ty_const = ty::Const::new_param(tcx, ty::ParamConst::new(index, name), ty);
-                debug!(?ty_const);
-
-                return Self::Ty(ty_const);
-            }
-            _ => {}
-        }
-
         let hir_id = tcx.hir().local_def_id_to_hir_id(def);
         let parent_args = if let Some(parent_hir_id) = tcx.hir().opt_parent_id(hir_id)
             && let Some(parent_did) = parent_hir_id.as_owner()
