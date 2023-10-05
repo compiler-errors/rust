@@ -184,18 +184,7 @@ impl<'tcx> TypeErrCtxtExt<'tcx> for TypeErrCtxt<'_, 'tcx> {
             flags.push((sym::cause, Some("MainFunctionType".to_string())));
         }
 
-        if let Some(kind) = self.tcx.fn_trait_kind_from_def_id(trait_ref.def_id)
-            && let ty::Tuple(args) = trait_ref.args.type_at(1).kind()
-        {
-            let args = args
-                .iter()
-                .map(|ty| ty.to_string())
-                .collect::<Vec<_>>()
-                .join(", ");
-            flags.push((sym::Trait, Some(format!("{}({args})", kind.as_str()))));
-        } else {
-            flags.push((sym::Trait, Some(trait_ref.print_only_trait_path().to_string())));
-        }
+        flags.push((sym::Trait, Some(trait_ref.print_only_trait_path_sugared().to_string())));
 
         // Add all types without trimmed paths or visible paths, ensuring they end up with
         // their "canonical" def path.
@@ -248,15 +237,6 @@ impl<'tcx> TypeErrCtxtExt<'tcx> for TypeErrCtxt<'_, 'tcx> {
 
             if self_ty.is_array_slice() {
                 flags.push((sym::_Self, Some("&[]".to_owned())));
-            }
-
-            if self_ty.is_fn() {
-                let fn_sig = self_ty.fn_sig(self.tcx);
-                let shortname = match fn_sig.unsafety() {
-                    hir::Unsafety::Normal => "fn",
-                    hir::Unsafety::Unsafe => "unsafe fn",
-                };
-                flags.push((sym::_Self, Some(shortname.to_owned())));
             }
 
             // Slices give us `[]`, `[{ty}]`

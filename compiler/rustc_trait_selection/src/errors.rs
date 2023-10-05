@@ -165,3 +165,22 @@ pub struct ClosureFnMutLabel {
     pub span: Span,
     pub place: String,
 }
+
+#[derive(Subdiagnostic)]
+#[note(trait_selection_is_unsafe)]
+pub struct UnsafeFn {
+    pub trait_ref: String,
+}
+
+#[derive(Subdiagnostic)]
+#[note(trait_selection_is_variadic)]
+pub struct VariadicFn {
+    pub trait_ref: String,
+}
+
+#[derive(Subdiagnostic)]
+#[note(trait_selection_is_not_rust_abi)]
+pub struct FnAbi {
+    pub trait_ref: String,
+    pub abi: &'static str,
+}

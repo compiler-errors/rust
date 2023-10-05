@@ -27,6 +27,12 @@ trait_selection_inherent_projection_normalization_overflow = overflow evaluating
 trait_selection_invalid_on_clause_in_rustc_on_unimplemented = invalid `on`-clause in `#[rustc_on_unimplemented]`
     .label = invalid on-clause here
 
+trait_selection_is_not_rust_abi = `extern "{$abi}"` functions do not implement `{$trait_ref}` and cannot be called generically
+
+trait_selection_is_unsafe = unsafe functions do not implement `{$trait_ref}` and cannot be called generically
+
+trait_selection_is_variadic = variadic functions do not implement `{$trait_ref}` and cannot be called generically
+
 trait_selection_malformed_on_unimplemented_attr = malformed `on_unimplemented` attribute
     .help = only `message`, `note` and `label` are allowed as options
     .label = invalid option found here

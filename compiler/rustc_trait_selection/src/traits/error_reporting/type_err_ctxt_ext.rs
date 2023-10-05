@@ -1,6 +1,6 @@
 use super::on_unimplemented::{AppendConstMessage, OnUnimplementedNote, TypeErrCtxtExt as _};
 use super::suggestions::{get_explanation_based_on_obligation, TypeErrCtxtExt as _};
-use crate::errors::{ClosureFnMutLabel, ClosureFnOnceLabel, ClosureKindMismatch};
+use crate::errors;
 use crate::infer::error_reporting::{TyCategory, TypeAnnotationNeeded as ErrorCode};
 use crate::infer::type_variable::{TypeVariableOrigin, TypeVariableOriginKind};
 use crate::infer::{self, InferCtxt};
@@ -41,6 +41,7 @@ use rustc_session::Limit;
 use rustc_span::def_id::LOCAL_CRATE;
 use rustc_span::symbol::sym;
 use rustc_span::{ExpnKind, Span, DUMMY_SP};
+use rustc_target::spec::abi;
 use std::borrow::Cow;
 use std::fmt;
 use std::iter;
@@ -2896,6 +2897,20 @@ impl<'tcx> InferCtxtPrivExt<'tcx> for TypeErrCtxt<'_, 'tcx> {
             )
         {
             self.add_help_message_for_fn_trait(trait_ref, err, implemented_kind, params);
+        } else if is_fn_trait
+            && let callable_ty = trait_ref.self_ty().skip_binder()
+            && callable_ty.is_fn()
+            && let sig = callable_ty.fn_sig(self.tcx)
+            && !sig.is_fn_trait_compatible()
+        {
+            let trait_ref = trait_ref.print_only_trait_path_sugared().to_string();
+            if sig.skip_binder().unsafety == hir::Unsafety::Unsafe {
+                err.subdiagnostic(errors::UnsafeFn { trait_ref });
+            } else if sig.c_variadic() {
+                err.subdiagnostic(errors::VariadicFn { trait_ref });
+            } else if sig.skip_binder().abi != abi::Abi::Rust {
+                err.subdiagnostic(errors::FnAbi { trait_ref, abi: sig.skip_binder().abi.name() });
+            }
         } else if !trait_ref.has_non_region_infer()
             && self.predicate_can_apply(obligation.param_env, *trait_predicate)
         {
@@ -3028,7 +3043,7 @@ impl<'tcx> InferCtxtPrivExt<'tcx> for TypeErrCtxt<'_, 'tcx> {
     ) -> DiagnosticBuilder<'tcx, ErrorGuaranteed> {
         let closure_span = self.tcx.def_span(closure_def_id);
 
-        let mut err = ClosureKindMismatch {
+        let mut err = errors::ClosureKindMismatch {
             closure_span,
             expected: kind,
             found: found_kind,
@@ -3043,13 +3058,13 @@ impl<'tcx> InferCtxtPrivExt<'tcx> for TypeErrCtxt<'_, 'tcx> {
             let hir_id = self.tcx.hir().local_def_id_to_hir_id(closure_def_id.expect_local());
             match (found_kind, typeck_results.closure_kind_origins().get(hir_id)) {
                 (ty::ClosureKind::FnOnce, Some((span, place))) => {
-                    err.fn_once_label = Some(ClosureFnOnceLabel {
+                    err.fn_once_label = Some(errors::ClosureFnOnceLabel {
                         span: *span,
                         place: ty::place_to_string_for_capture(self.tcx, &place),
                     })
                 }
                 (ty::ClosureKind::FnMut, Some((span, place))) => {
-                    err.fn_mut_label = Some(ClosureFnMutLabel {
+                    err.fn_mut_label = Some(errors::ClosureFnMutLabel {
                         span: *span,
                         place: ty::place_to_string_for_capture(self.tcx, &place),
                     })

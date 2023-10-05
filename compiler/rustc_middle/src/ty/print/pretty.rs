@@ -2641,6 +2641,15 @@ impl<'tcx> fmt::Debug for TraitRefPrintOnlyTraitPath<'tcx> {
     }
 }
 
+#[derive(Copy, Clone, TypeFoldable, TypeVisitable, Lift)]
+pub struct TraitRefPrintOnlyTraitPathSugared<'tcx>(ty::TraitRef<'tcx>);
+
+impl<'tcx> fmt::Debug for TraitRefPrintOnlyTraitPathSugared<'tcx> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt::Display::fmt(self, f)
+    }
+}
+
 /// Wrapper type for `ty::TraitRef` which opts-in to pretty printing only
 /// the trait name. That is, it will print `Trait` instead of
 /// `<T as Trait<U>>`.
@@ -2658,6 +2667,10 @@ impl<'tcx> ty::TraitRef<'tcx> {
         TraitRefPrintOnlyTraitPath(self)
     }
 
+    pub fn print_only_trait_path_sugared(self) -> TraitRefPrintOnlyTraitPathSugared<'tcx> {
+        TraitRefPrintOnlyTraitPathSugared(self)
+    }
+
     pub fn print_only_trait_name(self) -> TraitRefPrintOnlyTraitName<'tcx> {
         TraitRefPrintOnlyTraitName(self)
     }
@@ -2666,6 +2679,12 @@ impl<'tcx> ty::TraitRef<'tcx> {
 impl<'tcx> ty::Binder<'tcx, ty::TraitRef<'tcx>> {
     pub fn print_only_trait_path(self) -> ty::Binder<'tcx, TraitRefPrintOnlyTraitPath<'tcx>> {
         self.map_bound(|tr| tr.print_only_trait_path())
+    }
+
+    pub fn print_only_trait_path_sugared(
+        self,
+    ) -> ty::Binder<'tcx, TraitRefPrintOnlyTraitPathSugared<'tcx>> {
+        self.map_bound(|tr| tr.print_only_trait_path_sugared())
     }
 }
 
@@ -2746,6 +2765,7 @@ forward_display_to_print! {
     ty::PolyExistentialTraitRef<'tcx>,
     ty::Binder<'tcx, ty::TraitRef<'tcx>>,
     ty::Binder<'tcx, TraitRefPrintOnlyTraitPath<'tcx>>,
+    ty::Binder<'tcx, TraitRefPrintOnlyTraitPathSugared<'tcx>>,
     ty::Binder<'tcx, ty::FnSig<'tcx>>,
     ty::Binder<'tcx, ty::TraitPredicate<'tcx>>,
     ty::Binder<'tcx, TraitPredPrintModifiersAndPath<'tcx>>,
@@ -2848,6 +2868,24 @@ define_print_and_forward_display! {
 
     TraitRefPrintOnlyTraitPath<'tcx> {
         p!(print_def_path(self.0.def_id, self.0.args));
+    }
+
+    TraitRefPrintOnlyTraitPathSugared<'tcx> {
+        if !with_no_queries()
+            && let Some(kind) = cx.tcx().fn_trait_kind_from_def_id(self.0.def_id)
+            && let ty::Tuple(args) = self.0.args.type_at(1).kind()
+        {
+            p!(write("{}", kind.as_str()), "(");
+            for (i, arg) in args.iter().enumerate() {
+                if i > 0 {
+                    p!(", ");
+                }
+                p!(write("{arg}"));
+            }
+            p!(")");
+        } else {
+            p!(write("{}", self.0.print_only_trait_path()));
+        }
     }
 
     TraitRefPrintOnlyTraitName<'tcx> {
