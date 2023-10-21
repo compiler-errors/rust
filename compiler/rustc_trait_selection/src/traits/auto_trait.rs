@@ -136,7 +136,7 @@ impl<'tcx> AutoTraitFinder<'tcx> {
         // selection and projection:
         //
         // * We can always cache the result of a particular trait selection for the lifetime of
-        // an InfCtxt
+        // an Infcxt
         // * Given a projection bound such as '<T as SomeTrait>::SomeItem = K', if 'T:
         // SomeTrait' doesn't hold, then we don't need to care about the 'SomeItem = K'
         //
