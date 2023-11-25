@@ -1436,12 +1436,24 @@ pub fn compute_inherent_assoc_ty_args<'a, 'b, 'tcx>(
     obligations: &mut Vec<PredicateObligation<'tcx>>,
 ) -> ty::GenericArgsRef<'tcx> {
     let tcx = selcx.tcx();
+    let mut self_ty = alias_ty.self_ty();
 
     let impl_def_id = tcx.parent(alias_ty.def_id);
     let impl_args = selcx.infcx.fresh_args_for_item(cause.span, impl_def_id);
 
     let mut impl_ty = tcx.type_of(impl_def_id).instantiate(tcx, impl_args);
+
+    // We must normalize the self types so they can be unified structurally in the old solver.
+    // In the new solver, this is handled automatically with lazy normalization.
     if !selcx.infcx.next_trait_solver() {
+        self_ty = normalize_with_depth_to(
+            selcx,
+            param_env,
+            cause.clone(),
+            depth + 1,
+            self_ty,
+            obligations,
+        );
         impl_ty = normalize_with_depth_to(
             selcx,
             param_env,
@@ -1454,7 +1466,6 @@ pub fn compute_inherent_assoc_ty_args<'a, 'b, 'tcx>(
 
     // Infer the generic parameters of the impl by unifying the
     // impl type with the self type of the projection.
-    let self_ty = alias_ty.self_ty();
     match selcx.infcx.at(&cause, param_env).eq(DefineOpaqueTypes::No, impl_ty, self_ty) {
         Ok(mut ok) => obligations.append(&mut ok.obligations),
         Err(_) => {
