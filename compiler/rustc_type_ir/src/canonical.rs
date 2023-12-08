@@ -10,7 +10,7 @@ use crate::{Interner, PlaceholderLike, UniverseIndex};
 /// variables have been rewritten to "canonical vars". These are
 /// numbered starting from 0 in order of first appearance.
 #[derive(derivative::Derivative)]
-#[derivative(Clone(bound = "V: Clone"), Hash(bound = "V: Hash"))]
+#[derivative(Clone(bound = "V: Clone"), Copy(bound = "V: Copy"), Hash(bound = "V: Hash"))]
 #[cfg_attr(feature = "nightly", derive(TyEncodable, TyDecodable, HashStable_NoContext))]
 pub struct Canonical<I: Interner, V> {
     pub value: V,
@@ -87,8 +87,6 @@ impl<I: Interner, V: fmt::Debug> fmt::Debug for Canonical<I, V> {
             .finish()
     }
 }
-
-impl<I: Interner, V: Copy> Copy for Canonical<I, V> where I::CanonicalVars: Copy {}
 
 impl<I: Interner, V: TypeFoldable<I>> TypeFoldable<I> for Canonical<I, V>
 where
@@ -207,7 +205,7 @@ impl<I: Interner> CanonicalVarInfo<I> {
 /// in the type-theory sense of the term -- i.e., a "meta" type system
 /// that analyzes type-like values.
 #[derive(derivative::Derivative)]
-#[derivative(Clone(bound = ""), Hash(bound = ""), Debug(bound = ""))]
+#[derivative(Clone(bound = ""), Copy(bound = ""), Hash(bound = ""), Debug(bound = ""))]
 #[cfg_attr(feature = "nightly", derive(TyDecodable, TyEncodable, HashStable_NoContext))]
 pub enum CanonicalVarKind<I: Interner> {
     /// Some kind of type inference variable.
@@ -232,15 +230,6 @@ pub enum CanonicalVarKind<I: Interner> {
 
     /// A "placeholder" that represents "any const".
     PlaceholderConst(I::PlaceholderConst, I::Ty),
-}
-
-impl<I: Interner> Copy for CanonicalVarKind<I>
-where
-    I::PlaceholderTy: Copy,
-    I::PlaceholderRegion: Copy,
-    I::PlaceholderConst: Copy,
-    I::Ty: Copy,
-{
 }
 
 impl<I: Interner> PartialEq for CanonicalVarKind<I> {

@@ -94,17 +94,11 @@ impl<I: Interner, T: DebugWithInfcx<I>> DebugWithInfcx<I> for [T] {
     }
 }
 
+#[derive(derivative::Derivative)]
+#[derivative(Copy(bound = "T: Copy"), Clone(bound = "T: Clone"))]
 pub struct WithInfcx<'a, Infcx: InferCtxtLike, T> {
     pub data: T,
     pub infcx: &'a Infcx,
-}
-
-impl<Infcx: InferCtxtLike, T: Copy> Copy for WithInfcx<'_, Infcx, T> {}
-
-impl<Infcx: InferCtxtLike, T: Clone> Clone for WithInfcx<'_, Infcx, T> {
-    fn clone(&self) -> Self {
-        Self { data: self.data.clone(), infcx: self.infcx }
-    }
 }
 
 impl<'a, I: Interner, T> WithInfcx<'a, NoInfcx<I>, T> {
