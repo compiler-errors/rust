@@ -10,7 +10,13 @@ use crate::{Interner, PlaceholderLike, UniverseIndex};
 /// variables have been rewritten to "canonical vars". These are
 /// numbered starting from 0 in order of first appearance.
 #[derive(derivative::Derivative)]
-#[derivative(Clone(bound = "V: Clone"), Copy(bound = "V: Copy"), Hash(bound = "V: Hash"))]
+#[derivative(
+    Clone(bound = "V: Clone"),
+    Copy(bound = "V: Copy"),
+    Hash(bound = "V: Hash"),
+    PartialEq(bound = "V: PartialEq"),
+    Eq(bound = "V: Eq")
+)]
 #[cfg_attr(feature = "nightly", derive(TyEncodable, TyDecodable, HashStable_NoContext))]
 pub struct Canonical<I: Interner, V> {
     pub value: V,
@@ -55,16 +61,6 @@ impl<I: Interner, V> Canonical<I, V> {
     pub fn unchecked_rebind<W>(self, value: W) -> Canonical<I, W> {
         let Canonical { max_universe, variables, value: _ } = self;
         Canonical { max_universe, variables, value }
-    }
-}
-
-impl<I: Interner, V: Eq> Eq for Canonical<I, V> {}
-
-impl<I: Interner, V: PartialEq> PartialEq for Canonical<I, V> {
-    fn eq(&self, other: &Self) -> bool {
-        self.value == other.value
-            && self.max_universe == other.max_universe
-            && self.variables == other.variables
     }
 }
 
@@ -120,21 +116,15 @@ where
 #[derivative(
     Clone(bound = ""),
     Hash(bound = ""),
-    Copy(bound = "CanonicalVarKind<I>: Copy"),
-    Debug(bound = "")
+    Copy(bound = ""),
+    Debug(bound = ""),
+    PartialEq(bound = ""),
+    Eq(bound = "")
 )]
 #[cfg_attr(feature = "nightly", derive(TyDecodable, TyEncodable, HashStable_NoContext))]
 pub struct CanonicalVarInfo<I: Interner> {
     pub kind: CanonicalVarKind<I>,
 }
-
-impl<I: Interner> PartialEq for CanonicalVarInfo<I> {
-    fn eq(&self, other: &Self) -> bool {
-        self.kind == other.kind
-    }
-}
-
-impl<I: Interner> Eq for CanonicalVarInfo<I> {}
 
 impl<I: Interner> TypeVisitable<I> for CanonicalVarInfo<I>
 where
