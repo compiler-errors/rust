@@ -14,7 +14,7 @@ use rustc_middle::ty::visit::{TypeVisitable, TypeVisitableExt};
 use rustc_middle::ty::GenericArgs;
 use rustc_middle::ty::{self, Ty, TyCtxt, TypeSuperVisitable, TypeVisitor};
 use rustc_span::def_id::LocalDefId;
-use rustc_span::{sym, Span};
+use rustc_span::{sym, Span, DUMMY_SP};
 use rustc_target::spec::abi::Abi;
 use rustc_trait_selection::traits;
 use rustc_trait_selection::traits::error_reporting::ArgKind;
@@ -209,6 +209,7 @@ impl<'a, 'tcx> FnCtxt<'a, 'tcx> {
         predicates: impl DoubleEndedIterator<Item = (ty::Predicate<'tcx>, Span)>,
     ) -> (Option<ExpectedSig<'tcx>>, Option<ty::ClosureKind>) {
         let mut expected_sig = None;
+        let mut fallback_sig = None;
         let mut expected_kind = None;
 
         for (pred, span) in traits::elaborate(
@@ -259,6 +260,15 @@ impl<'a, 'tcx> FnCtxt<'a, 'tcx> {
                 }
             }
 
+            if fallback_sig.is_none()
+                && self.next_trait_solver()
+                && let ty::PredicateKind::Clause(ty::ClauseKind::Trait(trait_predicate)) =
+                    bound_predicate.skip_binder()
+            {
+                fallback_sig =
+                    self.deduce_sig_from_trait(Some(span), bound_predicate.rebind(trait_predicate));
+            }
+
             // Even if we can't infer the full signature, we may be able to
             // infer the kind. This can occur when we elaborate a predicate
             // like `F : Fn<A>`. Note that due to subtyping we could encounter
@@ -280,7 +290,7 @@ impl<'a, 'tcx> FnCtxt<'a, 'tcx> {
             }
         }
 
-        (expected_sig, expected_kind)
+        (expected_sig.or(fallback_sig), expected_kind)
     }
 
     /// Given a projection like "<F as Fn(X)>::Result == Y", we can deduce
@@ -339,6 +349,38 @@ impl<'a, 'tcx> FnCtxt<'a, 'tcx> {
         let sig = projection.rebind(self.tcx.mk_fn_sig(
             input_tys,
             ret_param_ty,
+            false,
+            hir::Unsafety::Normal,
+            Abi::Rust,
+        ));
+
+        Some(ExpectedSig { cause_span, sig })
+    }
+
+    fn deduce_sig_from_trait(
+        &self,
+        cause_span: Option<Span>,
+        trait_pred: ty::PolyTraitPredicate<'tcx>,
+    ) -> Option<ExpectedSig<'tcx>> {
+        if !self.tcx.is_fn_trait(trait_pred.def_id()) {
+            return None;
+        }
+
+        let arg_param_ty = trait_pred.skip_binder().trait_ref.args.type_at(1);
+        let arg_param_ty = self.resolve_vars_if_possible(arg_param_ty);
+        debug!(?arg_param_ty);
+
+        let input_tys = match arg_param_ty.kind() {
+            &ty::Tuple(tys) => tys,
+            _ => return None,
+        };
+
+        let sig = trait_pred.rebind(self.tcx.mk_fn_sig(
+            input_tys,
+            self.next_ty_var(TypeVariableOrigin {
+                kind: TypeVariableOriginKind::MiscVariable,
+                span: cause_span.unwrap_or(DUMMY_SP),
+            }),
             false,
             hir::Unsafety::Normal,
             Abi::Rust,
