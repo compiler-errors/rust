@@ -6,6 +6,7 @@
 
 use crate::infer::outlives::env::OutlivesEnvironment;
 use crate::infer::InferOk;
+use crate::regions::InferCtxtRegionExt;
 use crate::solve::inspect::{InspectGoal, ProofTreeInferCtxtExt, ProofTreeVisitor};
 use crate::solve::{deeply_normalize_for_diagnostics, inspect};
 use crate::traits::engine::TraitEngineExt;
@@ -590,7 +591,7 @@ fn try_prove_negated_where_clause<'tcx>(
     // the normalization ourselves since this is totally fallible...
     let outlives_env = OutlivesEnvironment::new(param_env);
 
-    let errors = infcx.resolve_regions(&outlives_env);
+    let errors = infcx.resolve_regions_normalizing_outlives_obligations(&outlives_env);
     if !errors.is_empty() {
         return false;
     }

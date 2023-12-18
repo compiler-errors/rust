@@ -8,6 +8,7 @@ use rustc_middle::ty::{
     self, Ty, TyCtxt, TypeFoldable, TypeFolder, TypeSuperVisitable, TypeVisitable, TypeVisitor,
 };
 use rustc_span::{Span, DUMMY_SP};
+use rustc_trait_selection::regions::InferCtxtRegionExt;
 use rustc_trait_selection::traits::{
     elaborate, normalize_param_env_or_error, outlives_bounds::InferCtxtExt, ObligationCtxt,
 };
@@ -163,7 +164,7 @@ pub(super) fn check_refining_return_position_impl_trait_in_trait<'tcx>(
         param_env,
         infcx.implied_bounds_tys(param_env, impl_m.def_id.expect_local(), implied_wf_types),
     );
-    let errors = infcx.resolve_regions(&outlives_env);
+    let errors = infcx.resolve_regions_normalizing_outlives_obligations(&outlives_env);
     if !errors.is_empty() {
         tcx.sess.span_delayed_bug(
             DUMMY_SP,

@@ -1,5 +1,6 @@
 //! Miscellaneous type-system utilities that are too small to deserve their own modules.
 
+use crate::regions::InferCtxtRegionExt;
 use crate::traits::{self, ObligationCause, ObligationCtxt};
 
 use hir::LangItem;
@@ -197,7 +198,7 @@ pub fn all_fields_implement_trait<'tcx>(
                     FxIndexSet::from_iter([self_type]),
                 ),
             );
-            let errors = infcx.resolve_regions(&outlives_env);
+            let errors = infcx.resolve_regions_normalizing_outlives_obligations(&outlives_env);
             if !errors.is_empty() {
                 infringing.push((field, ty, InfringingFieldsReason::Regions(errors)));
             }

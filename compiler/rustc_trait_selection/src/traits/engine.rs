@@ -3,6 +3,7 @@ use std::fmt::Debug;
 
 use super::FulfillmentContext;
 use super::TraitEngine;
+use crate::regions::InferCtxtRegionExt;
 use crate::solve::FulfillmentCtxt as NextFulfillmentCtxt;
 use crate::traits::error_reporting::TypeErrCtxtExt;
 use crate::traits::NormalizeExt;
@@ -201,7 +202,7 @@ impl<'a, 'tcx> ObligationCtxt<'a, 'tcx> {
         generic_param_scope: LocalDefId,
         outlives_env: &OutlivesEnvironment<'tcx>,
     ) -> Result<(), ErrorGuaranteed> {
-        let errors = self.infcx.resolve_regions(outlives_env);
+        let errors = self.infcx.resolve_regions_normalizing_outlives_obligations(outlives_env);
         if errors.is_empty() {
             Ok(())
         } else {

@@ -25,6 +25,7 @@ pub mod wf;
 
 use crate::infer::outlives::env::OutlivesEnvironment;
 use crate::infer::{InferCtxt, TyCtxtInferExt};
+use crate::regions::InferCtxtRegionExt;
 use crate::traits::error_reporting::TypeErrCtxtExt as _;
 use crate::traits::query::evaluate_obligation::InferCtxtExt as _;
 use rustc_errors::ErrorGuaranteed;
@@ -213,7 +214,7 @@ fn do_normalize_predicates<'tcx>(
     // FIXME: It's very weird that we ignore region obligations but apparently
     // still need to use `resolve_regions` as we need the resolved regions in
     // the normalized predicates.
-    let errors = infcx.resolve_regions(&outlives_env);
+    let errors = infcx.resolve_regions_normalizing_outlives_obligations(&outlives_env);
     if !errors.is_empty() {
         tcx.sess.span_delayed_bug(
             span,

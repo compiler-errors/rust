@@ -20,6 +20,7 @@ use rustc_middle::ty::{
 };
 use rustc_middle::ty::{GenericParamDefKind, TyCtxt};
 use rustc_span::{Span, DUMMY_SP};
+use rustc_trait_selection::regions::InferCtxtRegionExt;
 use rustc_trait_selection::traits::error_reporting::TypeErrCtxtExt;
 use rustc_trait_selection::traits::outlives_bounds::InferCtxtExt as _;
 use rustc_trait_selection::traits::{
@@ -380,7 +381,7 @@ fn compare_method_predicate_entailment<'tcx>(
         param_env,
         infcx.implied_bounds_tys(param_env, impl_m_def_id, wf_tys),
     );
-    let errors = infcx.resolve_regions(&outlives_env);
+    let errors = infcx.resolve_regions_normalizing_outlives_obligations(&outlives_env);
     if !errors.is_empty() {
         return Err(infcx
             .tainted_by_errors()

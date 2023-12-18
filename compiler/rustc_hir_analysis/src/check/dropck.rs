@@ -8,6 +8,7 @@ use rustc_infer::infer::{RegionResolutionError, TyCtxtInferExt};
 use rustc_middle::ty::util::CheckRegions;
 use rustc_middle::ty::GenericArgsRef;
 use rustc_middle::ty::{self, TyCtxt};
+use rustc_trait_selection::regions::InferCtxtRegionExt;
 use rustc_trait_selection::traits::{self, ObligationCtxt};
 
 use crate::errors;
@@ -169,7 +170,9 @@ fn ensure_drop_predicates_are_implied_by_item_defn<'tcx>(
         return Err(guar.unwrap());
     }
 
-    let errors = ocx.infcx.resolve_regions(&OutlivesEnvironment::new(param_env));
+    let errors = ocx
+        .infcx
+        .resolve_regions_normalizing_outlives_obligations(&OutlivesEnvironment::new(param_env));
     if !errors.is_empty() {
         let mut guar = None;
         for error in errors {
@@ -184,6 +187,7 @@ fn ensure_drop_predicates_are_implied_by_item_defn<'tcx>(
                 RegionResolutionError::UpperBoundUniverseConflict(a, _, _, _, b) => {
                     format!("{b}: {a}", a = ty::Region::new_var(tcx, a))
                 }
+                RegionResolutionError::CannotNormalize(..) => todo!(),
             };
             guar = Some(
                 struct_span_err!(

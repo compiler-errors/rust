@@ -23,6 +23,7 @@ use rustc_session::parse::feature_err;
 use rustc_span::symbol::{sym, Ident, Symbol};
 use rustc_span::{Span, DUMMY_SP};
 use rustc_target::spec::abi::Abi;
+use rustc_trait_selection::regions::InferCtxtRegionExt;
 use rustc_trait_selection::traits::error_reporting::TypeErrCtxtExt;
 use rustc_trait_selection::traits::misc::{
     type_allowed_to_implement_const_param_ty, ConstParamTyImplementationError,
@@ -725,7 +726,7 @@ fn resolve_regions_with_wf_tys<'tcx>(
 
     add_constraints(&infcx, region_bound_pairs);
 
-    let errors = infcx.resolve_regions(&outlives_environment);
+    let errors = infcx.resolve_regions_normalizing_outlives_obligations(&outlives_environment);
     debug!(?errors, "errors");
 
     // If we were able to prove that the type outlives the region without
