@@ -8,7 +8,7 @@ use rustc_hir as hir;
 use rustc_hir::def_id::{DefId, LocalDefId, LocalModDefId};
 use rustc_hir::lang_items::LangItem;
 use rustc_hir::ItemKind;
-use rustc_infer::infer::outlives::env::OutlivesEnvironment;
+use rustc_infer::infer::outlives::env::RegionCheckingAssumptions;
 use rustc_infer::infer::{self, InferCtxt, TyCtxtInferExt};
 use rustc_middle::query::Providers;
 use rustc_middle::ty::trait_def::TraitSpecializationKind;
@@ -125,9 +125,9 @@ where
         }
     }
 
-    let outlives_env = OutlivesEnvironment::with_bounds(param_env, implied_bounds);
+    let assumptions = RegionCheckingAssumptions::with_bounds(param_env, implied_bounds);
 
-    wfcx.ocx.resolve_regions_and_report_errors(body_def_id, &outlives_env)?;
+    wfcx.ocx.resolve_regions_and_report_errors(body_def_id, &assumptions)?;
     infcx.tainted_by_errors().error_reported()
 }
 
@@ -713,7 +713,7 @@ fn test_region_obligations<'tcx>(
 
     add_constraints(&infcx);
 
-    let outlives_environment = OutlivesEnvironment::with_bounds(
+    let outlives_environment = RegionCheckingAssumptions::with_bounds(
         param_env,
         infcx.implied_bounds_tys(param_env, id, wf_tys.clone()),
     );

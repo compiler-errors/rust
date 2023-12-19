@@ -4,7 +4,7 @@
 //! [trait-resolution]: https://rustc-dev-guide.rust-lang.org/traits/resolution.html
 //! [trait-specialization]: https://rustc-dev-guide.rust-lang.org/traits/specialization.html
 
-use crate::infer::outlives::env::OutlivesEnvironment;
+use crate::infer::outlives::env::RegionCheckingAssumptions;
 use crate::infer::InferOk;
 use crate::regions::InferCtxtRegionExt;
 use crate::solve::inspect::{InspectGoal, ProofTreeInferCtxtExt, ProofTreeVisitor};
@@ -589,9 +589,9 @@ fn try_prove_negated_where_clause<'tcx>(
     // FIXME: We could use the assumed_wf_types from both impls, I think,
     // if that wasn't implemented just for LocalDefId, and we'd need to do
     // the normalization ourselves since this is totally fallible...
-    let outlives_env = OutlivesEnvironment::new(param_env);
+    let assumptions = RegionCheckingAssumptions::new(param_env);
 
-    let errors = infcx.resolve_regions_normalizing_outlives_obligations(&outlives_env);
+    let errors = infcx.resolve_regions_normalizing_outlives_obligations(&assumptions);
     if !errors.is_empty() {
         return false;
     }

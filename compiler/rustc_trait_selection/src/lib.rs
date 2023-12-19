@@ -23,6 +23,7 @@
 #![feature(never_type)]
 #![feature(type_alias_impl_trait)]
 #![feature(min_specialization)]
+#![feature(unwrap_infallible)]
 #![recursion_limit = "512"] // For rustdoc
 
 #[macro_use]

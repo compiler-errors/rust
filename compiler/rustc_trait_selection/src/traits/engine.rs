@@ -14,7 +14,7 @@ use rustc_infer::infer::at::ToTrace;
 use rustc_infer::infer::canonical::{
     Canonical, CanonicalQueryResponse, CanonicalVarValues, QueryResponse,
 };
-use rustc_infer::infer::outlives::env::OutlivesEnvironment;
+use rustc_infer::infer::outlives::env::RegionCheckingAssumptions;
 use rustc_infer::infer::{DefineOpaqueTypes, InferCtxt, InferOk};
 use rustc_infer::traits::{
     FulfillmentError, Obligation, ObligationCause, PredicateObligation, TraitEngineExt as _,
@@ -200,7 +200,7 @@ impl<'a, 'tcx> ObligationCtxt<'a, 'tcx> {
     pub fn resolve_regions_and_report_errors(
         self,
         generic_param_scope: LocalDefId,
-        outlives_env: &OutlivesEnvironment<'tcx>,
+        outlives_env: &RegionCheckingAssumptions<'tcx>,
     ) -> Result<(), ErrorGuaranteed> {
         let errors = self.infcx.resolve_regions_normalizing_outlives_obligations(outlives_env);
         if errors.is_empty() {

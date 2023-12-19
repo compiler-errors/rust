@@ -1,11 +1,29 @@
-use crate::infer::free_regions::FreeRegionMap;
 use crate::infer::GenericKind;
+use crate::infer::{free_regions::FreeRegionMap, outlives::explicit_outlives_bounds};
 use crate::traits::query::OutlivesBound;
 use rustc_data_structures::fx::FxIndexSet;
 use rustc_data_structures::transitive_relation::TransitiveRelationBuilder;
 use rustc_middle::ty::{self, Region};
 
-use super::explicit_outlives_bounds;
+pub struct RegionCheckingAssumptions<'tcx> {
+    pub param_env: ty::ParamEnv<'tcx>,
+    pub extra_bounds: FxIndexSet<OutlivesBound<'tcx>>,
+}
+
+impl<'tcx> RegionCheckingAssumptions<'tcx> {
+    /// Create a new `RegionCheckingAssumptions` without extra outlives bounds.
+    pub fn new(param_env: ty::ParamEnv<'tcx>) -> RegionCheckingAssumptions<'tcx> {
+        RegionCheckingAssumptions { param_env, extra_bounds: Default::default() }
+    }
+
+    /// Create a new `RegionCheckingAssumptions` with extra outlives bounds.
+    pub fn with_bounds(
+        param_env: ty::ParamEnv<'tcx>,
+        extra_bounds: impl IntoIterator<Item = OutlivesBound<'tcx>>,
+    ) -> RegionCheckingAssumptions<'tcx> {
+        RegionCheckingAssumptions { param_env, extra_bounds: extra_bounds.into_iter().collect() }
+    }
+}
 
 /// The `OutlivesEnvironment` collects information about what outlives
 /// what in a given type-checking setting. For example, if we have a
@@ -28,7 +46,7 @@ use super::explicit_outlives_bounds;
 /// interested in the `OutlivesEnvironment`. -nmatsakis
 #[derive(Clone)]
 pub struct OutlivesEnvironment<'tcx> {
-    pub param_env: ty::ParamEnv<'tcx>,
+    pub clauses: Vec<ty::Clause<'tcx>>,
     free_region_map: FreeRegionMap<'tcx>,
 
     // Contains the implied region bounds in scope for our current body.
@@ -54,8 +72,8 @@ pub struct OutlivesEnvironment<'tcx> {
 
 /// Builder of OutlivesEnvironment.
 #[derive(Debug)]
-struct OutlivesEnvironmentBuilder<'tcx> {
-    param_env: ty::ParamEnv<'tcx>,
+pub struct OutlivesEnvironmentBuilder<'tcx> {
+    clauses: Vec<ty::Clause<'tcx>>,
     region_relation: TransitiveRelationBuilder<Region<'tcx>>,
     region_bound_pairs: RegionBoundPairs<'tcx>,
 }
@@ -68,32 +86,12 @@ pub type RegionBoundPairs<'tcx> =
 
 impl<'tcx> OutlivesEnvironment<'tcx> {
     /// Create a builder using `ParamEnv` and add explicit outlives bounds into it.
-    fn builder(param_env: ty::ParamEnv<'tcx>) -> OutlivesEnvironmentBuilder<'tcx> {
-        let mut builder = OutlivesEnvironmentBuilder {
-            param_env,
+    pub fn builder() -> OutlivesEnvironmentBuilder<'tcx> {
+        OutlivesEnvironmentBuilder {
+            clauses: vec![],
             region_relation: Default::default(),
             region_bound_pairs: Default::default(),
-        };
-
-        builder.add_outlives_bounds(explicit_outlives_bounds(param_env));
-
-        builder
-    }
-
-    #[inline]
-    /// Create a new `OutlivesEnvironment` without extra outlives bounds.
-    pub fn new(param_env: ty::ParamEnv<'tcx>) -> Self {
-        Self::builder(param_env).build()
-    }
-
-    /// Create a new `OutlivesEnvironment` with extra outlives bounds.
-    pub fn with_bounds(
-        param_env: ty::ParamEnv<'tcx>,
-        extra_bounds: impl IntoIterator<Item = OutlivesBound<'tcx>>,
-    ) -> Self {
-        let mut builder = Self::builder(param_env);
-        builder.add_outlives_bounds(extra_bounds);
-        builder.build()
+        }
     }
 
     /// Borrows current value of the `free_region_map`.
@@ -110,16 +108,21 @@ impl<'tcx> OutlivesEnvironment<'tcx> {
 impl<'tcx> OutlivesEnvironmentBuilder<'tcx> {
     #[inline]
     #[instrument(level = "debug")]
-    fn build(self) -> OutlivesEnvironment<'tcx> {
+    pub fn build(self) -> OutlivesEnvironment<'tcx> {
         OutlivesEnvironment {
-            param_env: self.param_env,
+            clauses: self.clauses,
             free_region_map: FreeRegionMap { relation: self.region_relation.freeze() },
             region_bound_pairs: self.region_bound_pairs,
         }
     }
 
+    pub fn add_clauses(&mut self, clauses: &[ty::Clause<'tcx>]) {
+        self.add_outlives_bounds(explicit_outlives_bounds(clauses));
+        self.clauses.extend(clauses.iter().copied());
+    }
+
     /// Processes outlives bounds that are known to hold, whether from implied or other sources.
-    fn add_outlives_bounds<I>(&mut self, outlives_bounds: I)
+    pub fn add_outlives_bounds<I>(&mut self, outlives_bounds: I)
     where
         I: IntoIterator<Item = OutlivesBound<'tcx>>,
     {

@@ -1,11 +1,13 @@
 //! Various code related to computing outlives relations.
-use self::env::OutlivesEnvironment;
+use self::env::{OutlivesEnvironment, RegionCheckingAssumptions};
 use super::region_constraints::RegionConstraintData;
-use super::{InferCtxt, RegionResolutionError};
+use super::{InferCtxt, RegionResolutionError, SubregionOrigin};
 use crate::infer::free_regions::RegionRelations;
 use crate::infer::lexical_region_resolve;
+use rustc_data_structures::captures::Captures;
 use rustc_middle::traits::query::OutlivesBound;
-use rustc_middle::ty::{self, Ty};
+use rustc_middle::ty::{self, ToPredicate, Ty, TyCtxt};
+use rustc_span::DUMMY_SP;
 
 pub mod components;
 pub mod env;
@@ -14,16 +16,12 @@ pub mod obligations;
 pub mod test_type_match;
 pub mod verify;
 
-#[instrument(level = "debug", skip(param_env), ret)]
-pub fn explicit_outlives_bounds<'tcx>(
-    param_env: ty::ParamEnv<'tcx>,
-) -> impl Iterator<Item = OutlivesBound<'tcx>> + 'tcx {
-    param_env
-        .caller_bounds()
-        .into_iter()
-        .map(ty::Clause::kind)
-        .filter_map(ty::Binder::no_bound_vars)
-        .filter_map(move |kind| match kind {
+#[instrument(level = "debug", skip(clauses), ret)]
+pub fn explicit_outlives_bounds<'a, 'tcx>(
+    clauses: &'a [ty::Clause<'tcx>],
+) -> impl Iterator<Item = OutlivesBound<'tcx>> + Captures<'tcx> + 'a {
+    clauses.iter().copied().map(ty::Clause::kind).filter_map(ty::Binder::no_bound_vars).filter_map(
+        move |kind| match kind {
             ty::ClauseKind::RegionOutlives(ty::OutlivesPredicate(r_a, r_b)) => {
                 Some(OutlivesBound::RegionSubRegion(r_b, r_a))
             }
@@ -33,7 +31,42 @@ pub fn explicit_outlives_bounds<'tcx>(
             | ty::ClauseKind::ConstArgHasType(_, _)
             | ty::ClauseKind::WellFormed(_)
             | ty::ClauseKind::ConstEvaluatable(_) => None,
+        },
+    )
+}
+
+pub fn lower_region_checking_assumptions<'tcx, E>(
+    tcx: TyCtxt<'tcx>,
+    x: &RegionCheckingAssumptions<'tcx>,
+    deeply_normalize_ty: impl Fn(Ty<'tcx>) -> Result<Ty<'tcx>, E>,
+) -> Result<OutlivesEnvironment<'tcx>, E> {
+    let mut outlives_env = OutlivesEnvironment::builder();
+    let caller_bounds: Vec<_> = x
+        .param_env
+        .caller_bounds()
+        .iter()
+        .filter_map(|clause| {
+            let bound_clause = clause.kind();
+            let clause = match bound_clause.skip_binder() {
+                region_outlives @ ty::ClauseKind::RegionOutlives(..) => region_outlives,
+                ty::ClauseKind::TypeOutlives(ty::OutlivesPredicate(ty, region)) => {
+                    ty::ClauseKind::TypeOutlives(ty::OutlivesPredicate(
+                        match deeply_normalize_ty(ty) {
+                            Ok(ty) => ty,
+                            Err(e) => return Some(Err(e)),
+                        },
+                        region,
+                    ))
+                }
+                _ => return None,
+            };
+            Some(Ok(bound_clause.rebind(clause).to_predicate(tcx)))
         })
+        .try_collect()?;
+
+    outlives_env.add_clauses(&caller_bounds);
+    outlives_env.add_outlives_bounds(x.extra_bounds.iter().copied());
+    Ok(outlives_env.build())
 }
 
 impl<'tcx> InferCtxt<'tcx> {
@@ -48,14 +81,27 @@ impl<'tcx> InferCtxt<'tcx> {
     #[must_use]
     pub fn resolve_regions(
         &self,
-        outlives_env: &OutlivesEnvironment<'tcx>,
+        assumptions: &RegionCheckingAssumptions<'tcx>,
         deeply_normalize_ty: impl Fn(Ty<'tcx>) -> Result<Ty<'tcx>, Ty<'tcx>>,
     ) -> Vec<RegionResolutionError<'tcx>> {
-        match self.process_registered_region_obligations(outlives_env, deeply_normalize_ty) {
+        let outlives_env =
+            match lower_region_checking_assumptions(self.tcx, assumptions, &deeply_normalize_ty) {
+                Ok(outlives_env) => outlives_env,
+                Err(ty) => {
+                    return vec![RegionResolutionError::CannotNormalize(
+                        ty,
+                        SubregionOrigin::RelateRegionParamBound(DUMMY_SP),
+                    )];
+                }
+            };
+
+        match self.process_registered_region_obligations(
+            &outlives_env,
+            assumptions.param_env,
+            &deeply_normalize_ty,
+        ) {
             Ok(()) => {}
-            Err((ty, origin)) => {
-                return vec![RegionResolutionError::CannotNormalize(ty, origin)];
-            }
+            Err((ty, origin)) => return vec![RegionResolutionError::CannotNormalize(ty, origin)],
         };
 
         let (var_infos, data) = {

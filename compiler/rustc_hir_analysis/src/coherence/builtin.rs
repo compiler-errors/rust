@@ -9,7 +9,7 @@ use rustc_hir as hir;
 use rustc_hir::def_id::{DefId, LocalDefId};
 use rustc_hir::lang_items::LangItem;
 use rustc_hir::ItemKind;
-use rustc_infer::infer::outlives::env::OutlivesEnvironment;
+use rustc_infer::infer::outlives::env::RegionCheckingAssumptions;
 use rustc_infer::infer::{self, RegionResolutionError};
 use rustc_infer::infer::{DefineOpaqueTypes, TyCtxtInferExt};
 use rustc_infer::traits::Obligation;
@@ -265,8 +265,8 @@ fn visit_implementation_of_dispatch_from_dyn(tcx: TyCtxt<'_>, impl_did: LocalDef
                 }
 
                 // Finally, resolve all regions.
-                let outlives_env = OutlivesEnvironment::new(param_env);
-                let _ = ocx.resolve_regions_and_report_errors(impl_did, &outlives_env);
+                let assumptions = RegionCheckingAssumptions::new(param_env);
+                let _ = ocx.resolve_regions_and_report_errors(impl_did, &assumptions);
             }
         }
         _ => {
@@ -474,8 +474,8 @@ pub fn coerce_unsized_info<'tcx>(tcx: TyCtxt<'tcx>, impl_did: LocalDefId) -> Coe
     }
 
     // Finally, resolve all regions.
-    let outlives_env = OutlivesEnvironment::new(param_env);
-    let _ = ocx.resolve_regions_and_report_errors(impl_did, &outlives_env);
+    let assumptions = RegionCheckingAssumptions::new(param_env);
+    let _ = ocx.resolve_regions_and_report_errors(impl_did, &assumptions);
 
     CoerceUnsizedInfo { custom_kind: kind }
 }

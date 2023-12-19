@@ -3,7 +3,7 @@
 // We don't do any drop checking during hir typeck.
 use rustc_data_structures::fx::FxHashSet;
 use rustc_errors::{struct_span_err, ErrorGuaranteed};
-use rustc_infer::infer::outlives::env::OutlivesEnvironment;
+use rustc_infer::infer::outlives::env::RegionCheckingAssumptions;
 use rustc_infer::infer::{RegionResolutionError, TyCtxtInferExt};
 use rustc_middle::ty::util::CheckRegions;
 use rustc_middle::ty::GenericArgsRef;
@@ -170,9 +170,9 @@ fn ensure_drop_predicates_are_implied_by_item_defn<'tcx>(
         return Err(guar.unwrap());
     }
 
-    let errors = ocx
-        .infcx
-        .resolve_regions_normalizing_outlives_obligations(&OutlivesEnvironment::new(param_env));
+    let errors = ocx.infcx.resolve_regions_normalizing_outlives_obligations(
+        &RegionCheckingAssumptions::new(param_env),
+    );
     if !errors.is_empty() {
         let mut guar = None;
         for error in errors {

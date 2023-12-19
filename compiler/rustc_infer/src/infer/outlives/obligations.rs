@@ -127,6 +127,7 @@ impl<'tcx> InferCtxt<'tcx> {
     pub fn process_registered_region_obligations<E>(
         &self,
         outlives_env: &OutlivesEnvironment<'tcx>,
+        param_env: ty::ParamEnv<'tcx>,
         mut deeply_normalize_ty: impl FnMut(Ty<'tcx>) -> Result<Ty<'tcx>, E>,
     ) -> Result<(), (E, SubregionOrigin<'tcx>)> {
         assert!(!self.in_snapshot(), "cannot process registered region obligations in a snapshot");
@@ -142,7 +143,7 @@ impl<'tcx> InferCtxt<'tcx> {
                 self.tcx,
                 outlives_env.region_bound_pairs(),
                 None,
-                outlives_env.param_env,
+                param_env,
             );
             let category = origin.to_constraint_category();
             outlives.type_must_outlive(origin, sup_type, sub_region, category);

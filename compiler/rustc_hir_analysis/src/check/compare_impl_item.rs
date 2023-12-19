@@ -7,7 +7,7 @@ use rustc_hir as hir;
 use rustc_hir::def::{DefKind, Res};
 use rustc_hir::intravisit;
 use rustc_hir::{GenericParamKind, ImplItemKind};
-use rustc_infer::infer::outlives::env::OutlivesEnvironment;
+use rustc_infer::infer::outlives::env::RegionCheckingAssumptions;
 use rustc_infer::infer::type_variable::{TypeVariableOrigin, TypeVariableOriginKind};
 use rustc_infer::infer::{self, InferCtxt, TyCtxtInferExt};
 use rustc_infer::traits::util;
@@ -377,11 +377,11 @@ fn compare_method_predicate_entailment<'tcx>(
 
     // Finally, resolve all regions. This catches wily misuses of
     // lifetime parameters.
-    let outlives_env = OutlivesEnvironment::with_bounds(
+    let assumptions = RegionCheckingAssumptions::with_bounds(
         param_env,
         infcx.implied_bounds_tys(param_env, impl_m_def_id, wf_tys),
     );
-    let errors = infcx.resolve_regions_normalizing_outlives_obligations(&outlives_env);
+    let errors = infcx.resolve_regions_normalizing_outlives_obligations(&assumptions);
     if !errors.is_empty() {
         return Err(infcx
             .tainted_by_errors()
@@ -701,11 +701,11 @@ pub(super) fn collect_return_position_impl_trait_in_trait_tys<'tcx>(
 
     // Finally, resolve all regions. This catches wily misuses of
     // lifetime parameters.
-    let outlives_env = OutlivesEnvironment::with_bounds(
+    let assumptions = RegionCheckingAssumptions::with_bounds(
         param_env,
         infcx.implied_bounds_tys(param_env, impl_m_def_id, wf_tys),
     );
-    ocx.resolve_regions_and_report_errors(impl_m_def_id, &outlives_env)?;
+    ocx.resolve_regions_and_report_errors(impl_m_def_id, &assumptions)?;
 
     let mut remapped_types = FxHashMap::default();
     for (def_id, (ty, args)) in collected_types {
@@ -1873,8 +1873,8 @@ fn compare_const_predicate_entailment<'tcx>(
         return Err(infcx.err_ctxt().report_fulfillment_errors(errors));
     }
 
-    let outlives_env = OutlivesEnvironment::new(param_env);
-    ocx.resolve_regions_and_report_errors(impl_ct_def_id, &outlives_env)
+    let assumptions = RegionCheckingAssumptions::new(param_env);
+    ocx.resolve_regions_and_report_errors(impl_ct_def_id, &assumptions)
 }
 
 pub(super) fn compare_impl_ty<'tcx>(
@@ -1969,8 +1969,8 @@ fn compare_type_predicate_entailment<'tcx>(
 
     // Finally, resolve all regions. This catches wily misuses of
     // lifetime parameters.
-    let outlives_env = OutlivesEnvironment::new(param_env);
-    ocx.resolve_regions_and_report_errors(impl_ty_def_id, &outlives_env)
+    let assumptions = RegionCheckingAssumptions::new(param_env);
+    ocx.resolve_regions_and_report_errors(impl_ty_def_id, &assumptions)
 }
 
 /// Validate that `ProjectionCandidate`s created for this associated type will
@@ -2075,8 +2075,8 @@ pub(super) fn check_type_bounds<'tcx>(
     // Finally, resolve all regions. This catches wily misuses of
     // lifetime parameters.
     let implied_bounds = infcx.implied_bounds_tys(param_env, impl_ty_def_id, assumed_wf_types);
-    let outlives_env = OutlivesEnvironment::with_bounds(param_env, implied_bounds);
-    ocx.resolve_regions_and_report_errors(impl_ty_def_id, &outlives_env)
+    let assumptions = RegionCheckingAssumptions::with_bounds(param_env, implied_bounds);
+    ocx.resolve_regions_and_report_errors(impl_ty_def_id, &assumptions)
 }
 
 /// Install projection predicates that allow GATs to project to their own

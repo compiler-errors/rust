@@ -25,6 +25,7 @@
 #![feature(min_specialization)]
 #![feature(never_type)]
 #![feature(try_blocks)]
+#![feature(iterator_try_collect)]
 #![recursion_limit = "512"] // For rustdoc
 
 #[macro_use]

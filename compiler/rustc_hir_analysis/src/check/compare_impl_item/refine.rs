@@ -1,7 +1,8 @@
 use rustc_data_structures::fx::FxIndexSet;
 use rustc_hir as hir;
 use rustc_hir::def_id::DefId;
-use rustc_infer::infer::{outlives::env::OutlivesEnvironment, TyCtxtInferExt};
+use rustc_infer::infer::outlives::env::RegionCheckingAssumptions;
+use rustc_infer::infer::TyCtxtInferExt;
 use rustc_lint_defs::builtin::REFINING_IMPL_TRAIT;
 use rustc_middle::traits::{ObligationCause, Reveal};
 use rustc_middle::ty::{
@@ -160,11 +161,11 @@ pub(super) fn check_refining_return_position_impl_trait_in_trait<'tcx>(
         );
         return;
     }
-    let outlives_env = OutlivesEnvironment::with_bounds(
+    let assumptions = RegionCheckingAssumptions::with_bounds(
         param_env,
         infcx.implied_bounds_tys(param_env, impl_m.def_id.expect_local(), implied_wf_types),
     );
-    let errors = infcx.resolve_regions_normalizing_outlives_obligations(&outlives_env);
+    let errors = infcx.resolve_regions_normalizing_outlives_obligations(&assumptions);
     if !errors.is_empty() {
         tcx.sess.span_delayed_bug(
             DUMMY_SP,

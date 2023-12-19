@@ -9,7 +9,7 @@ use rustc_hir as hir;
 use rustc_infer::infer::canonical::Canonical;
 use rustc_infer::infer::{RegionResolutionError, TyCtxtInferExt};
 use rustc_infer::traits::query::NoSolution;
-use rustc_infer::{infer::outlives::env::OutlivesEnvironment, traits::FulfillmentError};
+use rustc_infer::{infer::outlives::env::RegionCheckingAssumptions, traits::FulfillmentError};
 use rustc_middle::ty::{self, AdtDef, GenericArg, List, Ty, TyCtxt, TypeVisitableExt};
 use rustc_span::DUMMY_SP;
 
@@ -190,7 +190,7 @@ pub fn all_fields_implement_trait<'tcx>(
             }
 
             // Check regions assuming the self type of the impl is WF
-            let outlives_env = OutlivesEnvironment::with_bounds(
+            let assumptions = RegionCheckingAssumptions::with_bounds(
                 param_env,
                 infcx.implied_bounds_tys(
                     param_env,
@@ -198,7 +198,7 @@ pub fn all_fields_implement_trait<'tcx>(
                     FxIndexSet::from_iter([self_type]),
                 ),
             );
-            let errors = infcx.resolve_regions_normalizing_outlives_obligations(&outlives_env);
+            let errors = infcx.resolve_regions_normalizing_outlives_obligations(&assumptions);
             if !errors.is_empty() {
                 infringing.push((field, ty, InfringingFieldsReason::Regions(errors)));
             }

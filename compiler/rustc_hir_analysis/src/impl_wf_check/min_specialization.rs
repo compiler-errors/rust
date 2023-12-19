@@ -71,7 +71,7 @@ use crate::{constrained_generic_params as cgp, errors};
 use rustc_data_structures::fx::FxHashSet;
 use rustc_hir as hir;
 use rustc_hir::def_id::{DefId, LocalDefId};
-use rustc_infer::infer::outlives::env::OutlivesEnvironment;
+use rustc_infer::infer::outlives::env::RegionCheckingAssumptions;
 use rustc_infer::infer::TyCtxtInferExt;
 use rustc_infer::traits::specialization_graph::Node;
 use rustc_middle::ty::trait_def::TraitSpecializationKind;
@@ -203,8 +203,8 @@ fn get_impl_args(
     }
 
     let implied_bounds = infcx.implied_bounds_tys(param_env, impl1_def_id, assumed_wf_types);
-    let outlives_env = OutlivesEnvironment::with_bounds(param_env, implied_bounds);
-    let _ = ocx.resolve_regions_and_report_errors(impl1_def_id, &outlives_env);
+    let assumptions = RegionCheckingAssumptions::with_bounds(param_env, implied_bounds);
+    let _ = ocx.resolve_regions_and_report_errors(impl1_def_id, &assumptions);
     let Ok(impl2_args) = infcx.fully_resolve(impl2_args) else {
         let span = tcx.def_span(impl1_def_id);
         let guar = tcx.sess.emit_err(SubstsOnOverriddenImpl { span });

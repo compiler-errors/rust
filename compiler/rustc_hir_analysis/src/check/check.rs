@@ -10,6 +10,7 @@ use rustc_hir as hir;
 use rustc_hir::def::{CtorKind, DefKind};
 use rustc_hir::def_id::LocalModDefId;
 use rustc_hir::Node;
+use rustc_infer::infer::outlives::env::RegionCheckingAssumptions;
 use rustc_infer::infer::{RegionVariableOrigin, TyCtxtInferExt};
 use rustc_infer::traits::{Obligation, TraitEngineExt as _};
 use rustc_lint_defs::builtin::REPR_TRANSPARENT_EXTERNAL_PRIVATE_FIELDS;
@@ -353,8 +354,8 @@ fn check_opaque_meets_bounds<'tcx>(
         hir::OpaqueTyOrigin::TyAlias { .. } => {
             let wf_tys = ocx.assumed_wf_types_and_report_errors(param_env, def_id)?;
             let implied_bounds = infcx.implied_bounds_tys(param_env, def_id, wf_tys);
-            let outlives_env = OutlivesEnvironment::with_bounds(param_env, implied_bounds);
-            ocx.resolve_regions_and_report_errors(defining_use_anchor, &outlives_env)?;
+            let assumptions = RegionCheckingAssumptions::with_bounds(param_env, implied_bounds);
+            ocx.resolve_regions_and_report_errors(defining_use_anchor, &assumptions)?;
         }
     }
     // Check that any hidden types found during wf checking match the hidden types that `type_of` sees.

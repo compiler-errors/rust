@@ -199,7 +199,8 @@ impl<'tcx> UniversalRegionRelationsBuilder<'_, 'tcx> {
 
         // Insert the facts we know from the predicates. Why? Why not.
         let param_env = self.param_env;
-        self.add_outlives_bounds(outlives::explicit_outlives_bounds(param_env));
+        // FIXME(-Znext-solver): This param-env is not normalized!
+        self.add_outlives_bounds(outlives::explicit_outlives_bounds(param_env.caller_bounds()));
 
         // - outlives is reflexive, so `'r: 'r` for every region `'r`
         // - `'static: 'r` for every region `'r`

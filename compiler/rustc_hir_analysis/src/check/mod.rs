@@ -83,7 +83,7 @@ use rustc_hir::def_id::{DefId, LocalDefId};
 use rustc_hir::intravisit::Visitor;
 use rustc_index::bit_set::BitSet;
 use rustc_infer::infer::error_reporting::ObligationCauseExt as _;
-use rustc_infer::infer::outlives::env::OutlivesEnvironment;
+use rustc_infer::infer::outlives::env::RegionCheckingAssumptions;
 use rustc_infer::infer::{self, TyCtxtInferExt as _};
 use rustc_infer::traits::ObligationCause;
 use rustc_middle::query::Providers;
@@ -633,8 +633,8 @@ pub fn check_function_signature<'tcx>(
         }
     }
 
-    let outlives_env = OutlivesEnvironment::new(param_env);
-    if let Err(e) = ocx.resolve_regions_and_report_errors(local_id, &outlives_env) {
+    let assumptions = RegionCheckingAssumptions::new(param_env);
+    if let Err(e) = ocx.resolve_regions_and_report_errors(local_id, &assumptions) {
         return Err(e);
     }
 

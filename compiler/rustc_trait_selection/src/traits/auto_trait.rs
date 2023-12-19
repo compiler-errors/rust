@@ -6,6 +6,7 @@ use super::*;
 use crate::errors::UnableToConstructConstantValue;
 use crate::infer::region_constraints::{Constraint, RegionConstraintData};
 use crate::traits::project::ProjectAndUnifyResult;
+use rustc_infer::infer::outlives::lower_region_checking_assumptions;
 use rustc_infer::infer::DefineOpaqueTypes;
 use rustc_middle::mir::interpret::ErrorHandled;
 use rustc_middle::ty::{ImplPolarity, Region, RegionVid};
@@ -178,8 +179,11 @@ impl<'tcx> AutoTraitFinder<'tcx> {
             panic!("Unable to fulfill trait {trait_did:?} for '{ty:?}': {errors:?}");
         }
 
-        let outlives_env = OutlivesEnvironment::new(full_env);
-        let _ = infcx.process_registered_region_obligations::<!>(&outlives_env, |ty| Ok(ty));
+        let assumptions = RegionCheckingAssumptions::new(full_env);
+        let outlives_env =
+            lower_region_checking_assumptions::<!>(self.tcx, &assumptions, |ty| Ok(ty)).into_ok();
+        let _ =
+            infcx.process_registered_region_obligations::<!>(&outlives_env, full_env, |ty| Ok(ty));
 
         let region_data =
             infcx.inner.borrow_mut().unwrap_region_constraints().region_constraint_data().clone();
