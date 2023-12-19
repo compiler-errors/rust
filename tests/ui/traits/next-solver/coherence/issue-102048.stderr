@@ -1,5 +1,5 @@
-error[E0119]: conflicting implementations of trait `Trait<for<'a> fn(<_ as WithAssoc1<'a>>::Assoc, <_ as WithAssoc2<'a>>::Assoc)>` for type `(_, _)`
-  --> $DIR/issue-102048.rs:39:1
+error[E0119]: conflicting implementations of trait `Trait<for<'a> fn(<_ /* ?0t */ as WithAssoc1<'a>>::Assoc, <_ /* ?1t */ as WithAssoc2<'a>>::Assoc)>` for type `(_ /* ?0t */, _ /* ?1t */)`
+  --> $DIR/issue-102048.rs:40:1
    |
 LL | / impl<T, U> Trait<for<'a> fn(<T as WithAssoc1<'a>>::Assoc, <U as WithAssoc2<'a>>::Assoc)> for (T, U)
 LL | | where
@@ -9,7 +9,7 @@ LL | |     U: for<'a> WithAssoc2<'a>,
 ...
 LL | / impl<T, U> Trait<for<'a> fn(<U as WithAssoc1<'a>>::Assoc, u32)> for (T, U) where
 LL | |     U: for<'a> WithAssoc1<'a>
-   | |_____________________________^ conflicting implementation for `(_, _)`
+   | |_____________________________^ conflicting implementation for `(_ /* ?0t */, _ /* ?1t */)`
 
 error: aborting due to 1 previous error
 

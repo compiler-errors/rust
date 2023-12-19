@@ -17,7 +17,8 @@
 // that to `i32`. We then try to unify `i32` from `impl1` with `u32` from `impl2` which fails,
 // causing coherence to consider these two impls distinct.
 
-// compile-flags: -Znext-solver
+// compile-flags: -Znext-solver --verbose
+
 pub trait Trait<T> {}
 
 pub trait WithAssoc1<'a> {
