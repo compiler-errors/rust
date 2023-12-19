@@ -281,6 +281,8 @@ where
                                 ty::Invariant => {
                                     if self.for_universe.can_name(universe) {
                                         return Ok(t);
+                                    } else if self.infcx.next_trait_solver() && self.in_alias {
+                                        return Err(TypeError::Mismatch);
                                     }
                                 }
 
@@ -412,6 +414,8 @@ where
             let r_universe = self.infcx.universe_of_region(r);
             if self.for_universe.can_name(r_universe) {
                 return Ok(r);
+            } else if self.infcx.next_trait_solver() && self.in_alias {
+                return Err(TypeError::Mismatch);
             }
         }
 
@@ -452,6 +456,8 @@ where
                     ConstVariableValue::Unknown { universe } => {
                         if self.for_universe.can_name(universe) {
                             Ok(c)
+                        } else if self.infcx.next_trait_solver() && self.in_alias {
+                            return Err(TypeError::Mismatch);
                         } else {
                             let new_var_id = variable_table
                                 .new_key(ConstVarValue {
