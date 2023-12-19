@@ -676,8 +676,13 @@ pub trait PrettyPrinter<'tcx>: Printer<'tcx> + fmt::Write {
             }
             ty::FnPtr(ref bare_fn) => p!(print(bare_fn)),
             ty::Infer(infer_ty) => {
-                if self.should_print_verbose() {
+                if self.should_print_internal() {
                     p!(write("{:?}", ty.kind()));
+                    return Ok(());
+                }
+
+                if self.should_print_verbose() {
+                    p!(write("_ /* {:?} */", ty.kind()));
                     return Ok(());
                 }
 
@@ -697,7 +702,7 @@ pub trait PrettyPrinter<'tcx>: Printer<'tcx> + fmt::Write {
                 ty::BoundTyKind::Anon => {
                     rustc_type_ir::debug_bound_var(self, debruijn, bound_ty.var)?
                 }
-                ty::BoundTyKind::Param(_, s) => match self.should_print_verbose() {
+                ty::BoundTyKind::Param(_, s) => match self.should_print_internal() {
                     true => p!(write("{:?}", ty.kind())),
                     false => p!(write("{s}")),
                 },
@@ -723,7 +728,7 @@ pub trait PrettyPrinter<'tcx>: Printer<'tcx> + fmt::Write {
                 p!(print_def_path(def_id, &[]));
             }
             ty::Alias(ty::Projection | ty::Inherent | ty::Weak, ref data) => {
-                if !(self.should_print_verbose() || with_no_queries())
+                if !(self.should_print_internal() || with_no_queries())
                     && self.tcx().is_impl_trait_in_trait(data.def_id)
                 {
                     return self.pretty_print_opaque_impl_type(data.def_id, data.args);
@@ -733,7 +738,7 @@ pub trait PrettyPrinter<'tcx>: Printer<'tcx> + fmt::Write {
             }
             ty::Placeholder(placeholder) => match placeholder.bound.kind {
                 ty::BoundTyKind::Anon => p!(write("{placeholder:?}")),
-                ty::BoundTyKind::Param(_, name) => match self.should_print_verbose() {
+                ty::BoundTyKind::Param(_, name) => match self.should_print_internal() {
                     true => p!(write("{:?}", ty.kind())),
                     false => p!(write("{name}")),
                 },
@@ -747,7 +752,7 @@ pub trait PrettyPrinter<'tcx>: Printer<'tcx> + fmt::Write {
                 // [Unless `-Zverbose-internals` is used, e.g. in the output of
                 // `tests/ui/nll/ty-outlives/impl-trait-captures.rs`, for
                 // example.]
-                if self.should_print_verbose() {
+                if self.should_print_internal() {
                     // FIXME(eddyb) print this with `print_def_path`.
                     p!(write("Opaque({:?}, {})", def_id, args.print_as_list()));
                     return Ok(());
@@ -787,7 +792,7 @@ pub trait PrettyPrinter<'tcx>: Printer<'tcx> + fmt::Write {
                 p!(write("{{"));
                 let coroutine_kind = self.tcx().coroutine_kind(did).unwrap();
                 let should_print_movability =
-                    self.should_print_verbose() || coroutine_kind == hir::CoroutineKind::Coroutine;
+                    self.should_print_internal() || coroutine_kind == hir::CoroutineKind::Coroutine;
 
                 if should_print_movability {
                     match movability {
@@ -796,7 +801,7 @@ pub trait PrettyPrinter<'tcx>: Printer<'tcx> + fmt::Write {
                     }
                 }
 
-                if !self.should_print_verbose() {
+                if !self.should_print_internal() {
                     p!(write("{}", coroutine_kind));
                     // FIXME(eddyb) should use `def_span`.
                     if let Some(did) = did.as_local() {
@@ -829,7 +834,7 @@ pub trait PrettyPrinter<'tcx>: Printer<'tcx> + fmt::Write {
             }
             ty::CoroutineWitness(did, args) => {
                 p!(write("{{"));
-                if !self.tcx().sess.verbose_internals() {
+                if !self.should_print_internal() {
                     p!("coroutine witness");
                     // FIXME(eddyb) should use `def_span`.
                     if let Some(did) = did.as_local() {
@@ -851,7 +856,7 @@ pub trait PrettyPrinter<'tcx>: Printer<'tcx> + fmt::Write {
             }
             ty::Closure(did, args) => {
                 p!(write("{{"));
-                if !self.should_print_verbose() {
+                if !self.should_print_internal() {
                     p!(write("closure"));
                     // FIXME(eddyb) should use `def_span`.
                     if let Some(did) = did.as_local() {
@@ -1210,7 +1215,7 @@ pub trait PrettyPrinter<'tcx>: Printer<'tcx> + fmt::Write {
 
                 // Special-case `Fn(...) -> ...` and re-sugar it.
                 let fn_trait_kind = cx.tcx().fn_trait_kind_from_def_id(principal.def_id);
-                if !cx.should_print_verbose() && fn_trait_kind.is_some() {
+                if !cx.should_print_internal() && fn_trait_kind.is_some() {
                     if let ty::Tuple(tys) = principal.args.type_at(0).kind() {
                         let mut projections = predicates.projection_bounds();
                         if let (Some(proj), None) = (projections.next(), projections.next()) {
@@ -1315,7 +1320,7 @@ pub trait PrettyPrinter<'tcx>: Printer<'tcx> + fmt::Write {
     ) -> Result<(), PrintError> {
         define_scoped_cx!(self);
 
-        if self.should_print_verbose() {
+        if self.should_print_internal() {
             p!(write("{:?}", ct));
             return Ok(());
         }
@@ -1368,6 +1373,12 @@ pub trait PrettyPrinter<'tcx>: Printer<'tcx> + fmt::Write {
             ty::ConstKind::Infer(infer_ct) => match infer_ct {
                 ty::InferConst::Var(ct_vid) if let Some(name) = self.const_infer_name(ct_vid) => {
                     p!(write("{}", name))
+                }
+                ty::InferConst::Var(ct_vid) if self.should_print_internal() => {
+                    p!(write("{:?}", ct_vid));
+                }
+                ty::InferConst::Var(ct_vid) if self.should_print_verbose() => {
+                    p!(write("_ /* {:?} */", ct_vid));
                 }
                 _ => print_underscore!(),
             },
@@ -1555,7 +1566,7 @@ pub trait PrettyPrinter<'tcx>: Printer<'tcx> + fmt::Write {
     ) -> Result<(), PrintError> {
         define_scoped_cx!(self);
 
-        if self.should_print_verbose() {
+        if self.should_print_internal() {
             p!(write("ValTree({:?}: ", valtree), print(ty), ")");
             return Ok(());
         }
@@ -1697,8 +1708,16 @@ pub trait PrettyPrinter<'tcx>: Printer<'tcx> + fmt::Write {
         })
     }
 
-    fn should_print_verbose(&self) -> bool {
+    /// Whether the compiler should print an unfriendly, totally-internal
+    /// representation, meant for compiler devs.
+    fn should_print_internal(&self) -> bool {
         self.tcx().sess.verbose_internals()
+    }
+
+    /// Whether the compiler should print a friendly but possibly long
+    /// representation, meant for stable users who want more information.
+    fn should_print_verbose(&self) -> bool {
+        self.tcx().sess.opts.verbose
     }
 }
 
@@ -2017,7 +2036,7 @@ impl<'tcx> Printer<'tcx> for FmtPrinter<'_, 'tcx> {
             }
         }
 
-        let verbose = self.should_print_verbose();
+        let verbose = self.should_print_internal();
         disambiguated_data.fmt_maybe_verbose(self, verbose)?;
 
         self.empty_path = false;
@@ -2122,7 +2141,7 @@ impl<'tcx> PrettyPrinter<'tcx> for FmtPrinter<'_, 'tcx> {
             return true;
         }
 
-        if self.should_print_verbose() {
+        if self.should_print_internal() || self.should_print_verbose() {
             return true;
         }
 
@@ -2191,7 +2210,7 @@ impl<'tcx> FmtPrinter<'_, 'tcx> {
             return Ok(());
         }
 
-        if self.should_print_verbose() {
+        if self.should_print_internal() {
             p!(write("{:?}", region));
             return Ok(());
         }
@@ -2230,6 +2249,10 @@ impl<'tcx> FmtPrinter<'_, 'tcx> {
             }
             ty::ReVar(region_vid) if identify_regions => {
                 p!(write("{:?}", region_vid));
+                return Ok(());
+            }
+            ty::ReVar(region_vid) if self.should_print_verbose() => {
+                p!(write("'_ /* {:?} */", region_vid));
                 return Ok(());
             }
             ty::ReVar(_) => {}
@@ -2399,7 +2422,7 @@ impl<'tcx> FmtPrinter<'_, 'tcx> {
         // aren't named. Eventually, we might just want this as the default, but
         // this is not *quite* right and changes the ordering of some output
         // anyways.
-        let (new_value, map) = if self.should_print_verbose() {
+        let (new_value, map) = if self.should_print_internal() {
             for var in value.bound_vars().iter() {
                 start_or_continue(self, "for<", ", ");
                 write!(self, "{var:?}")?;

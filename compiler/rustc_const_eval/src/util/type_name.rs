@@ -163,6 +163,11 @@ impl<'tcx> PrettyPrinter<'tcx> for AbsolutePathPrinter<'tcx> {
         Ok(())
     }
 
+    fn should_print_internal(&self) -> bool {
+        // `std::any::type_name` should never print verbose type names
+        false
+    }
+
     fn should_print_verbose(&self) -> bool {
         // `std::any::type_name` should never print verbose type names
         false
