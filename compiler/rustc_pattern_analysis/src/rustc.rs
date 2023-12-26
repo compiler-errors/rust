@@ -399,7 +399,7 @@ impl<'p, 'tcx> RustcMatchCheckCtxt<'p, 'tcx> {
 
     /// Note: the input patterns must have been lowered through
     /// `rustc_mir_build::thir::pattern::check_match::MatchVisitor::lower_pattern`.
-    pub fn lower_pat(&self, pat: &Pat<'tcx>) -> DeconstructedPat<'p, 'tcx> {
+    pub fn lower_pat(&self, pat: &'p Pat<'tcx>) -> DeconstructedPat<'p, 'tcx> {
         let singleton = |pat| std::slice::from_ref(self.pattern_arena.alloc(pat));
         let cx = self;
         let ctor;
@@ -894,7 +894,7 @@ impl<'p, 'tcx> TypeCx for RustcMatchCheckCtxt<'p, 'tcx> {
     type VariantIdx = VariantIdx;
     type StrLit = Const<'tcx>;
     type ArmData = HirId;
-    type PatData = &'thir Pat<'tcx>;
+    type PatData = &'p Pat<'tcx>;
 
     fn is_exhaustive_patterns_feature_on(&self) -> bool {
         self.tcx.features().exhaustive_patterns
