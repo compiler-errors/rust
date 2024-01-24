@@ -1348,6 +1348,7 @@ pub enum AggregateKind<'tcx> {
 
     Closure(DefId, GenericArgsRef<'tcx>),
     Coroutine(DefId, GenericArgsRef<'tcx>),
+    CoroutineClosure(DefId, GenericArgsRef<'tcx>),
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, TyEncodable, TyDecodable, Hash, HashStable)]
