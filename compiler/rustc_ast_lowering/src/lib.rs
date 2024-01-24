@@ -33,6 +33,7 @@
 #![allow(internal_features)]
 #![feature(rustdoc_internals)]
 #![doc(rust_logo)]
+#![feature(assert_matches)]
 #![feature(if_let_guard)]
 #![feature(box_patterns)]
 #![feature(let_chains)]

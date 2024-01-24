@@ -91,11 +91,12 @@ pub use self::sty::BoundRegionKind::*;
 pub use self::sty::{
     AliasTy, Article, Binder, BoundRegion, BoundRegionKind, BoundTy, BoundTyKind,
     BoundVariableKind, CanonicalPolyFnSig, ClauseKind, ClosureArgs, ClosureArgsParts, ConstKind,
-    CoroutineArgs, CoroutineArgsParts, EarlyParamRegion, ExistentialPredicate,
-    ExistentialProjection, ExistentialTraitRef, FnSig, GenSig, InlineConstArgs,
-    InlineConstArgsParts, LateParamRegion, ParamConst, ParamTy, PolyExistentialPredicate,
-    PolyExistentialProjection, PolyExistentialTraitRef, PolyFnSig, PolyTraitRef, PredicateKind,
-    Region, RegionKind, RegionVid, TraitRef, TyKind, TypeAndMut, UpvarArgs, VarianceDiagInfo,
+    CoroutineArgs, CoroutineArgsParts, CoroutineClosureArgs, CoroutineClosureArgsParts,
+    CoroutineClosureSignature, EarlyParamRegion, ExistentialPredicate, ExistentialProjection,
+    ExistentialTraitRef, FnSig, GenSig, InlineConstArgs, InlineConstArgsParts, LateParamRegion,
+    ParamConst, ParamTy, PolyExistentialPredicate, PolyExistentialProjection,
+    PolyExistentialTraitRef, PolyFnSig, PolyTraitRef, PredicateKind, Region, RegionKind, RegionVid,
+    TraitRef, TyKind, TypeAndMut, UpvarArgs, VarianceDiagInfo,
 };
 pub use self::trait_def::TraitDef;
 pub use self::typeck_results::{
