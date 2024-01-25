@@ -1231,6 +1231,7 @@ fn create_coroutine_drop_shim<'tcx>(
     drop_clean: BasicBlock,
 ) -> Body<'tcx> {
     let mut body = body.clone();
+    let _ = body.coroutine.take();
     body.arg_count = 1; // make sure the resume argument is not included here
 
     let source_info = SourceInfo::outermost(body.span);
