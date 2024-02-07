@@ -2616,16 +2616,6 @@ impl<'o, 'tcx> dyn AstConv<'tcx> + 'o {
         }
     }
 
-    pub fn ty_of_arg(&self, ty: &hir::Ty<'tcx>, expected_ty: Option<Ty<'tcx>>) -> Ty<'tcx> {
-        match ty.kind {
-            hir::TyKind::Infer if expected_ty.is_some() => {
-                self.record_ty(ty.hir_id, expected_ty.unwrap(), ty.span);
-                expected_ty.unwrap()
-            }
-            _ => self.ast_ty_to_ty(ty),
-        }
-    }
-
     #[instrument(level = "debug", skip(self, hir_id, unsafety, abi, decl, generics, hir_ty), ret)]
     pub fn ty_of_fn(
         &self,
@@ -2676,7 +2666,7 @@ impl<'o, 'tcx> dyn AstConv<'tcx> + 'o {
 
                 // Only visit the type looking for `_` if we didn't fix the type above
                 visitor.visit_ty(a);
-                self.ty_of_arg(a, None)
+                self.ast_ty_to_ty(a)
             })
             .collect();
 
