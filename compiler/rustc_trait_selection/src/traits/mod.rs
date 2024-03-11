@@ -487,15 +487,11 @@ fn is_impossible_associated_item(
     });
 
     let infcx = tcx.infer_ctxt().ignoring_regions().build();
-    for obligation in predicates_for_trait {
-        // Ignore overflow error, to be conservative.
-        if let Ok(result) = infcx.evaluate_obligation(&obligation)
-            && !result.may_apply()
-        {
-            return true;
-        }
-    }
-    false
+    let ocx = ObligationCtxt::new(&infcx);
+    ocx.register_obligations(predicates_for_trait);
+
+    // Impossible pred if >0 obligations fail
+    !ocx.select_where_possible().is_empty()
 }
 
 pub fn provide(providers: &mut Providers) {
