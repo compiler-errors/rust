@@ -74,7 +74,8 @@ pub fn trivial_dropck_outlives<'tcx>(tcx: TyCtxt<'tcx>, ty: Ty<'tcx>) -> bool {
         | ty::Placeholder(..)
         | ty::Infer(_)
         | ty::Bound(..)
-        | ty::Coroutine(..) => false,
+        | ty::Coroutine(..)
+        | ty::UnsafeBinder(_) => false,
     }
 }
 
@@ -292,6 +293,8 @@ pub fn dtorck_constraint_for_ty_inner<'tcx>(
                 constraints.outlives.push(args.resume_ty().into());
             }
         }
+
+        ty::UnsafeBinder(_) => todo!(),
 
         ty::Adt(def, args) => {
             let DropckConstraint { dtorck_types, outlives, overflows } =

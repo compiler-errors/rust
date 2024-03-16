@@ -2119,6 +2119,13 @@ impl<'tcx> dyn HirTyLowerer<'tcx> + '_ {
                     ),
                 )
             }
+            hir::TyKind::UnsafeBinder(unsafe_binder) => Ty::new_unsafe_binder(
+                tcx,
+                ty::Binder::bind_with_vars(
+                    self.lower_ty(unsafe_binder.inner_ty),
+                    tcx.late_bound_vars(hir_ty.hir_id),
+                ),
+            ),
             hir::TyKind::TraitObject(bounds, lifetime, repr) => {
                 self.prohibit_or_lint_bare_trait_object_ty(hir_ty, in_path);
 

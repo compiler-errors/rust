@@ -452,6 +452,11 @@ fn has_late_bound_regions<'tcx>(tcx: TyCtxt<'tcx>, node: Node<'tcx>) -> Option<S
                     intravisit::walk_ty(self, ty);
                     self.outer_index.shift_out(1);
                 }
+                hir::TyKind::UnsafeBinder(..) => {
+                    self.outer_index.shift_in(1);
+                    intravisit::walk_ty(self, ty);
+                    self.outer_index.shift_out(1);
+                }
                 _ => intravisit::walk_ty(self, ty),
             }
         }

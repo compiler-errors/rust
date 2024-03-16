@@ -79,6 +79,8 @@ pub(in crate::solve) fn instantiate_constituent_tys_for_auto_trait<'tcx>(
             .map(|bty| bty.instantiate(tcx, args))
             .collect()),
 
+        ty::UnsafeBinder(bound_ty) => Ok(vec![bound_ty]),
+
         // For `PhantomData<T>`, we pass `T`.
         ty::Adt(def, args) if def.is_phantom_data() => Ok(vec![ty::Binder::dummy(args.type_at(0))]),
 
@@ -135,6 +137,8 @@ pub(in crate::solve) fn instantiate_constituent_tys_for_sized_trait<'tcx>(
         | ty::Infer(ty::TyVar(_) | ty::FreshTy(_) | ty::FreshIntTy(_) | ty::FreshFloatTy(_)) => {
             bug!("unexpected type `{ty}`")
         }
+
+        ty::UnsafeBinder(bound_ty) => Ok(vec![bound_ty]),
 
         // impl Sized for ()
         // impl Sized for (T1, T2, .., Tn) where Tn: Sized if n >= 1
@@ -223,6 +227,8 @@ pub(in crate::solve) fn instantiate_constituent_tys_for_copy_clone_trait<'tcx>(
                 }
             }
         },
+
+        ty::UnsafeBinder(_) => Err(NoSolution),
 
         // impl Copy/Clone for CoroutineWitness where T: Copy/Clone forall T in coroutine_hidden_types
         ty::CoroutineWitness(def_id, args) => Ok(ecx
@@ -357,6 +363,7 @@ pub(in crate::solve) fn extract_tupled_inputs_and_output_from_callable<'tcx>(
         | ty::Never
         | ty::Tuple(_)
         | ty::Pat(_, _)
+        | ty::UnsafeBinder(_)
         | ty::Alias(_, _)
         | ty::Param(_)
         | ty::Placeholder(..)
@@ -546,6 +553,7 @@ pub(in crate::solve) fn extract_tupled_inputs_and_output_from_async_callable<'tc
         | ty::Coroutine(_, _)
         | ty::CoroutineWitness(..)
         | ty::Never
+        | ty::UnsafeBinder(_)
         | ty::Tuple(_)
         | ty::Alias(_, _)
         | ty::Param(_)

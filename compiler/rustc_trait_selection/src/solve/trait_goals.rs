@@ -1061,6 +1061,7 @@ impl<'tcx> EvalCtxt<'_, 'tcx> {
             | ty::Never
             | ty::Tuple(_)
             | ty::Adt(_, _)
+        | ty::UnsafeBinder(_)
             // FIXME: Handling opaques here is kinda sus. Especially because we
             // simplify them to SimplifiedType::Placeholder.
             | ty::Alias(ty::Opaque, _) => {

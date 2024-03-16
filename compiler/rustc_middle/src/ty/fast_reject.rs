@@ -32,6 +32,7 @@ pub enum SimplifiedType {
     CoroutineWitness(DefId),
     Function(usize),
     Placeholder,
+    UnsafeBinder,
     Error,
 }
 
@@ -137,6 +138,7 @@ pub fn simplify_type<'tcx>(
         ty::Never => Some(SimplifiedType::Never),
         ty::Tuple(tys) => Some(SimplifiedType::Tuple(tys.len())),
         ty::FnPtr(f) => Some(SimplifiedType::Function(f.skip_binder().inputs().len())),
+        ty::UnsafeBinder(_) => Some(SimplifiedType::UnsafeBinder),
         ty::Placeholder(..) => Some(SimplifiedType::Placeholder),
         ty::Param(_) => match treat_params {
             TreatParams::ForLookup | TreatParams::NextSolverLookup => {
@@ -237,7 +239,8 @@ impl DeepRejectCtxt {
             | ty::Never
             | ty::Tuple(..)
             | ty::FnPtr(..)
-            | ty::Foreign(..) => debug_assert!(impl_ty.is_known_rigid()),
+            | ty::Foreign(..)
+            | ty::UnsafeBinder(_) => debug_assert!(impl_ty.is_known_rigid()),
             ty::FnDef(..)
             | ty::Closure(..)
             | ty::CoroutineClosure(..)
@@ -349,6 +352,9 @@ impl DeepRejectCtxt {
             ty::Alias(..) => true,
 
             ty::Error(_) => true,
+
+            // TODO:
+            ty::UnsafeBinder(_) => true,
 
             ty::CoroutineWitness(..) => {
                 bug!("unexpected obligation type: {:?}", obligation_ty)

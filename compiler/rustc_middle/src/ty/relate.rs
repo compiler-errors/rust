@@ -558,6 +558,16 @@ pub fn structurally_relate_tys<'tcx, R: TypeRelation<'tcx>>(
             Ok(Ty::new_fn_ptr(tcx, fty))
         }
 
+        (&ty::UnsafeBinder(a_bound), &ty::UnsafeBinder(b_bound)) => {
+            let bound = relation.relate_with_variance(
+                ty::Invariant,
+                ty::VarianceDiagInfo::None,
+                a_bound,
+                b_bound,
+            )?;
+            Ok(Ty::new_unsafe_binder(tcx, bound))
+        }
+
         // Alias tend to mostly already be handled downstream due to normalization.
         (&ty::Alias(a_kind, a_data), &ty::Alias(b_kind, b_data)) => {
             let alias_ty = relation.relate(a_data, b_data)?;

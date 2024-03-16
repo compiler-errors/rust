@@ -126,7 +126,12 @@ impl<'tcx> TypeVisitor<TyCtxt<'tcx>> for Search<'tcx> {
                 return ControlFlow::Continue(());
             }
 
-            ty::Pat(..) | ty::Array(..) | ty::Slice(_) | ty::Ref(..) | ty::Tuple(..) => {
+            ty::Pat(..)
+            | ty::Array(..)
+            | ty::Slice(_)
+            | ty::Ref(..)
+            | ty::Tuple(..)
+            | ty::UnsafeBinder(_) => {
                 // First check all contained types and then tell the caller to continue searching.
                 return ty.super_visit_with(self);
             }

@@ -621,6 +621,8 @@ pub fn encode_ty<'tcx>(
             typeid.push_str(&s);
         }
 
+        ty::UnsafeBinder(_) => todo!(),
+
         // Unexpected types
         ty::Alias(..)
         | ty::Bound(..)

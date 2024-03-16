@@ -374,7 +374,8 @@ impl<'tcx> EvalCtxt<'_, 'tcx> {
             | ty::CoroutineClosure(..)
             | ty::Coroutine(_, _)
             | ty::Never
-            | ty::Tuple(_) => {
+            | ty::Tuple(_)
+            | ty::UnsafeBinder(_) => {
                 let simp =
                     fast_reject::simplify_type(tcx, self_ty, TreatParams::ForLookup).unwrap();
                 consider_impls_for_simplified_type(simp);
@@ -609,6 +610,7 @@ impl<'tcx> EvalCtxt<'_, 'tcx> {
             | ty::Coroutine(..)
             | ty::CoroutineWitness(..)
             | ty::Never
+            | ty::UnsafeBinder(_)
             | ty::Tuple(_)
             | ty::Param(_)
             | ty::Placeholder(..)
@@ -704,7 +706,8 @@ impl<'tcx> EvalCtxt<'_, 'tcx> {
             | ty::Infer(ty::IntVar(_) | ty::FloatVar(_))
             | ty::Error(_) => return,
             ty::Infer(ty::TyVar(_) | ty::FreshTy(_) | ty::FreshIntTy(_) | ty::FreshFloatTy(_))
-            | ty::Bound(..) => bug!("unexpected self type for `{goal:?}`"),
+            | ty::Bound(..)
+            | ty::UnsafeBinder(_) => bug!("unexpected self type for `{goal:?}`"),
             ty::Dynamic(bounds, ..) => bounds,
         };
 

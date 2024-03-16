@@ -107,6 +107,7 @@ impl<'tcx> Interner for TyCtxt<'tcx> {
     type ErrorGuaranteed = ErrorGuaranteed;
     type BoundExistentialPredicates = &'tcx List<PolyExistentialPredicate<'tcx>>;
     type PolyFnSig = PolyFnSig<'tcx>;
+    type PolyTy = Binder<'tcx, Ty<'tcx>>;
     type AllocId = crate::mir::interpret::AllocId;
 
     type Const = ty::Const<'tcx>;
@@ -1619,7 +1620,7 @@ TrivialLiftImpls! {
 }
 
 macro_rules! sty_debug_print {
-    ($fmt: expr, $ctxt: expr, $($variant: ident),*) => {{
+    ($fmt: expr, $ctxt: expr, $($variant: ident),+ $(,)?) => {{
         // Curious inner module to allow variant names to be used as
         // variable names.
         #[allow(non_snake_case)]
@@ -1720,7 +1721,8 @@ impl<'tcx> TyCtxt<'tcx> {
                     Infer,
                     Alias,
                     Pat,
-                    Foreign
+                    Foreign,
+                    UnsafeBinder,
                 )?;
 
                 writeln!(fmt, "GenericArgs interner: #{}", self.0.interners.args.len())?;

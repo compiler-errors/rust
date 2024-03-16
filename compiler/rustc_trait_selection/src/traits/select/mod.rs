@@ -2155,6 +2155,11 @@ impl<'tcx> SelectionContext<'_, 'tcx> {
                 }
             }
 
+            ty::UnsafeBinder(bound_ty) => {
+                assert!(obligation.predicate.no_bound_vars().is_some());
+                Where(bound_ty.map_bound(|ty| vec![ty]))
+            }
+
             ty::Alias(..) | ty::Param(_) | ty::Placeholder(..) => None,
             ty::Infer(ty::TyVar(_)) => Ambiguous,
 
@@ -2281,6 +2286,8 @@ impl<'tcx> SelectionContext<'_, 'tcx> {
                 Ambiguous
             }
 
+            ty::UnsafeBinder(_) => None,
+
             // We can make this an ICE if/once we actually instantiate the trait obligation eagerly.
             ty::Bound(..) => None,
 
@@ -2343,6 +2350,11 @@ impl<'tcx> SelectionContext<'_, 'tcx> {
             | ty::Bound(..)
             | ty::Infer(ty::TyVar(_) | ty::FreshTy(_) | ty::FreshIntTy(_) | ty::FreshFloatTy(_)) => {
                 bug!("asked to assemble constituent types of unexpected type: {:?}", t);
+            }
+
+            ty::UnsafeBinder(bound_ty) => {
+                assert!(t.no_bound_vars().is_some());
+                bound_ty.map_bound(|ty| vec![ty])
             }
 
             ty::RawPtr(element_ty, _) | ty::Ref(_, element_ty, _) => t.rebind(vec![element_ty]),

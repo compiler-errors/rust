@@ -2095,6 +2095,12 @@ pub struct BareFnTy {
     pub decl_span: Span,
 }
 
+#[derive(Clone, Encodable, Decodable, Debug)]
+pub struct UnsafeBinderTy {
+    pub generic_params: ThinVec<GenericParam>,
+    pub inner_ty: P<Ty>,
+}
+
 /// The various kinds of type recognized by the compiler.
 //
 // Adding a new variant? Please update `test_ty` in `tests/ui/macros/stringify.rs`.
@@ -2110,6 +2116,8 @@ pub enum TyKind {
     Ref(Option<Lifetime>, MutTy),
     /// A bare function (e.g., `fn(usize) -> bool`).
     BareFn(P<BareFnTy>),
+    /// An unsafe existential lifetime binder (e.g., `unsafe<'a> &'a ()`).
+    UnsafeBinder(P<UnsafeBinderTy>),
     /// The never type (`!`).
     Never,
     /// A tuple (`(A, B, C, D,...)`).

@@ -164,6 +164,7 @@ impl<'b, 'a, 'tcx, F: Fn(Ty<'tcx>) -> bool> Gatherer<'b, 'a, 'tcx, F> {
                     | ty::CoroutineWitness(..)
                     | ty::Never
                     | ty::Tuple(_)
+                    | ty::UnsafeBinder(_)
                     | ty::Alias(_, _)
                     | ty::Param(_)
                     | ty::Bound(_, _)
@@ -202,6 +203,7 @@ impl<'b, 'a, 'tcx, F: Fn(Ty<'tcx>) -> bool> Gatherer<'b, 'a, 'tcx, F> {
                     | ty::FnPtr(_)
                     | ty::Dynamic(_, _, _)
                     | ty::CoroutineWitness(..)
+                    | ty::UnsafeBinder(_)
                     | ty::Never
                     | ty::Alias(_, _)
                     | ty::Param(_)

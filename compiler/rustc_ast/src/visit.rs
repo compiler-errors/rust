@@ -443,6 +443,10 @@ pub fn walk_ty<'a, V: Visitor<'a>>(visitor: &mut V, typ: &'a Ty) -> V::Result {
             walk_list!(visitor, visit_generic_param, &function_declaration.generic_params);
             try_visit!(walk_fn_decl(visitor, &function_declaration.decl));
         }
+        TyKind::UnsafeBinder(binder) => {
+            walk_list!(visitor, visit_generic_param, &binder.generic_params);
+            try_visit!(visitor.visit_ty(&binder.inner_ty));
+        }
         TyKind::Path(maybe_qself, path) => {
             if let Some(qself) = maybe_qself {
                 try_visit!(visitor.visit_ty(&qself.ty));

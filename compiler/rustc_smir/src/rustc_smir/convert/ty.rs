@@ -381,6 +381,7 @@ impl<'tcx> Stable<'tcx> for ty::TyKind<'tcx> {
                 tables.coroutine_witness_def(*def_id),
                 args.stable(tables),
             )),
+            ty::UnsafeBinder(_) => todo!(),
             ty::Placeholder(..) | ty::Infer(_) | ty::Error(_) => {
                 unreachable!();
             }

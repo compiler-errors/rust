@@ -94,6 +94,11 @@ impl<'ast> Visitor<'ast> for LifetimeCollectVisitor<'ast> {
                 visit::walk_ty(self, t);
                 self.current_binders.pop();
             }
+            TyKind::UnsafeBinder(_) => {
+                self.current_binders.push(t.id);
+                visit::walk_ty(self, t);
+                self.current_binders.pop();
+            }
             TyKind::Ref(None, _) => {
                 self.record_elided_anchor(t.id, t.span);
                 visit::walk_ty(self, t);

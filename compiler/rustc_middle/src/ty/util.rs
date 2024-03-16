@@ -250,6 +250,8 @@ impl<'tcx> TyCtxt<'tcx> {
                     ty = inner;
                 }
 
+                ty::UnsafeBinder(_) => todo!(),
+
                 ty::Alias(..) => {
                     let normalized = normalize(ty);
                     if ty == normalized {
@@ -1256,6 +1258,7 @@ impl<'tcx> Ty<'tcx> {
             | ty::Foreign(_)
             | ty::Coroutine(..)
             | ty::CoroutineWitness(..)
+            | ty::UnsafeBinder(_)
             | ty::Infer(_)
             | ty::Alias(..)
             | ty::Param(_)
@@ -1296,6 +1299,7 @@ impl<'tcx> Ty<'tcx> {
             | ty::Foreign(_)
             | ty::Coroutine(..)
             | ty::CoroutineWitness(..)
+            | ty::UnsafeBinder(_)
             | ty::Infer(_)
             | ty::Alias(..)
             | ty::Param(_)
@@ -1428,7 +1432,7 @@ impl<'tcx> Ty<'tcx> {
                 false
             }
 
-            ty::Foreign(_) | ty::CoroutineWitness(..) | ty::Error(_) => false,
+            ty::Foreign(_) | ty::CoroutineWitness(..) | ty::Error(_) | ty::UnsafeBinder(_) => false,
         }
     }
 
@@ -1565,7 +1569,8 @@ pub fn needs_drop_components<'tcx>(
         | ty::Closure(..)
         | ty::CoroutineClosure(..)
         | ty::Coroutine(..)
-        | ty::CoroutineWitness(..) => Ok(smallvec![ty]),
+        | ty::CoroutineWitness(..)
+        | ty::UnsafeBinder(_) => Ok(smallvec![ty]),
     }
 }
 
@@ -1600,7 +1605,8 @@ pub fn is_trivially_const_drop(ty: Ty<'_>) -> bool {
         | ty::CoroutineClosure(..)
         | ty::Coroutine(..)
         | ty::CoroutineWitness(..)
-        | ty::Adt(..) => false,
+        | ty::Adt(..)
+        | ty::UnsafeBinder(_) => false,
 
         ty::Array(ty, _) | ty::Slice(ty) | ty::Pat(ty, _) => is_trivially_const_drop(ty),
 

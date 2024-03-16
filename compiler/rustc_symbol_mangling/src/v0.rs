@@ -461,6 +461,8 @@ impl<'tcx> Printer<'tcx> for SymbolMangler<'tcx> {
                 r.print(self)?;
             }
 
+            ty::UnsafeBinder(_) => todo!(),
+
             ty::Alias(ty::Inherent, _) => bug!("symbol_names: unexpected inherent projection"),
             ty::Alias(ty::Weak, _) => bug!("symbol_names: unexpected weak projection"),
             ty::CoroutineWitness(..) => bug!("symbol_names: unexpected `CoroutineWitness`"),

@@ -430,6 +430,7 @@ fn push_debuginfo_type_name<'tcx>(
                 push_closure_or_coroutine_name(tcx, def_id, args, qualified, output, visited);
             }
         }
+        ty::UnsafeBinder(_) => todo!(),
         // Type parameters from polymorphized functions.
         ty::Param(_) => {
             write!(output, "{t:?}").unwrap();

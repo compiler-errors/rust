@@ -1621,7 +1621,8 @@ impl<'cx, 'tcx> MirBorrowckCtxt<'cx, 'tcx> {
                     | ty::Bound(_, _)
                     | ty::Infer(_)
                     | ty::Error(_)
-                    | ty::Placeholder(_) => {
+                    | ty::Placeholder(_)
+                    | ty::UnsafeBinder(_) => {
                         bug!("When Place is Deref it's type shouldn't be {place_ty:#?}")
                     }
                 },
@@ -1662,7 +1663,8 @@ impl<'cx, 'tcx> MirBorrowckCtxt<'cx, 'tcx> {
                     | ty::Bound(_, _)
                     | ty::Infer(_)
                     | ty::Error(_)
-                    | ty::Placeholder(_) => bug!(
+                    | ty::Placeholder(_)
+                    | ty::UnsafeBinder(_) => bug!(
                         "When Place contains ProjectionElem::Field it's type shouldn't be {place_ty:#?}"
                     ),
                 },

@@ -46,6 +46,8 @@ fn sized_constraint_for_ty<'tcx>(tcx: TyCtxt<'tcx>, ty: Ty<'tcx>) -> Option<Ty<'
             sized_constraint_for_ty(tcx, ty)
         }),
 
+        UnsafeBinder(_) => Some(ty),
+
         // these can be sized or unsized
         Param(..) | Alias(..) | Error(_) => Some(ty),
 

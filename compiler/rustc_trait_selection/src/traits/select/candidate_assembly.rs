@@ -685,6 +685,7 @@ impl<'cx, 'tcx> SelectionContext<'cx, 'tcx> {
                 | ty::CoroutineWitness(..)
                 | ty::Never
                 | ty::Tuple(_)
+                | ty::UnsafeBinder(_)
                 | ty::Error(_) => return true,
                 // FIXME: Function definitions could actually implement `FnPtr` by
                 // casting the ZST function def to a function pointer.
@@ -821,7 +822,8 @@ impl<'cx, 'tcx> SelectionContext<'cx, 'tcx> {
                 | ty::Coroutine(..)
                 | ty::Never
                 | ty::Tuple(_)
-                | ty::CoroutineWitness(..) => {
+                | ty::CoroutineWitness(..)
+                | ty::UnsafeBinder(_) => {
                     // Only consider auto impls if there are no manual impls for the root of `self_ty`.
                     //
                     // For example, we only consider auto candidates for `&i32: Auto` if no explicit impl
@@ -1206,7 +1208,8 @@ impl<'cx, 'tcx> SelectionContext<'cx, 'tcx> {
             | ty::CoroutineClosure(..)
             | ty::Coroutine(..)
             | ty::Tuple(_)
-            | ty::CoroutineWitness(..) => {
+            | ty::CoroutineWitness(..)
+            | ty::UnsafeBinder(_) => {
                 // These are built-in, and cannot have a custom `impl const Destruct`.
                 candidates.vec.push(ConstDestructCandidate(None));
             }
@@ -1291,7 +1294,8 @@ impl<'cx, 'tcx> SelectionContext<'cx, 'tcx> {
             | ty::Bound(_, _)
             | ty::Error(_)
             | ty::Infer(_)
-            | ty::Placeholder(_) => {}
+            | ty::Placeholder(_)
+            | ty::UnsafeBinder(_) => {}
         }
     }
 
@@ -1360,7 +1364,8 @@ impl<'cx, 'tcx> SelectionContext<'cx, 'tcx> {
                 | ty::InferTy::FloatVar(_)
                 | ty::InferTy::FreshIntTy(_)
                 | ty::InferTy::FreshFloatTy(_),
-            ) => {}
+            )
+            | ty::UnsafeBinder(_) => {}
             ty::Infer(ty::InferTy::TyVar(_) | ty::InferTy::FreshTy(_)) => {
                 candidates.ambiguous = true;
             }

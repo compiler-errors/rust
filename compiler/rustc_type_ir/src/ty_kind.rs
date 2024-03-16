@@ -143,6 +143,8 @@ pub enum TyKind<I: Interner> {
     /// ```
     FnPtr(I::PolyFnSig),
 
+    UnsafeBinder(I::PolyTy),
+
     /// A trait object. Written as `dyn for<'b> Trait<'b, Assoc = u32> + Send + 'a`.
     Dynamic(I::BoundExistentialPredicates, I::Region, DynKind),
 
@@ -287,6 +289,7 @@ const fn tykind_discriminant<I: Interner>(value: &TyKind<I>) -> usize {
         Placeholder(_) => 25,
         Infer(_) => 26,
         Error(_) => 27,
+        UnsafeBinder(_) => 28,
     }
 }
 
@@ -313,6 +316,7 @@ impl<I: Interner> PartialEq for TyKind<I> {
             (Ref(a_r, a_t, a_m), Ref(b_r, b_t, b_m)) => a_r == b_r && a_t == b_t && a_m == b_m,
             (FnDef(a_d, a_s), FnDef(b_d, b_s)) => a_d == b_d && a_s == b_s,
             (FnPtr(a_s), FnPtr(b_s)) => a_s == b_s,
+            (UnsafeBinder(a_s), UnsafeBinder(b_s)) => a_s == b_s,
             (Dynamic(a_p, a_r, a_repr), Dynamic(b_p, b_r, b_repr)) => {
                 a_p == b_p && a_r == b_r && a_repr == b_repr
             }
@@ -377,6 +381,7 @@ impl<I: Interner> DebugWithInfcx<I> for TyKind<I> {
             Ref(r, t, m) => write!(f, "&{:?} {}{:?}", this.wrap(r), m.prefix_str(), this.wrap(t)),
             FnDef(d, s) => f.debug_tuple("FnDef").field(d).field(&this.wrap(s)).finish(),
             FnPtr(s) => write!(f, "{:?}", &this.wrap(s)),
+            UnsafeBinder(s) => write!(f, "{:?}", &this.wrap(s)),
             Dynamic(p, r, repr) => match repr {
                 DynKind::Dyn => write!(f, "dyn {:?} + {:?}", &this.wrap(p), &this.wrap(r)),
                 DynKind::DynStar => {

@@ -255,6 +255,10 @@ impl FlagComputation {
                 computation.add_tys(fn_sig.inputs());
                 computation.add_ty(fn_sig.output());
             }),
+
+            &ty::UnsafeBinder(bound_ty) => self.bound_computation(bound_ty, |computation, ty| {
+                computation.add_ty(ty);
+            }),
         }
     }
 

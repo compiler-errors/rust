@@ -858,6 +858,10 @@ impl<'a, 'tcx> TypeVisitor<TyCtxt<'tcx>> for WfPredicates<'a, 'tcx> {
                     ))),
                 ));
             }
+
+            ty::UnsafeBinder(_) => {
+                // Walk into the binder
+            }
         }
 
         t.super_visit_with(self)

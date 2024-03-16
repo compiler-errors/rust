@@ -14,7 +14,8 @@ use rustc_ast::util::case::Case;
 use rustc_ast::{
     self as ast, BareFnTy, BoundAsyncness, BoundConstness, BoundPolarity, FnRetTy, GenericBound,
     GenericBounds, GenericParam, Generics, Lifetime, MacCall, MutTy, Mutability, PolyTraitRef,
-    PreciseCapturingArg, TraitBoundModifiers, TraitObjectSyntax, Ty, TyKind, DUMMY_NODE_ID,
+    PreciseCapturingArg, TraitBoundModifiers, TraitObjectSyntax, Ty, TyKind, UnsafeBinderTy,
+    DUMMY_NODE_ID,
 };
 use rustc_errors::{Applicability, PResult};
 use rustc_span::symbol::{kw, sym, Ident};
@@ -352,6 +353,8 @@ impl<'a> Parser<'a> {
                     TyKind::Err(guar)
                 }
             }
+        } else if self.check_keyword(kw::Unsafe) {
+            self.parse_unsafe_binder_ty()?
         } else {
             let msg = format!("expected type, found {}", super::token_descr(&self.token));
             let mut err = self.dcx().struct_span_err(self.token.span, msg);
@@ -371,6 +374,15 @@ impl<'a> Parser<'a> {
             ty = self.maybe_recover_from_question_mark(ty);
         }
         if allow_qpath_recovery { self.maybe_recover_from_bad_qpath(ty) } else { Ok(ty) }
+    }
+
+    fn parse_unsafe_binder_ty(&mut self) -> PResult<'a, TyKind> {
+        assert!(self.eat_keyword(kw::Unsafe));
+        self.expect_lt()?;
+        let generic_params = self.parse_generic_params()?;
+        self.expect_gt()?;
+
+        Ok(TyKind::UnsafeBinder(P(UnsafeBinderTy { generic_params, inner_ty: self.parse_ty()? })))
     }
 
     /// Parse an anonymous struct or union (only for field definitions):

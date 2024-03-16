@@ -284,6 +284,14 @@ impl<'a> State<'a> {
             hir::TyKind::BareFn(f) => {
                 self.print_ty_fn(f.abi, f.unsafety, f.decl, None, f.generic_params, f.param_names);
             }
+            hir::TyKind::UnsafeBinder(unsafe_binder) => {
+                self.ibox(INDENT_UNIT);
+                self.word("unsafe");
+                self.print_generic_params(unsafe_binder.generic_params);
+                self.nbsp();
+                self.print_type(unsafe_binder.inner_ty);
+                self.end();
+            }
             hir::TyKind::OpaqueDef(..) => self.word("/*impl Trait*/"),
             hir::TyKind::Path(ref qpath) => self.print_qpath(qpath, false),
             hir::TyKind::TraitObject(bounds, lifetime, syntax) => {

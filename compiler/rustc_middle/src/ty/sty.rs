@@ -1690,6 +1690,11 @@ impl<'tcx> Ty<'tcx> {
     }
 
     #[inline]
+    pub fn new_unsafe_binder(tcx: TyCtxt<'tcx>, b: Binder<'tcx, Ty<'tcx>>) -> Ty<'tcx> {
+        Ty::new(tcx, UnsafeBinder(b))
+    }
+
+    #[inline]
     pub fn new_dynamic(
         tcx: TyCtxt<'tcx>,
         obj: &'tcx List<ty::PolyExistentialPredicate<'tcx>>,
@@ -2305,6 +2310,7 @@ impl<'tcx> Ty<'tcx> {
             | ty::CoroutineWitness(..)
             | ty::Never
             | ty::Tuple(_)
+            | ty::UnsafeBinder(_)
             | ty::Error(_)
             | ty::Infer(IntVar(_) | FloatVar(_)) => tcx.types.u8,
 
@@ -2364,6 +2370,8 @@ impl<'tcx> Ty<'tcx> {
             // We don't know the metadata of `self`, but it must be equal to the
             // metadata of `tail`.
             ty::Param(_) | ty::Alias(..) => Err(tail),
+
+            | ty::UnsafeBinder(_) => todo!(),
 
             ty::Infer(ty::TyVar(_))
             | ty::Pat(..)
@@ -2497,6 +2505,7 @@ impl<'tcx> Ty<'tcx> {
             | ty::Float(_)
             | ty::FnDef(..)
             | ty::FnPtr(_)
+            | ty::UnsafeBinder(_)
             | ty::RawPtr(..)
             | ty::Char
             | ty::Ref(..)
@@ -2576,6 +2585,8 @@ impl<'tcx> Ty<'tcx> {
             // Might be, but not "trivial" so just giving the safe answer.
             ty::Adt(..) | ty::Closure(..) | ty::CoroutineClosure(..) => false,
 
+            ty::UnsafeBinder(_) => false,
+
             // Needs normalization or revealing to determine, so no is the safe answer.
             ty::Alias(..) => false,
 
@@ -2653,7 +2664,8 @@ impl<'tcx> Ty<'tcx> {
             | Coroutine(_, _)
             | CoroutineWitness(..)
             | Never
-            | Tuple(_) => true,
+            | Tuple(_)
+            | UnsafeBinder(_) => true,
             Error(_) | Infer(_) | Alias(_, _) | Param(_) | Bound(_, _) | Placeholder(_) => false,
         }
     }
