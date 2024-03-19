@@ -44,11 +44,14 @@ use rustc_hir::intravisit::{self, Visitor};
 use rustc_hir::Expr;
 use rustc_hir_analysis::hir_ty_lowering::HirTyLowerer;
 use rustc_infer::infer::type_variable::TypeVariableOrigin;
-use rustc_infer::infer::{Coercion, DefineOpaqueTypes, InferOk, InferResult};
+use rustc_infer::infer::{
+    BoundRegionConversionTime, Coercion, DefineOpaqueTypes, InferOk, InferResult,
+};
 use rustc_infer::traits::TraitEngineExt as _;
 use rustc_infer::traits::{IfExpressionCause, MatchExpressionArmCause, TraitEngine};
 use rustc_infer::traits::{Obligation, PredicateObligation};
 use rustc_middle::lint::in_external_macro;
+use rustc_middle::mir::UnsafeBinderCastDirection;
 use rustc_middle::traits::BuiltinImplSource;
 use rustc_middle::ty::adjustment::{
     Adjust, Adjustment, AllowTwoPhase, AutoBorrow, AutoBorrowMutability, PointerCoercion,
@@ -220,6 +223,17 @@ impl<'f, 'tcx> Coerce<'f, 'tcx> {
             }
             Err(error) => {
                 debug!(?error, "coerce: unsize failed");
+            }
+        }
+
+        // Consider `unsafe` binder coercion
+        match self.coerce_unsafe_binders(a, b) {
+            Ok(unsafety) => {
+                debug!("coerce: unsafety binder successful");
+                return Ok(unsafety);
+            }
+            Err(error) => {
+                debug!(?error, "coerce: unsafety binder failed");
             }
         }
 
@@ -737,6 +751,71 @@ impl<'f, 'tcx> Coerce<'f, 'tcx> {
         }
 
         Ok(coercion)
+    }
+
+    fn coerce_unsafe_binders(&self, mut a: Ty<'tcx>, mut b: Ty<'tcx>) -> CoerceResult<'tcx> {
+        let mut derefs = vec![];
+
+        while let ty::Ref(_, a_pointee, a_mutbl) = *a.kind()
+            && let ty::Ref(_, b_pointee, b_mutbl) = *b.kind()
+        {
+            coerce_mutbls(a_mutbl, b_mutbl)?;
+            derefs.push((a_pointee, b, b_mutbl));
+            a = self.try_structurally_resolve_type(self.cause.span, a_pointee);
+            b = self.try_structurally_resolve_type(self.cause.span, b_pointee);
+        }
+
+        let create_adjustments = |adjustment| {
+            let mut adjustments = vec![];
+            for &(a_pointee, _, _) in derefs.iter() {
+                adjustments.push(Adjustment { kind: Adjust::Deref(None), target: a_pointee });
+            }
+            adjustments.push(adjustment);
+            for &(_, b_ty, b_mutbl) in derefs.iter().rev() {
+                adjustments.push(Adjustment {
+                    kind: Adjust::Borrow(AutoBorrow::Ref(
+                        self.next_region_var(Coercion(self.cause.span)),
+                        AutoBorrowMutability::new(b_mutbl, AllowTwoPhase::No),
+                    )),
+                    target: b_ty,
+                });
+            }
+            adjustments
+        };
+
+        if let ty::UnsafeBinder(binder_ty) = *a.kind() {
+            let instantiated_a = self.instantiate_binder_with_fresh_vars(
+                self.cause.span,
+                BoundRegionConversionTime::HigherRankedType,
+                binder_ty,
+            );
+            if let Ok(a) = self.unify_and(instantiated_a, b, |_| {
+                create_adjustments(Adjustment {
+                    kind: Adjust::UnsafeBinderCast(UnsafeBinderCastDirection::FromUnsafe),
+                    target: b,
+                })
+            }) {
+                return Ok(a);
+            }
+        }
+
+        if let ty::UnsafeBinder(binder_ty) = *b.kind() {
+            let instantiated_b = self.instantiate_binder_with_fresh_vars(
+                self.cause.span,
+                BoundRegionConversionTime::HigherRankedType,
+                binder_ty,
+            );
+            if let Ok(a) = self.unify_and(a, instantiated_b, |_| {
+                create_adjustments(Adjustment {
+                    kind: Adjust::UnsafeBinderCast(UnsafeBinderCastDirection::ToUnsafe),
+                    target: b,
+                })
+            }) {
+                return Ok(a);
+            }
+        }
+
+        Err(TypeError::Mismatch)
     }
 
     fn coerce_dyn_star(

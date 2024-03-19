@@ -248,6 +248,13 @@ impl<'a, 'tcx> ThirPrinter<'a, 'tcx> {
                 self.print_expr(*arg, depth_lvl + 1);
                 print_indented!(self, "}", depth_lvl);
             }
+            UnsafeBinderCast { value, direction } => {
+                print_indented!(self, "Deref {", depth_lvl);
+                print_indented!(self, "value:", depth_lvl + 1);
+                self.print_expr(*value, depth_lvl + 2);
+                print_indented!(self, format!("direction: {direction:?}"), depth_lvl + 1);
+                print_indented!(self, "}", depth_lvl);
+            }
             Binary { op, lhs, rhs } => {
                 print_indented!(self, "Binary {", depth_lvl);
                 print_indented!(self, format!("op: {:?}", op), depth_lvl + 1);

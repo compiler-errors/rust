@@ -754,9 +754,45 @@ impl<'a, 'b, 'tcx> TypeVerifier<'a, 'b, 'tcx> {
                     .unwrap();
                 PlaceTy::from_ty(ty)
             }
-            ProjectionElem::UnsafeBinderCast(_ty, _) => {
-                // Open the binder here
-                todo!("FIXME(unsafe_binder)")
+            ProjectionElem::UnsafeBinderCast(target_ty, dir) => {
+                let (binder_ty, actual_ty) = match dir {
+                    UnsafeBinderCastDirection::FromUnsafe => {
+                        let ty::UnsafeBinder(binder_ty) = *base_ty.kind() else {
+                            bug!();
+                        };
+                        (binder_ty, target_ty)
+                    }
+                    UnsafeBinderCastDirection::ToUnsafe => {
+                        let ty::UnsafeBinder(binder_ty) = *target_ty.kind() else {
+                            bug!(
+                                "expected {target_ty} to be an unsafe binder, and {base_ty} to not be"
+                            );
+                        };
+                        (binder_ty, base_ty)
+                    }
+                };
+                let span = self.body().source_info(location).span;
+                let instantiated_ty = self.cx.infcx.instantiate_binder_with_fresh_vars(
+                    span,
+                    BoundRegionConversionTime::HigherRankedType,
+                    binder_ty,
+                );
+
+                if let Err(_) = self.cx.eq_types(
+                    actual_ty,
+                    instantiated_ty,
+                    Locations::Single(location),
+                    ConstraintCategory::Boring,
+                ) {
+                    span_bug!(
+                        span,
+                        "cannot instantiate unsafe binder: ({:?} = {:?})",
+                        binder_ty,
+                        actual_ty
+                    );
+                }
+
+                PlaceTy::from_ty(target_ty)
             }
         }
     }

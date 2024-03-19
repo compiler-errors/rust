@@ -1,3 +1,4 @@
+use crate::mir::UnsafeBinderCastDirection;
 use crate::ty::{self, Ty, TyCtxt};
 use rustc_hir as hir;
 use rustc_hir::lang_items::LangItem;
@@ -103,6 +104,8 @@ pub enum Adjust<'tcx> {
 
     /// Cast into a dyn* object.
     DynStar,
+
+    UnsafeBinderCast(UnsafeBinderCastDirection),
 }
 
 /// An overloaded autoderef step, representing a `Deref(Mut)::deref(_mut)`

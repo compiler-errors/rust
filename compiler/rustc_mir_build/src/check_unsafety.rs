@@ -375,7 +375,8 @@ impl<'a, 'tcx> Visitor<'a, 'tcx> for UnsafetyVisitor<'a, 'tcx> {
             | ExprKind::InlineAsm { .. }
             | ExprKind::OffsetOf { .. }
             | ExprKind::LogicalOp { .. }
-            | ExprKind::Use { .. } => {
+            | ExprKind::Use { .. }
+            | ExprKind::UnsafeBinderCast { .. } => {
                 // We don't need to save the old value and restore it
                 // because all the place expressions can't have more
                 // than one child.
@@ -441,6 +442,9 @@ impl<'a, 'tcx> Visitor<'a, 'tcx> for UnsafetyVisitor<'a, 'tcx> {
                 } else if self.thir[arg].ty.is_unsafe_ptr() {
                     self.requires_unsafe(expr.span, DerefOfRawPointer);
                 }
+            }
+            ExprKind::UnsafeBinderCast { .. } => {
+                self.requires_unsafe(expr.span, UnsafeBinderCast);
             }
             ExprKind::InlineAsm { .. } => {
                 self.requires_unsafe(expr.span, UseOfInlineAssembly);
@@ -577,6 +581,7 @@ enum UnsafeOpKind {
         /// (e.g., with `-C target-feature`).
         build_enabled: Vec<Symbol>,
     },
+    UnsafeBinderCast,
 }
 
 use UnsafeOpKind::*;
@@ -719,6 +724,9 @@ impl UnsafeOpKind {
                     unsafe_not_inherited_note,
                 },
             ),
+            UnsafeBinderCast => {
+                todo!("FIXME(unsafe_binder): UWU")
+            }
         }
     }
 
@@ -903,6 +911,9 @@ impl UnsafeOpKind {
                     unsafe_not_inherited_note,
                     function: tcx.def_path_str(*function),
                 });
+            }
+            UnsafeBinderCast => {
+                todo!("FIXME(unsafe_binder): UWU")
             }
         }
     }

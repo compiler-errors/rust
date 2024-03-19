@@ -300,6 +300,14 @@ impl<'tcx> PlaceBuilder<'tcx> {
         self.project(PlaceElem::Deref)
     }
 
+    pub(crate) fn unsafe_binder_cast(
+        self,
+        ty: Ty<'tcx>,
+        direction: UnsafeBinderCastDirection,
+    ) -> Self {
+        self.project(PlaceElem::UnsafeBinderCast(ty, direction))
+    }
+
     pub(crate) fn downcast(self, adt_def: AdtDef<'tcx>, variant_index: VariantIdx) -> Self {
         self.project(PlaceElem::Downcast(Some(adt_def.variant(variant_index).name), variant_index))
     }
@@ -435,6 +443,14 @@ impl<'a, 'tcx> Builder<'a, 'tcx> {
                     unpack!(block = this.expr_as_place(block, arg, mutability, fake_borrow_temps,));
                 block.and(place_builder.deref())
             }
+
+            ExprKind::UnsafeBinderCast { value, direction } => {
+                let place_builder = unpack!(
+                    block = this.expr_as_place(block, value, mutability, fake_borrow_temps)
+                );
+                block.and(place_builder.unsafe_binder_cast(expr.ty, direction))
+            }
+
             ExprKind::Index { lhs, index } => this.lower_index_expression(
                 block,
                 lhs,

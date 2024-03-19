@@ -169,6 +169,7 @@ pub fn walk_expr<'thir, 'tcx: 'thir, V: Visitor<'thir, 'tcx>>(
         OffsetOf { container: _, fields: _ } => {}
         ThreadLocalRef(_) => {}
         Yield { value } => visitor.visit_expr(&visitor.thir()[value]),
+        UnsafeBinderCast { value, direction: _ } => visitor.visit_expr(&visitor.thir()[value]),
     }
 }
 

@@ -260,7 +260,8 @@ fn recurse_build<'tcx>(
         | ExprKind::UpvarRef { .. }
         | ExprKind::StaticRef { .. }
         | ExprKind::OffsetOf { .. }
-        | ExprKind::ThreadLocalRef(_) => {
+        | ExprKind::ThreadLocalRef(_)
+        | ExprKind::UnsafeBinderCast { .. } => {
             error(GenericConstantTooComplexSub::OperationNotSupported(node.span))?
         }
     })
@@ -355,7 +356,8 @@ impl<'a, 'tcx> IsThirPolymorphic<'a, 'tcx> {
             | thir::ExprKind::InlineAsm(_)
             | thir::ExprKind::OffsetOf { .. }
             | thir::ExprKind::ThreadLocalRef(_)
-            | thir::ExprKind::Yield { .. } => false,
+            | thir::ExprKind::Yield { .. }
+            | thir::ExprKind::UnsafeBinderCast { .. } => false,
         }
     }
     fn pat_is_poly(&mut self, pat: &thir::Pat<'tcx>) -> bool {

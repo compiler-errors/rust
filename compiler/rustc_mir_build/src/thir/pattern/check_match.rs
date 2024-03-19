@@ -316,6 +316,8 @@ impl<'p, 'tcx> MatchVisitor<'p, 'tcx> {
             NeverToAny { source }
             | Cast { source }
             | Use { source }
+            // FIXME(unsafe_binder): Is this right??
+            | UnsafeBinderCast { value: source, .. }
             | PointerCoercion { source, .. }
             | PlaceTypeAscription { source, .. }
             | ValueTypeAscription { source, .. } => {

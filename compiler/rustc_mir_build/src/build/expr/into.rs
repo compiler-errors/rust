@@ -518,7 +518,10 @@ impl<'a, 'tcx> Builder<'a, 'tcx> {
                 this.cfg.push_assign(block, source_info, destination, rvalue);
                 block.unit()
             }
-            ExprKind::Index { .. } | ExprKind::Deref { .. } | ExprKind::Field { .. } => {
+            ExprKind::Index { .. }
+            | ExprKind::Deref { .. }
+            | ExprKind::Field { .. }
+            | ExprKind::UnsafeBinderCast { .. } => {
                 debug_assert_eq!(Category::of(&expr.kind), Some(Category::Place));
 
                 // Create a "fake" temporary variable so that we check that the

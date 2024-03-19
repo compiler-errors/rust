@@ -32,6 +32,8 @@ use std::cmp::Ordering;
 use std::fmt;
 use std::ops::Index;
 
+use crate::mir::UnsafeBinderCastDirection;
+
 pub mod visit;
 
 macro_rules! thir_with_elements {
@@ -507,6 +509,10 @@ pub enum ExprKind<'tcx> {
     /// A `yield` expression.
     Yield {
         value: ExprId,
+    },
+    UnsafeBinderCast {
+        value: ExprId,
+        direction: UnsafeBinderCastDirection,
     },
 }
 
