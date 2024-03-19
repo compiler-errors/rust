@@ -294,8 +294,6 @@ pub fn dtorck_constraint_for_ty_inner<'tcx>(
             }
         }
 
-        ty::UnsafeBinder(_) => todo!(),
-
         ty::Adt(def, args) => {
             let DropckConstraint { dtorck_types, outlives, overflows } =
                 tcx.at(span).adt_dtorck_constraint(def.did())?;
@@ -320,6 +318,11 @@ pub fn dtorck_constraint_for_ty_inner<'tcx>(
 
         // Types that can't be resolved. Pass them forward.
         ty::Alias(..) | ty::Param(..) => {
+            constraints.dtorck_types.push(ty);
+        }
+
+        // Can't instantiate binder here.
+        ty::UnsafeBinder(_) => {
             constraints.dtorck_types.push(ty);
         }
 

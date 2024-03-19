@@ -384,6 +384,9 @@ impl<'a, 'tcx> DropElaborator<'a, 'tcx> for DropShimElaborator<'a, 'tcx> {
     fn array_subpath(&self, _path: Self::Path, _index: u64, _size: u64) -> Option<Self::Path> {
         None
     }
+    fn unsafe_binder_subpath(&self, _path: Self::Path) -> Option<Self::Path> {
+        None
+    }
 }
 
 fn build_thread_local_shim<'tcx>(tcx: TyCtxt<'tcx>, instance: ty::InstanceDef<'tcx>) -> Body<'tcx> {

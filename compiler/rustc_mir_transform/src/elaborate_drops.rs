@@ -233,6 +233,13 @@ impl<'a, 'tcx> DropElaborator<'a, 'tcx> for Elaborator<'a, '_, 'tcx> {
         })
     }
 
+    fn unsafe_binder_subpath(&self, path: Self::Path) -> Option<Self::Path> {
+        // FIXME(unsafe_binder): This is definitely not correct??
+        rustc_mir_dataflow::move_path_children_matching(self.ctxt.move_data(), path, |e| {
+            matches!(e, ProjectionElem::UnsafeBinderCast(..))
+        })
+    }
+
     fn get_drop_flag(&mut self, path: Self::Path) -> Option<Operand<'tcx>> {
         self.ctxt.drop_flag(path).map(Operand::Copy)
     }

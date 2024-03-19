@@ -311,6 +311,7 @@ where
             | ProjectionElem::Subtype(_)
             | ProjectionElem::Field(_, _)
             | ProjectionElem::OpaqueCast(_)
+            | ProjectionElem::UnsafeBinderCast(..)
             | ProjectionElem::ConstantIndex { .. }
             | ProjectionElem::Subslice { .. }
             | ProjectionElem::Downcast(_, _)

@@ -1093,6 +1093,15 @@ pub enum ProjectionElem<V, T> {
     /// borrowchecker, as we only care about subtyping that can affect trait selection and
     /// `TypeId`.
     Subtype(T),
+
+    UnsafeBinderCast(T, UnsafeBinderCastDirection),
+}
+
+#[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(TyEncodable, TyDecodable, HashStable, TypeFoldable, TypeVisitable)]
+pub enum UnsafeBinderCastDirection {
+    FromUnsafe,
+    ToUnsafe,
 }
 
 /// Alias for projections as they appear in places, where the base is a place

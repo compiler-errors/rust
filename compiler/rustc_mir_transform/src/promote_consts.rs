@@ -290,7 +290,9 @@ impl<'tcx> Validator<'_, 'tcx> {
             | ProjectionElem::Subslice { .. } => {}
 
             // Never recurse.
-            ProjectionElem::OpaqueCast(..) | ProjectionElem::Downcast(..) => {
+            ProjectionElem::OpaqueCast(..)
+            | ProjectionElem::UnsafeBinderCast(..)
+            | ProjectionElem::Downcast(..) => {
                 return Err(Unpromotable);
             }
 

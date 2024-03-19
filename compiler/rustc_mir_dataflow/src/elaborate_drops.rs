@@ -150,6 +150,9 @@ pub trait DropElaborator<'a, 'tcx>: fmt::Debug {
     ///
     /// This is only relevant for array patterns, which can move out of individual array elements.
     fn array_subpath(&self, path: Self::Path, index: u64, size: u64) -> Option<Self::Path>;
+
+    // TODO:
+    fn unsafe_binder_subpath(&self, path: Self::Path) -> Option<Self::Path>;
 }
 
 #[derive(Debug)]
@@ -859,6 +862,18 @@ where
             ty::CoroutineClosure(_, args) => {
                 self.open_drop_for_tuple(args.as_coroutine_closure().upvar_tys())
             }
+            ty::UnsafeBinder(bound_ty) => self.drop_subpath(
+                self.tcx().mk_place_elem(
+                    self.place,
+                    ProjectionElem::UnsafeBinderCast(
+                        self.tcx().instantiate_bound_regions_with_erased(*bound_ty),
+                        UnsafeBinderCastDirection::FromUnsafe,
+                    ),
+                ),
+                self.elaborator.unsafe_binder_subpath(self.path),
+                self.succ,
+                self.unwind,
+            ),
             // Note that `elaborate_drops` only drops the upvars of a coroutine,
             // and this is ok because `open_drop` here can only be reached
             // within that own coroutine's resume function.

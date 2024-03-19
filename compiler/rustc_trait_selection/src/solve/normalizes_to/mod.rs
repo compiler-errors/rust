@@ -552,7 +552,7 @@ impl<'tcx> assembly::GoalKind<'tcx> for NormalizesTo<'tcx> {
                 | ty::Foreign(..)
                 | ty::Dynamic(_, _, ty::DynStar) => tcx.types.unit,
 
-                ty::UnsafeBinder(_) => todo!(),
+                ty::UnsafeBinder(_) => todo!("FIXME(unsafe_binder)"),
 
                 ty::Error(e) => Ty::new_error(tcx, *e),
 

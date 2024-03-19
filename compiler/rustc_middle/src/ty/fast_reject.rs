@@ -325,6 +325,11 @@ impl DeepRejectCtxt {
                 _ => false,
             },
 
+            ty::UnsafeBinder(ty) => match k {
+                ty::UnsafeBinder(ty2) => self.types_may_unify(ty.skip_binder(), ty2.skip_binder()),
+                _ => false,
+            },
+
             // Impls cannot contain these types as these cannot be named directly.
             ty::FnDef(..) | ty::Closure(..) | ty::CoroutineClosure(..) | ty::Coroutine(..) => false,
 
@@ -352,9 +357,6 @@ impl DeepRejectCtxt {
             ty::Alias(..) => true,
 
             ty::Error(_) => true,
-
-            // TODO:
-            ty::UnsafeBinder(_) => true,
 
             ty::CoroutineWitness(..) => {
                 bug!("unexpected obligation type: {:?}", obligation_ty)

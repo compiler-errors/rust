@@ -754,6 +754,10 @@ impl<'a, 'b, 'tcx> TypeVerifier<'a, 'b, 'tcx> {
                     .unwrap();
                 PlaceTy::from_ty(ty)
             }
+            ProjectionElem::UnsafeBinderCast(_ty, _) => {
+                // Open the binder here
+                todo!("FIXME(unsafe_binder)")
+            }
         }
     }
 
@@ -2697,6 +2701,7 @@ impl<'a, 'tcx> TypeChecker<'a, 'tcx> {
                 ProjectionElem::Field(..)
                 | ProjectionElem::Downcast(..)
                 | ProjectionElem::OpaqueCast(..)
+                | ProjectionElem::UnsafeBinderCast(..)
                 | ProjectionElem::Index(..)
                 | ProjectionElem::ConstantIndex { .. }
                 | ProjectionElem::Subslice { .. } => {

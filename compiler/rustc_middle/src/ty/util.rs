@@ -250,7 +250,7 @@ impl<'tcx> TyCtxt<'tcx> {
                     ty = inner;
                 }
 
-                ty::UnsafeBinder(_) => todo!(),
+                ty::UnsafeBinder(_) => todo!("FIXME(unsafe_binder)"),
 
                 ty::Alias(..) => {
                     let normalized = normalize(ty);

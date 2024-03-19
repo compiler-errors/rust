@@ -1064,7 +1064,7 @@ fn assemble_candidates_from_impls<'cx, 'tcx>(
                         // Integers and floats always have `u8` as their discriminant.
                         | ty::Infer(ty::InferTy::IntVar(_) | ty::InferTy::FloatVar(..)) => true,
 
-                        ty::UnsafeBinder(_) => todo!(),
+                        ty::UnsafeBinder(_) => todo!("FIXME(unsafe_binder)"),
 
                         // type parameters, opaques, and unnormalized projections don't have
                         // a known discriminant and may need to be normalized further or rely
@@ -1138,8 +1138,7 @@ fn assemble_candidates_from_impls<'cx, 'tcx>(
                             true
                         }
 
-
-        | ty::UnsafeBinder(_) => todo!(),
+                        ty::UnsafeBinder(_) => todo!("FIXME(unsafe_binder)"),
 
                         // FIXME(compiler-errors): are Bound and Placeholder types ever known sized?
                         ty::Param(_)

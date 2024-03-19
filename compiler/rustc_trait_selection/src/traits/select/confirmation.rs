@@ -1503,6 +1503,7 @@ impl<'cx, 'tcx> SelectionContext<'cx, 'tcx> {
                 | ty::Param(_)
                 | ty::Bound(..)
                 | ty::Adt(..)
+                | ty::UnsafeBinder(..)
                 | ty::Alias(ty::Opaque | ty::Weak, _)
                 | ty::Infer(_)
                 | ty::Placeholder(_) => {

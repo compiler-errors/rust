@@ -701,13 +701,13 @@ impl<'tcx> EvalCtxt<'_, 'tcx> {
             | ty::CoroutineWitness(..)
             | ty::Never
             | ty::Tuple(_)
+            | ty::UnsafeBinder(_)
             | ty::Param(_)
             | ty::Placeholder(..)
             | ty::Infer(ty::IntVar(_) | ty::FloatVar(_))
             | ty::Error(_) => return,
             ty::Infer(ty::TyVar(_) | ty::FreshTy(_) | ty::FreshIntTy(_) | ty::FreshFloatTy(_))
-            | ty::Bound(..)
-            | ty::UnsafeBinder(_) => bug!("unexpected self type for `{goal:?}`"),
+            | ty::Bound(..) => bug!("unexpected self type for `{goal:?}`"),
             ty::Dynamic(bounds, ..) => bounds,
         };
 

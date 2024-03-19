@@ -106,10 +106,10 @@ impl<'tcx> PlaceTy<'tcx> {
                 PlaceTy { ty: self.ty, variant_index: Some(index) }
             }
             ProjectionElem::Field(f, fty) => PlaceTy::from_ty(handle_field(&self, f, fty)),
-            ProjectionElem::OpaqueCast(ty) => {
-                PlaceTy::from_ty(handle_opaque_cast_and_subtype(&self, ty))
-            }
-            ProjectionElem::Subtype(ty) => {
+
+            ProjectionElem::OpaqueCast(ty)
+            | ProjectionElem::Subtype(ty)
+            | ProjectionElem::UnsafeBinderCast(ty, _) => {
                 PlaceTy::from_ty(handle_opaque_cast_and_subtype(&self, ty))
             }
         };

@@ -839,7 +839,7 @@ impl<'a: 'ast, 'ast, 'tcx> Visitor<'ast> for LateResolutionVisitor<'a, '_, 'ast,
                 )
             }
             TyKind::UnsafeBinder(unsafe_binder) => {
-                // TODO: Better span
+                // FIXME(unsafe_binder): Better span
                 let span = ty.span;
                 self.with_generic_param_rib(
                     &unsafe_binder.generic_params,

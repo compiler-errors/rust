@@ -60,7 +60,8 @@ impl<V, T> ProjectionElem<V, T> {
             | Self::Subtype(_)
             | Self::ConstantIndex { .. }
             | Self::Subslice { .. }
-            | Self::Downcast(_, _) => false,
+            | Self::Downcast(_, _)
+            | Self::UnsafeBinderCast(..) => false,
         }
     }
 
@@ -74,7 +75,8 @@ impl<V, T> ProjectionElem<V, T> {
             | Self::Subtype(_)
             | Self::ConstantIndex { .. }
             | Self::Subslice { .. }
-            | Self::Downcast(_, _) => true,
+            | Self::Downcast(_, _)
+            | Self::UnsafeBinderCast(..) => true,
         }
     }
 
@@ -99,7 +101,8 @@ impl<V, T> ProjectionElem<V, T> {
             | Self::Index(_)
             | Self::Subtype(_)
             | Self::OpaqueCast(_)
-            | Self::Subslice { .. } => false,
+            | Self::Subslice { .. }
+            | Self::UnsafeBinderCast(..) => false,
         }
     }
 }

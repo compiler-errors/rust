@@ -1125,6 +1125,11 @@ macro_rules! visit_place_fns {
                     self.visit_ty(&mut new_ty, TyContext::Location(location));
                     if ty != new_ty { Some(PlaceElem::OpaqueCast(new_ty)) } else { None }
                 }
+                PlaceElem::UnsafeBinderCast(ty, dir) => {
+                    let mut new_ty = ty;
+                    self.visit_ty(&mut new_ty, TyContext::Location(location));
+                    if ty != new_ty { Some(PlaceElem::UnsafeBinderCast(new_ty, dir)) } else { None }
+                }
                 PlaceElem::Subtype(ty) => {
                     let mut new_ty = ty;
                     self.visit_ty(&mut new_ty, TyContext::Location(location));
@@ -1198,7 +1203,8 @@ macro_rules! visit_place_fns {
             match elem {
                 ProjectionElem::OpaqueCast(ty)
                 | ProjectionElem::Subtype(ty)
-                | ProjectionElem::Field(_, ty) => {
+                | ProjectionElem::Field(_, ty)
+                | ProjectionElem::UnsafeBinderCast(ty, _) => {
                     self.visit_ty(ty, TyContext::Location(location));
                 }
                 ProjectionElem::Index(local) => {

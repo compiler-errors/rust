@@ -362,6 +362,7 @@ impl<'tcx> Stable<'tcx> for mir::PlaceElem<'tcx> {
             Downcast(_, idx) => stable_mir::mir::ProjectionElem::Downcast(idx.stable(tables)),
             OpaqueCast(ty) => stable_mir::mir::ProjectionElem::OpaqueCast(ty.stable(tables)),
             Subtype(ty) => stable_mir::mir::ProjectionElem::Subtype(ty.stable(tables)),
+            UnsafeBinderCast(..) => todo!("FIXME(unsafe_binder)"),
         }
     }
 }

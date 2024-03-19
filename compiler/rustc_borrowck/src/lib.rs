@@ -1693,11 +1693,13 @@ impl<'cx, 'tcx> MirBorrowckCtxt<'cx, 'tcx> {
                     }
                     _ => bug!("Unexpected type {place_ty:#?}"),
                 },
-                // `OpaqueCast`: only transmutes the type, so no moves there.
-                // `Downcast`  : only changes information about a `Place` without moving.
-                // `Subtype`   : only transmutes the type, so no moves.
+                // `OpaqueCast`      : only transmutes the type, so no moves there.
+                // `UnsafeBinderCast`: only transmutes the type, so no moves there.
+                // `Downcast`        : only changes information about a `Place` without moving.
+                // `Subtype`         : only transmutes the type, so no moves.
                 // So it's safe to skip these.
                 ProjectionElem::OpaqueCast(_)
+                | ProjectionElem::UnsafeBinderCast(..)
                 | ProjectionElem::Subtype(_)
                 | ProjectionElem::Downcast(_, _) => (),
             }
@@ -1925,6 +1927,7 @@ impl<'cx, 'tcx> MirBorrowckCtxt<'cx, 'tcx> {
                 ProjectionElem::Index(_/*operand*/) |
                 ProjectionElem::Subtype(_) |
                 ProjectionElem::OpaqueCast(_) |
+                ProjectionElem::UnsafeBinderCast(..) |
                 ProjectionElem::ConstantIndex { .. } |
                 // assigning to P[i] requires P to be valid.
                 ProjectionElem::Downcast(_/*adt_def*/, _/*variant_idx*/) =>
@@ -2316,6 +2319,7 @@ impl<'cx, 'tcx> MirBorrowckCtxt<'cx, 'tcx> {
                     | ProjectionElem::Subslice { .. }
                     | ProjectionElem::Subtype(..)
                     | ProjectionElem::OpaqueCast { .. }
+                    | ProjectionElem::UnsafeBinderCast(..)
                     | ProjectionElem::Downcast(..) => {
                         let upvar_field_projection = self.is_upvar_field_projection(place);
                         if let Some(field) = upvar_field_projection {

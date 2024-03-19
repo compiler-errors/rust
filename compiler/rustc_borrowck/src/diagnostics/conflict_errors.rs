@@ -3741,6 +3741,7 @@ impl<'cx, 'tcx> MirBorrowckCtxt<'cx, 'tcx> {
                             StorageDeadOrDrop::Destructor(_) => kind,
                         },
                         ProjectionElem::OpaqueCast { .. }
+                        | ProjectionElem::UnsafeBinderCast { .. }
                         | ProjectionElem::Field(..)
                         | ProjectionElem::Downcast(..) => {
                             match place_ty.ty.kind() {
