@@ -761,8 +761,9 @@ impl<'f, 'tcx> Coerce<'f, 'tcx> {
         {
             coerce_mutbls(a_mutbl, b_mutbl)?;
             derefs.push((a_pointee, b, b_mutbl));
-            a = self.try_structurally_resolve_type(self.cause.span, a_pointee);
-            b = self.try_structurally_resolve_type(self.cause.span, b_pointee);
+            // FIXME(-Znext-solver): We need to structurally normalize these.
+            a = a_pointee;
+            b = b_pointee;
         }
 
         let create_adjustments = |adjustment| {
