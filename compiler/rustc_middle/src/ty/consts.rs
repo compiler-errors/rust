@@ -135,6 +135,7 @@ impl<'tcx> Const<'tcx> {
         uv: ty::UnevaluatedConst<'tcx>,
         ty: Ty<'tcx>,
     ) -> Const<'tcx> {
+        tcx.debug_assert_args_compatible(uv.def, uv.args);
         Const::new(tcx, ty::ConstKind::Unevaluated(uv), ty)
     }
 
