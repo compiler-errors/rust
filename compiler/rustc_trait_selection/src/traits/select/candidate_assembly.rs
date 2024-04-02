@@ -61,32 +61,19 @@ impl<'cx, 'tcx> SelectionContext<'cx, 'tcx> {
             self.assemble_candidates_from_impls(obligation, &mut candidates);
             self.assemble_candidates_from_caller_bounds(stack, &mut candidates)?;
         } else {
-            self.assemble_candidates_for_trait_alias(obligation, &mut candidates);
-
             // Other bounds. Consider both in-scope bounds from fn decl
             // and applicable impls. There is a certain set of precedence rules here.
             let def_id = obligation.predicate.def_id();
             let lang_items = self.tcx().lang_items();
 
-            if lang_items.copy_trait() == Some(def_id) {
-                debug!(obligation_self_ty = ?obligation.predicate.skip_binder().self_ty());
-
-                // User-defined copy impls are permitted, but only for
-                // structs and enums.
-                self.assemble_candidates_from_impls(obligation, &mut candidates);
-
-                // For other types, we'll use the builtin rules.
+            if lang_items.copy_trait() == Some(def_id) || lang_items.clone_trait() == Some(def_id) {
                 let copy_conditions = self.copy_clone_conditions(obligation);
                 self.assemble_builtin_bound_candidates(copy_conditions, &mut candidates);
             } else if lang_items.discriminant_kind_trait() == Some(def_id) {
-                // `DiscriminantKind` is automatically implemented for every type.
                 candidates.vec.push(BuiltinCandidate { has_nested: false });
             } else if lang_items.pointee_trait() == Some(def_id) {
-                // `Pointee` is automatically implemented for every type.
                 candidates.vec.push(BuiltinCandidate { has_nested: false });
             } else if lang_items.sized_trait() == Some(def_id) {
-                // Sized is never implementable by end-users, it is
-                // always automatically computed.
                 let sized_conditions = self.sized_conditions(obligation);
                 self.assemble_builtin_bound_candidates(sized_conditions, &mut candidates);
             } else if lang_items.unsize_trait() == Some(def_id) {
@@ -94,8 +81,6 @@ impl<'cx, 'tcx> SelectionContext<'cx, 'tcx> {
             } else if lang_items.destruct_trait() == Some(def_id) {
                 self.assemble_const_destruct_candidates(obligation, &mut candidates);
             } else if lang_items.transmute_trait() == Some(def_id) {
-                // User-defined transmutability impls are permitted.
-                self.assemble_candidates_from_impls(obligation, &mut candidates);
                 self.assemble_candidates_for_transmutability(obligation, &mut candidates);
             } else if lang_items.tuple_trait() == Some(def_id) {
                 self.assemble_candidate_for_tuple(obligation, &mut candidates);
@@ -103,38 +88,28 @@ impl<'cx, 'tcx> SelectionContext<'cx, 'tcx> {
                 self.assemble_candidate_for_pointer_like(obligation, &mut candidates);
             } else if lang_items.fn_ptr_trait() == Some(def_id) {
                 self.assemble_candidates_for_fn_ptr_trait(obligation, &mut candidates);
-            } else {
-                if lang_items.clone_trait() == Some(def_id) {
-                    // Same builtin conditions as `Copy`, i.e., every type which has builtin support
-                    // for `Copy` also has builtin support for `Clone`, and tuples/arrays of `Clone`
-                    // types have builtin support for `Clone`.
-                    let clone_conditions = self.copy_clone_conditions(obligation);
-                    self.assemble_builtin_bound_candidates(clone_conditions, &mut candidates);
-                }
-
-                if lang_items.coroutine_trait() == Some(def_id) {
-                    self.assemble_coroutine_candidates(obligation, &mut candidates);
-                } else if lang_items.future_trait() == Some(def_id) {
-                    self.assemble_future_candidates(obligation, &mut candidates);
-                } else if lang_items.iterator_trait() == Some(def_id) {
-                    self.assemble_iterator_candidates(obligation, &mut candidates);
-                } else if lang_items.fused_iterator_trait() == Some(def_id) {
-                    self.assemble_fused_iterator_candidates(obligation, &mut candidates);
-                } else if lang_items.async_iterator_trait() == Some(def_id) {
-                    self.assemble_async_iterator_candidates(obligation, &mut candidates);
-                } else if lang_items.async_fn_kind_helper() == Some(def_id) {
-                    self.assemble_async_fn_kind_helper_candidates(obligation, &mut candidates);
-                }
-
-                // FIXME: Put these into `else if` blocks above, since they're built-in.
-                self.assemble_closure_candidates(obligation, &mut candidates);
+            } else if lang_items.coroutine_trait() == Some(def_id) {
+                self.assemble_coroutine_candidates(obligation, &mut candidates);
+            } else if lang_items.future_trait() == Some(def_id) {
+                self.assemble_future_candidates(obligation, &mut candidates);
+            } else if lang_items.iterator_trait() == Some(def_id) {
+                self.assemble_iterator_candidates(obligation, &mut candidates);
+            } else if lang_items.fused_iterator_trait() == Some(def_id) {
+                self.assemble_fused_iterator_candidates(obligation, &mut candidates);
+            } else if lang_items.async_iterator_trait() == Some(def_id) {
+                self.assemble_async_iterator_candidates(obligation, &mut candidates);
+            } else if lang_items.async_fn_kind_helper() == Some(def_id) {
+                self.assemble_async_fn_kind_helper_candidates(obligation, &mut candidates);
+            } else if self.tcx().async_fn_trait_kind_from_def_id(def_id).is_some() {
                 self.assemble_async_closure_candidates(obligation, &mut candidates);
+            } else if self.tcx().fn_trait_kind_from_def_id(def_id).is_some() {
+                self.assemble_closure_candidates(obligation, &mut candidates);
                 self.assemble_fn_pointer_candidates(obligation, &mut candidates);
-
-                self.assemble_candidates_from_impls(obligation, &mut candidates);
-                self.assemble_candidates_from_object_ty(obligation, &mut candidates);
             }
 
+            self.assemble_candidates_from_impls(obligation, &mut candidates);
+            self.assemble_candidates_from_object_ty(obligation, &mut candidates);
+            self.assemble_candidates_for_trait_alias(obligation, &mut candidates);
             self.assemble_candidates_from_projected_tys(obligation, &mut candidates);
             self.assemble_candidates_from_caller_bounds(stack, &mut candidates)?;
             self.assemble_candidates_from_auto_impls(obligation, &mut candidates);
