@@ -89,7 +89,7 @@ impl<'tcx> Bounds<'tcx> {
         self.clauses.insert(0, (trait_ref.to_predicate(tcx), span));
     }
 
-    pub fn clauses(&self) -> impl Iterator<Item = (ty::Clause<'tcx>, Span)> + '_ {
+    pub fn clauses(&self) -> impl use<'_, 'tcx> Iterator<Item = (ty::Clause<'tcx>, Span)> {
         self.clauses.iter().cloned()
     }
 }

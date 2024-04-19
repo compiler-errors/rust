@@ -6,6 +6,9 @@
 //!
 //! This API is still completely unstable and subject to change.
 
+#![feature(precise_capturing)]
+#![allow(incomplete_features)]
+
 #![doc(
     html_root_url = "https://doc.rust-lang.org/nightly/nightly-rustc/",
     test(attr(allow(unused_variables), deny(warnings)))

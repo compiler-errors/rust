@@ -1493,7 +1493,7 @@ impl<'a, 'hir> LoweringContext<'a, 'hir> {
     /// ```rust
     /// use std::fmt::Debug;
     ///
-    /// fn test<'a, T: Debug>(x: &'a T) -> impl Debug + 'a {
+    /// fn test<'a, T: Debug>(x: &'a T) -> impl use<'a> Debug {
     ///     x
     /// }
     /// ```

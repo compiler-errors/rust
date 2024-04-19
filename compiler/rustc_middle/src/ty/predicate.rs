@@ -304,7 +304,7 @@ impl<'tcx> ty::List<ty::PolyExistentialPredicate<'tcx>> {
     #[inline]
     pub fn projection_bounds<'a>(
         &'a self,
-    ) -> impl Iterator<Item = ty::Binder<'tcx, ExistentialProjection<'tcx>>> + 'a {
+    ) -> impl use<'a, 'tcx> Iterator<Item = ty::Binder<'tcx, ExistentialProjection<'tcx>>> {
         self.iter().filter_map(|predicate| {
             predicate
                 .map_bound(|pred| match pred {

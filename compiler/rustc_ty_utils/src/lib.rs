@@ -15,6 +15,8 @@
 #![feature(iterator_try_collect)]
 #![feature(let_chains)]
 #![feature(never_type)]
+#![feature(precise_capturing)]
+#![allow(incomplete_features)]
 
 #[macro_use]
 extern crate rustc_middle;

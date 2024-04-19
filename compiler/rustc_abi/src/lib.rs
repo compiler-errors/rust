@@ -3,6 +3,9 @@
 #![cfg_attr(feature = "nightly", doc(rust_logo))]
 #![cfg_attr(feature = "nightly", feature(rustdoc_internals))]
 
+#![feature(precise_capturing)]
+#![allow(incomplete_features)]
+
 use std::fmt;
 use std::num::{NonZeroUsize, ParseIntError};
 use std::ops::{Add, AddAssign, Mul, RangeInclusive, Sub};
@@ -1217,7 +1220,7 @@ impl<FieldIdx: Idx> FieldsShape<FieldIdx> {
 
     /// Gets source indices of the fields by increasing offsets.
     #[inline]
-    pub fn index_by_increasing_offset(&self) -> impl Iterator<Item = usize> + '_ {
+    pub fn index_by_increasing_offset(&self) -> impl use<'_, FieldIdx> Iterator<Item = usize> {
         let mut inverse_small = [0u8; 64];
         let mut inverse_big = IndexVec::new();
         let use_small = self.count() <= inverse_small.len();

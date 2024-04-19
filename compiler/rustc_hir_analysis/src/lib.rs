@@ -72,6 +72,8 @@ This API is completely unstable and subject to change.
 #![feature(lazy_cell)]
 #![feature(slice_partition_dedup)]
 #![feature(try_blocks)]
+#![feature(precise_capturing)]
+#![allow(incomplete_features)]
 
 #[macro_use]
 extern crate tracing;

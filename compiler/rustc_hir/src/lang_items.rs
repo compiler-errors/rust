@@ -41,7 +41,7 @@ impl LanguageItems {
         self.items[item as usize] = Some(def_id);
     }
 
-    pub fn iter(&self) -> impl Iterator<Item = (LangItem, DefId)> + '_ {
+    pub fn iter(&self) -> impl use<'_> Iterator<Item = (LangItem, DefId)> {
         self.items
             .iter()
             .enumerate()

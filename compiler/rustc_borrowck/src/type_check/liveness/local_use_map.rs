@@ -85,17 +85,17 @@ impl LocalUseMap {
         local_use_map
     }
 
-    pub(crate) fn defs(&self, local: Local) -> impl Iterator<Item = PointIndex> + '_ {
+    pub(crate) fn defs(&self, local: Local) -> impl use<'_> Iterator<Item = PointIndex> {
         vll::iter(self.first_def_at[local], &self.appearances)
             .map(move |aa| self.appearances[aa].point_index)
     }
 
-    pub(crate) fn uses(&self, local: Local) -> impl Iterator<Item = PointIndex> + '_ {
+    pub(crate) fn uses(&self, local: Local) -> impl use<'_> Iterator<Item = PointIndex> {
         vll::iter(self.first_use_at[local], &self.appearances)
             .map(move |aa| self.appearances[aa].point_index)
     }
 
-    pub(crate) fn drops(&self, local: Local) -> impl Iterator<Item = PointIndex> + '_ {
+    pub(crate) fn drops(&self, local: Local) -> impl use<'_> Iterator<Item = PointIndex> {
         vll::iter(self.first_drop_at[local], &self.appearances)
             .map(move |aa| self.appearances[aa].point_index)
     }

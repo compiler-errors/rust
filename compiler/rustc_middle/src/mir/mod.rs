@@ -585,7 +585,7 @@ impl<'tcx> Body<'tcx> {
     }
 
     #[inline]
-    pub fn drain_vars_and_temps<'a>(&'a mut self) -> impl Iterator<Item = LocalDecl<'tcx>> + 'a {
+    pub fn drain_vars_and_temps(&mut self) -> impl use<'_, 'tcx> Iterator<Item = LocalDecl<'tcx>> {
         self.local_decls.drain(self.arg_count + 1..)
     }
 

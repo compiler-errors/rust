@@ -845,7 +845,7 @@ impl SwitchTargets {
     }
 
     /// The conditional targets which are only taken if the pattern matches the given value.
-    pub fn branches(&self) -> impl Iterator<Item = (u128, BasicBlockIdx)> + '_ {
+    pub fn branches(&self) -> impl use<'_> Iterator<Item = (u128, BasicBlockIdx)> {
         self.branches.iter().copied()
     }
 

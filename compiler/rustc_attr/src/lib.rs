@@ -9,6 +9,8 @@
 #![doc(rust_logo)]
 #![feature(generic_nonzero)]
 #![feature(let_chains)]
+#![feature(precise_capturing)]
+#![allow(incomplete_features)]
 
 #[macro_use]
 extern crate rustc_macros;

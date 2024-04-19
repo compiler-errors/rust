@@ -595,7 +595,7 @@ impl<'tcx> RegionInferenceContext<'tcx> {
     }
 
     /// Returns an iterator over all the outlives constraints.
-    pub fn outlives_constraints(&self) -> impl Iterator<Item = OutlivesConstraint<'tcx>> + '_ {
+    pub fn outlives_constraints(&self) -> impl use<'_, 'tcx> Iterator<Item = OutlivesConstraint<'tcx>> {
         self.constraints.outlives().iter().copied()
     }
 

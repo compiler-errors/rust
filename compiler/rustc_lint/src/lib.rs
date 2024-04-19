@@ -39,6 +39,8 @@
 #![feature(trait_upcasting)]
 #![feature(rustc_attrs)]
 #![allow(internal_features)]
+#![feature(precise_capturing)]
+#![allow(incomplete_features)]
 
 #[macro_use]
 extern crate rustc_middle;

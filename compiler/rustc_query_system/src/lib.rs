@@ -5,6 +5,8 @@
 #![feature(min_specialization)]
 #![feature(let_chains)]
 #![allow(rustc::potential_query_instability, internal_features)]
+#![feature(precise_capturing)]
+#![allow(incomplete_features)]
 
 #[macro_use]
 extern crate tracing;
