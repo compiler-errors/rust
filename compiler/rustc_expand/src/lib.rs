@@ -15,7 +15,6 @@
 #![feature(yeet_expr)]
 #![allow(rustc::diagnostic_outside_of_impl)]
 #![allow(internal_features)]
-
 #![feature(precise_capturing)]
 #![allow(incomplete_features)]
 

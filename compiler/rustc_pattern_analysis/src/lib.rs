@@ -2,7 +2,6 @@
 
 #![allow(rustc::untranslatable_diagnostic)]
 #![allow(rustc::diagnostic_outside_of_impl)]
-
 #![feature(precise_capturing)]
 #![allow(incomplete_features)]
 
@@ -77,7 +76,7 @@ pub trait PatCx: Sized + fmt::Debug {
         &'a self,
         ctor: &'a Constructor<Self>,
         ty: &'a Self::Ty,
-    ) -> impl Iterator<Item = (Self::Ty, PrivateUninhabitedField)> + ExactSizeIterator + Captures<'a>;
+    ) -> impl Iterator<Item = (Self::Ty, PrivateUninhabitedField)> + ExactSizeIterator;
 
     /// The set of all the constructors for `ty`.
     ///

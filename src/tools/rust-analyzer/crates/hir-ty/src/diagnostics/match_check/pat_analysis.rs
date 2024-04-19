@@ -106,7 +106,7 @@ impl<'p> MatchCheckCtx<'p> {
         &'a self,
         ty: &'a Ty,
         variant: VariantId,
-    ) -> impl Iterator<Item = (LocalFieldId, Ty)> + Captures<'a> + Captures<'p> {
+    ) -> impl use<'a, 'p> Iterator<Item = (LocalFieldId, Ty)> {
         let (_, substs) = ty.as_adt().unwrap();
 
         let field_tys = self.db.field_types(variant);
@@ -327,7 +327,7 @@ impl<'p> PatCx for MatchCheckCtx<'p> {
         &'a self,
         ctor: &'a rustc_pattern_analysis::constructor::Constructor<Self>,
         ty: &'a Self::Ty,
-    ) -> impl ExactSizeIterator<Item = (Self::Ty, PrivateUninhabitedField)> + Captures<'a> {
+    ) -> impl use<'a> ExactSizeIterator<Item = (Self::Ty, PrivateUninhabitedField)> {
         let single = |ty| smallvec![(ty, PrivateUninhabitedField(false))];
         let tys: SmallVec<[_; 2]> = match ctor {
             Struct | Variant(_) | UnionField => match ty.kind(Interner) {

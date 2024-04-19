@@ -1,4 +1,3 @@
-use rustc_data_structures::captures::Captures;
 use rustc_data_structures::intern::Interned;
 use rustc_errors::{DiagArgValue, IntoDiagArg};
 use rustc_hir::def_id::DefId;
@@ -317,7 +316,7 @@ impl<'tcx> ty::List<ty::PolyExistentialPredicate<'tcx>> {
     }
 
     #[inline]
-    pub fn auto_traits<'a>(&'a self) -> impl Iterator<Item = DefId> + Captures<'tcx> + 'a {
+    pub fn auto_traits<'a>(&'a self) -> impl use<'tcx, 'a> Iterator<Item = DefId> {
         self.iter().filter_map(|predicate| match predicate.skip_binder() {
             ExistentialPredicate::AutoTrait(did) => Some(did),
             _ => None,

@@ -14,7 +14,6 @@
 //! At present, however, we do run collection across all items in the
 //! crate as a kind of pass. This should eventually be factored away.
 
-use rustc_data_structures::captures::Captures;
 use rustc_data_structures::fx::{FxHashSet, FxIndexMap};
 use rustc_data_structures::unord::UnordMap;
 use rustc_errors::{Applicability, Diag, ErrorGuaranteed, StashKey};
@@ -1640,10 +1639,10 @@ fn polarity_of_impl(
 /// the lifetimes that are declared. For fns or methods, we have to
 /// screen out those that do not appear in any where-clauses etc using
 /// `resolve_lifetime::early_bound_lifetimes`.
-fn early_bound_lifetimes_from_generics<'a, 'tcx: 'a>(
+fn early_bound_lifetimes_from_generics<'a, 'tcx>(
     tcx: TyCtxt<'tcx>,
-    generics: &'a hir::Generics<'a>,
-) -> impl Iterator<Item = &'a hir::GenericParam<'a>> + Captures<'tcx> {
+    generics: &'a hir::Generics<'tcx>,
+) -> impl Iterator<Item = &'a hir::GenericParam<'tcx>> {
     generics.params.iter().filter(move |param| match param.kind {
         GenericParamKind::Lifetime { .. } => !tcx.is_late_bound(param.hir_id),
         _ => false,

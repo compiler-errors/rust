@@ -10,7 +10,6 @@
 #![feature(if_let_guard)]
 #![feature(let_chains)]
 #![feature(try_blocks)]
-
 #![feature(precise_capturing)]
 #![allow(incomplete_features)]
 

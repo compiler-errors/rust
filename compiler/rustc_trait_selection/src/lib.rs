@@ -28,7 +28,6 @@
 #![feature(never_type)]
 #![feature(type_alias_impl_trait)]
 #![recursion_limit = "512"] // For rustdoc
-
 #![feature(precise_capturing)]
 #![allow(incomplete_features)]
 

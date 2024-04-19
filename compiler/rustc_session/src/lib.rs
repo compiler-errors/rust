@@ -6,7 +6,6 @@
 #![feature(map_many_mut)]
 #![feature(iter_intersperse)]
 #![allow(internal_features)]
-
 #![feature(precise_capturing)]
 #![allow(incomplete_features)]
 

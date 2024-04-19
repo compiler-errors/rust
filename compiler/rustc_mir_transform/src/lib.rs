@@ -14,7 +14,6 @@
 #![feature(try_blocks)]
 #![feature(yeet_expr)]
 #![feature(if_let_guard)]
-
 #![feature(precise_capturing)]
 #![allow(incomplete_features)]
 

@@ -1,4 +1,3 @@
-use rustc_data_structures::captures::Captures;
 use rustc_data_structures::fx::FxHashSet;
 use rustc_index::IndexVec;
 use rustc_middle::mir::coverage::{BlockMarkerId, BranchSpan, CoverageKind};
@@ -136,7 +135,7 @@ fn bcb_to_initial_coverage_spans<'a, 'tcx>(
     body_span: Span,
     bcb: BasicCoverageBlock,
     bcb_data: &'a BasicCoverageBlockData,
-) -> impl Iterator<Item = SpanFromMir> + Captures<'a> + Captures<'tcx> {
+) -> impl use<'a, 'tcx> Iterator<Item = SpanFromMir> {
     bcb_data.basic_blocks.iter().flat_map(move |&bb| {
         let data = &mir_body[bb];
 

@@ -19,7 +19,6 @@ use lexical_region_resolve::LexicalRegionResolutions;
 use opaque_types::OpaqueTypeStorage;
 use region_constraints::{GenericKind, VarInfos, VerifyBound};
 use region_constraints::{RegionConstraintCollector, RegionConstraintStorage};
-use rustc_data_structures::captures::Captures;
 use rustc_data_structures::fx::FxIndexMap;
 use rustc_data_structures::fx::{FxHashMap, FxHashSet};
 use rustc_data_structures::sync::Lrc;
@@ -1623,7 +1622,7 @@ impl<'tcx> InferCtxt<'tcx> {
     #[inline]
     pub fn is_ty_infer_var_definitely_unchanged<'a>(
         &'a self,
-    ) -> (impl Fn(TyOrConstInferVar) -> bool + Captures<'tcx> + 'a) {
+    ) -> impl use<'tcx, 'a> Fn(TyOrConstInferVar) -> bool {
         // This hoists the borrow/release out of the loop body.
         let inner = self.inner.try_borrow();
 

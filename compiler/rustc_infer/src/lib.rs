@@ -29,7 +29,6 @@
 #![feature(try_blocks)]
 #![feature(yeet_expr)]
 #![recursion_limit = "512"] // For rustdoc
-
 #![feature(precise_capturing)]
 #![allow(incomplete_features)]
 

@@ -1,4 +1,3 @@
-use rustc_data_structures::captures::Captures;
 use rustc_data_structures::fx::FxHashSet;
 use rustc_data_structures::graph::dominators::{self, Dominators};
 use rustc_data_structures::graph::{self, DirectedGraph, StartNode};
@@ -531,7 +530,7 @@ pub(super) fn find_loop_backedges(
 fn short_circuit_preorder<'a, 'tcx, F, Iter>(
     body: &'a mir::Body<'tcx>,
     filtered_successors: F,
-) -> impl Iterator<Item = BasicBlock> + Captures<'a> + Captures<'tcx>
+) -> impl use<'a, 'tcx, F, Iter> Iterator<Item = BasicBlock>
 where
     F: Fn(BasicBlock) -> Iter,
     Iter: IntoIterator<Item = BasicBlock>,

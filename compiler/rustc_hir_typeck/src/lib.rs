@@ -6,7 +6,6 @@
 #![feature(never_type)]
 #![feature(box_patterns)]
 #![feature(control_flow_enum)]
-
 #![feature(precise_capturing)]
 #![allow(incomplete_features)]
 

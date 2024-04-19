@@ -18,7 +18,7 @@ use rustc_target::abi::{FieldIdx, Integer, VariantIdx, FIRST_VARIANT};
 use crate::constructor::{
     IntRange, MaybeInfiniteInt, OpaqueId, RangeEnd, Slice, SliceKind, VariantVisibility,
 };
-use crate::{errors, Captures, PatCx, PrivateUninhabitedField};
+use crate::{errors, PatCx, PrivateUninhabitedField};
 
 use crate::constructor::Constructor::*;
 
@@ -158,7 +158,7 @@ impl<'p, 'tcx: 'p> RustcPatCtxt<'p, 'tcx> {
         &self,
         ty: RevealedTy<'tcx>,
         variant: &'tcx VariantDef,
-    ) -> impl Iterator<Item = (&'tcx FieldDef, RevealedTy<'tcx>)> + Captures<'p> + Captures<'_>
+    ) -> impl use<'_, 'p, 'tcx> Iterator<Item = (&'tcx FieldDef, RevealedTy<'tcx>)>
     {
         let ty::Adt(_, args) = ty.kind() else { bug!() };
         variant.fields.iter().map(move |field| {
@@ -190,7 +190,7 @@ impl<'p, 'tcx: 'p> RustcPatCtxt<'p, 'tcx> {
         &'a self,
         ctor: &'a Constructor<'p, 'tcx>,
         ty: RevealedTy<'tcx>,
-    ) -> impl use<'a, 'tcx> Iterator<Item = (RevealedTy<'tcx>, PrivateUninhabitedField)> + ExactSizeIterator {
+    ) -> impl use<'a, 'p, 'tcx> Iterator<Item = (RevealedTy<'tcx>, PrivateUninhabitedField)> + ExactSizeIterator {
         fn reveal_and_alloc<'a, 'tcx>(
             cx: &'a RustcPatCtxt<'_, 'tcx>,
             iter: impl Iterator<Item = Ty<'tcx>>,
@@ -864,7 +864,7 @@ impl<'p, 'tcx: 'p> PatCx for RustcPatCtxt<'p, 'tcx> {
         &'a self,
         ctor: &'a crate::constructor::Constructor<Self>,
         ty: &'a Self::Ty,
-    ) -> impl Iterator<Item = (Self::Ty, PrivateUninhabitedField)> + ExactSizeIterator + Captures<'a>
+    ) -> impl use<'a, 'p, 'tcx> Iterator<Item = (RevealedTy<'tcx>, PrivateUninhabitedField)> + ExactSizeIterator
     {
         self.ctor_sub_tys(ctor, *ty)
     }

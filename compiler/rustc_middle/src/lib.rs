@@ -64,7 +64,6 @@
 #![allow(rustc::potential_query_instability)]
 #![allow(rustc::diagnostic_outside_of_impl)]
 #![allow(rustc::untranslatable_diagnostic)]
-
 #![feature(precise_capturing)]
 #![allow(incomplete_features)]
 
