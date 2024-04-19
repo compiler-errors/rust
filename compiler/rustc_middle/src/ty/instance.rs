@@ -262,7 +262,7 @@ impl<'tcx> InstanceDef<'tcx> {
 
     #[inline]
     pub fn get_attrs(
-        &self,
+        self,
         tcx: TyCtxt<'tcx>,
         attr: Symbol,
     ) -> impl Iterator<Item = &'tcx rustc_ast::Attribute> {

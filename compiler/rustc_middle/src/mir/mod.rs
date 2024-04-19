@@ -572,7 +572,7 @@ impl<'tcx> Body<'tcx> {
 
     /// Returns an iterator over all function arguments.
     #[inline]
-    pub fn args_iter(&self) -> impl Iterator<Item = Local> + ExactSizeIterator {
+    pub fn args_iter(&self) -> impl use<> Iterator<Item = Local> + ExactSizeIterator {
         (1..self.arg_count + 1).map(Local::new)
     }
 
@@ -581,7 +581,7 @@ impl<'tcx> Body<'tcx> {
     #[inline]
     pub fn vars_and_temps_iter(
         &self,
-    ) -> impl DoubleEndedIterator<Item = Local> + ExactSizeIterator {
+    ) -> impl use<> DoubleEndedIterator<Item = Local> + ExactSizeIterator {
         (self.arg_count + 1..self.local_decls.len()).map(Local::new)
     }
 
@@ -1584,7 +1584,7 @@ pub struct UserTypeProjections {
     pub contents: Vec<(UserTypeProjection, Span)>,
 }
 
-impl<'tcx> UserTypeProjections {
+impl UserTypeProjections {
     pub fn none() -> Self {
         UserTypeProjections { contents: vec![] }
     }
@@ -1632,7 +1632,7 @@ impl<'tcx> UserTypeProjections {
         self.map_projections(|pat_ty_proj| pat_ty_proj.leaf(field))
     }
 
-    pub fn variant(
+    pub fn variant<'tcx>(
         self,
         adt_def: AdtDef<'tcx>,
         variant_index: VariantIdx,

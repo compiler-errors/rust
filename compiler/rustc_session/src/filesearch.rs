@@ -19,7 +19,7 @@ pub struct FileSearch<'a> {
 }
 
 impl<'a> FileSearch<'a> {
-    pub fn search_paths(&self) -> impl Iterator<Item = &'a SearchPath> {
+    pub fn search_paths(&self) -> impl use<'a> Iterator<Item = &'a SearchPath> {
         let kind = self.kind;
         self.search_paths
             .iter()

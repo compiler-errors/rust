@@ -4,6 +4,9 @@
 #![feature(let_chains)]
 #![feature(try_blocks)]
 
+#![feature(precise_capturing)]
+#![allow(incomplete_features)]
+
 #[macro_use]
 extern crate tracing;
 #[macro_use]

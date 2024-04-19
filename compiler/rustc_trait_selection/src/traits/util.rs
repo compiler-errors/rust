@@ -204,13 +204,13 @@ impl Iterator for SupertraitDefIds<'_> {
 /// Instantiate all bound parameters of the impl subject with the given args,
 /// returning the resulting subject and all obligations that arise.
 /// The obligations are closed under normalization.
-pub fn impl_subject_and_oblig<'a, 'tcx>(
+pub fn impl_subject_and_oblig<'a, 'tcx, C: Fn(usize, Span) -> ObligationCause<'tcx>>(
     selcx: &SelectionContext<'a, 'tcx>,
     param_env: ty::ParamEnv<'tcx>,
     impl_def_id: DefId,
     impl_args: GenericArgsRef<'tcx>,
-    cause: impl Fn(usize, Span) -> ObligationCause<'tcx>,
-) -> (ImplSubject<'tcx>, impl Iterator<Item = PredicateObligation<'tcx>>) {
+    cause: C,
+) -> (ImplSubject<'tcx>, impl use<'a, 'tcx, C> Iterator<Item = PredicateObligation<'tcx>>) {
     let subject = selcx.tcx().impl_subject(impl_def_id);
     let subject = subject.instantiate(selcx.tcx(), impl_args);
 

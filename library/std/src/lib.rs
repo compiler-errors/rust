@@ -1,3 +1,5 @@
+#![allow(incomplete_features)]
+
 //! # The Rust Standard Library
 //!
 //! The Rust Standard Library is the foundation of portable Rust software, a
@@ -307,6 +309,7 @@
 #![feature(negative_impls)]
 #![feature(never_type)]
 #![feature(no_sanitize)]
+#![feature(precise_capturing)]
 #![feature(prelude_import)]
 #![feature(rustc_attrs)]
 #![feature(rustdoc_internals)]

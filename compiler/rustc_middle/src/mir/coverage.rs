@@ -176,7 +176,7 @@ pub enum MappingKind {
 
 impl MappingKind {
     /// Iterator over all coverage terms in this mapping kind.
-    pub fn terms(&self) -> impl Iterator<Item = CovTerm> {
+    pub fn terms(&self) -> impl use<> Iterator<Item = CovTerm> {
         let one = |a| std::iter::once(a).chain(None);
         let two = |a, b| std::iter::once(a).chain(Some(b));
         match *self {

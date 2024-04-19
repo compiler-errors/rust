@@ -48,7 +48,7 @@ impl LocationTable {
         Self { num_points, statements_before_block }
     }
 
-    pub fn all_points(&self) -> impl Iterator<Item = LocationIndex> {
+    pub fn all_points(&self) -> impl use<> Iterator<Item = LocationIndex> {
         (0..self.num_points).map(LocationIndex::from_usize)
     }
 

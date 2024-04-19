@@ -1,6 +1,5 @@
 use crate::coverageinfo::ffi::{Counter, CounterExpression, ExprKind};
 
-use rustc_data_structures::captures::Captures;
 use rustc_data_structures::fx::FxIndexSet;
 use rustc_index::bit_set::BitSet;
 use rustc_middle::mir::coverage::{
@@ -192,7 +191,7 @@ impl<'tcx> FunctionCoverage<'tcx> {
     }
 
     /// Returns an iterator over all filenames used by this function's mappings.
-    pub(crate) fn all_file_names(&self) -> impl Iterator<Item = Symbol> + Captures<'_> {
+    pub(crate) fn all_file_names(&self) -> impl use<'_> Iterator<Item = Symbol> {
         self.function_coverage_info.mappings.iter().map(|mapping| mapping.code_region.file_name)
     }
 
@@ -200,7 +199,7 @@ impl<'tcx> FunctionCoverage<'tcx> {
     /// passed through FFI to LLVM.
     pub(crate) fn counter_expressions(
         &self,
-    ) -> impl Iterator<Item = CounterExpression> + ExactSizeIterator + Captures<'_> {
+    ) -> impl use<'_> Iterator<Item = CounterExpression> + ExactSizeIterator {
         // We know that LLVM will optimize out any unused expressions before
         // producing the final coverage map, so there's no need to do the same
         // thing on the Rust side unless we're confident we can do much better.
@@ -222,7 +221,7 @@ impl<'tcx> FunctionCoverage<'tcx> {
     /// that will be used by `mapgen` when preparing for FFI.
     pub(crate) fn counter_regions(
         &self,
-    ) -> impl Iterator<Item = (MappingKind, &CodeRegion)> + ExactSizeIterator {
+    ) -> impl use<'_> Iterator<Item = (MappingKind, &CodeRegion)> + ExactSizeIterator {
         self.function_coverage_info.mappings.iter().map(move |mapping| {
             let Mapping { kind, code_region } = mapping;
             let kind =

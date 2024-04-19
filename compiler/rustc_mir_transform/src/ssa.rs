@@ -81,7 +81,7 @@ impl SsaLocals {
         self.assignments.len()
     }
 
-    pub fn locals(&self) -> impl Iterator<Item = Local> {
+    pub fn locals(&self) -> impl use<> Iterator<Item = Local> {
         self.assignments.indices()
     }
 

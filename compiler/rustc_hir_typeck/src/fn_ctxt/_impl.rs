@@ -3,7 +3,6 @@ use crate::errors::CtorIsPrivate;
 use crate::method::{self, MethodCallee, SelfSource};
 use crate::rvalue_scopes;
 use crate::{BreakableCtxt, Diverges, Expectation, FnCtxt, LoweredTy};
-use rustc_data_structures::captures::Captures;
 use rustc_data_structures::fx::FxHashSet;
 use rustc_errors::{Applicability, Diag, ErrorGuaranteed, MultiSpan, StashKey};
 use rustc_hir as hir;
@@ -642,11 +641,11 @@ impl<'a, 'tcx> FnCtxt<'a, 'tcx> {
         }
     }
 
-    #[instrument(skip(self), level = "debug")]
-    pub(in super::super) fn obligations_for_self_ty<'b>(
-        &'b self,
+    // FIXME: #[instrument(skip(self), level = "debug")]
+    pub(in super::super) fn obligations_for_self_ty(
+        &self,
         self_ty: ty::TyVid,
-    ) -> impl DoubleEndedIterator<Item = traits::PredicateObligation<'tcx>> + Captures<'tcx> + 'b
+    ) -> impl use<'_, 'tcx> DoubleEndedIterator<Item = traits::PredicateObligation<'tcx>>
     {
         let ty_var_root = self.root_var(self_ty);
         trace!("pending_obligations = {:#?}", self.fulfillment_cx.borrow().pending_obligations());

@@ -1626,7 +1626,7 @@ impl<R: Idx, C: Idx> BitMatrix<R, C> {
         }
     }
 
-    pub fn rows(&self) -> impl Iterator<Item = R> {
+    pub fn rows(&self) -> impl use<R, C> Iterator<Item = R> {
         (0..self.num_rows).map(R::new)
     }
 
@@ -1860,7 +1860,7 @@ impl<R: Idx, C: Idx> SparseBitMatrix<R, C> {
         self.ensure_row(row).insert_all();
     }
 
-    pub fn rows(&self) -> impl Iterator<Item = R> {
+    pub fn rows(&self) -> impl use<R, C> Iterator<Item = R> {
         self.rows.indices()
     }
 

@@ -18,6 +18,9 @@
 #![feature(never_type)]
 #![allow(rustc::potential_query_instability)]
 
+#![feature(precise_capturing)]
+#![allow(incomplete_features)]
+
 extern crate proc_macro;
 
 #[macro_use]

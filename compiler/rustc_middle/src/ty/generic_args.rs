@@ -697,7 +697,7 @@ where
     /// but on an iterator of values that deref to a `TypeFoldable`.
     pub fn instantiate_identity_iter_copied(
         self,
-    ) -> impl Iterator<Item = <I::Item as Deref>::Target> {
+    ) -> impl use<I> Iterator<Item = <I::Item as Deref>::Target> {
         self.value.into_iter().map(|v| *v)
     }
 }

@@ -368,10 +368,10 @@ impl IntRange {
     /// These infinities affect splitting subtly: it is possible to get `NegInfinity..0` and
     /// `usize::MAX+1..PosInfinity` in the output. Diagnostics must be careful to handle these
     /// fictitious ranges sensibly.
-    fn split(
+    fn split<T: Iterator<Item = IntRange>>(
         &self,
-        column_ranges: impl Iterator<Item = IntRange>,
-    ) -> impl Iterator<Item = (Presence, IntRange)> {
+        column_ranges: T,
+    ) -> impl use<T> Iterator<Item = (Presence, IntRange)> {
         // The boundaries of ranges in `column_ranges` intersected with `self`.
         // We do parenthesis matching for input ranges. A boundary counts as +1 if it starts
         // a range and -1 if it ends it. When the count is > 0 between two boundaries, we

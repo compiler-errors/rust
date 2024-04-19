@@ -245,7 +245,7 @@ impl SeekTarget {
 
     /// An iterator over all possible `SeekTarget`s in a given block in order, starting with
     /// `BlockEntry`.
-    fn iter_in_block(body: &mir::Body<'_>, block: BasicBlock) -> impl Iterator<Item = Self> {
+    fn iter_in_block(body: &mir::Body<'_>, block: BasicBlock) -> impl use<> Iterator<Item = Self> {
         let statements_and_terminator = (0..=body[block].statements.len())
             .flat_map(|i| (0..2).map(move |j| (i, j)))
             .map(move |(i, kind)| {

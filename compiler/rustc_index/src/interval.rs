@@ -283,7 +283,7 @@ impl<R: Idx, C: Step + Idx> SparseIntervalMatrix<R, C> {
         SparseIntervalMatrix { rows: IndexVec::new(), column_size }
     }
 
-    pub fn rows(&self) -> impl Iterator<Item = R> {
+    pub fn rows(&self) -> impl use<R, C> Iterator<Item = R> {
         self.rows.indices()
     }
 

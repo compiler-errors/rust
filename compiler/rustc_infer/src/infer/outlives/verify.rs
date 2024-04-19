@@ -298,7 +298,7 @@ impl<'cx, 'tcx> VerifyBoundCx<'cx, 'tcx> {
     pub fn declared_bounds_from_definition(
         &self,
         alias_ty: ty::AliasTy<'tcx>,
-    ) -> impl Iterator<Item = ty::Region<'tcx>> {
+    ) -> impl use<'tcx> Iterator<Item = ty::Region<'tcx>> {
         let tcx = self.tcx;
         let bounds = tcx.item_super_predicates(alias_ty.def_id);
         trace!("{:#?}", bounds.skip_binder());

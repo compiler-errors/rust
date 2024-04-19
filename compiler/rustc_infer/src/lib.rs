@@ -30,6 +30,9 @@
 #![feature(yeet_expr)]
 #![recursion_limit = "512"] // For rustdoc
 
+#![feature(precise_capturing)]
+#![allow(incomplete_features)]
+
 #[macro_use]
 extern crate rustc_macros;
 #[cfg(target_pointer_width = "64")]

@@ -637,7 +637,7 @@ impl<'hir> Generics<'hir> {
     pub fn outlives_for_param(
         &self,
         param_def_id: LocalDefId,
-    ) -> impl Iterator<Item = &WhereRegionPredicate<'_>> {
+    ) -> impl Iterator<Item = &WhereRegionPredicate<'hir>> {
         self.predicates.iter().filter_map(move |pred| match pred {
             WherePredicate::RegionPredicate(rp) if rp.is_param_bound(param_def_id) => Some(rp),
             _ => None,

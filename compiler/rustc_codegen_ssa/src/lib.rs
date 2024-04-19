@@ -12,6 +12,9 @@
 #![feature(strict_provenance)]
 #![feature(try_blocks)]
 
+#![feature(precise_capturing)]
+#![allow(incomplete_features)]
+
 //! This crate contains codegen code that is used by all codegen backends (LLVM and others).
 //! The backend-agnostic functions of this crate use functions defined in various traits that
 //! have to be implemented by each backend.

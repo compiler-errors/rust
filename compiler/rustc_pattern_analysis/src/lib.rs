@@ -3,6 +3,9 @@
 #![allow(rustc::untranslatable_diagnostic)]
 #![allow(rustc::diagnostic_outside_of_impl)]
 
+#![feature(precise_capturing)]
+#![allow(incomplete_features)]
+
 pub mod constructor;
 #[cfg(feature = "rustc")]
 pub mod errors;

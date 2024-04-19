@@ -76,7 +76,7 @@ impl<'a, 'tcx> EvalCtxt<'a, 'tcx> {
         '_,
         'a,
         'tcx,
-        impl FnOnce(&QueryResult<'tcx>) -> inspect::ProbeKind<'tcx>,
+        impl use<'tcx> FnOnce(&QueryResult<'tcx>) -> inspect::ProbeKind<'tcx>,
         QueryResult<'tcx>,
     > {
         ProbeCtxt {
@@ -92,7 +92,7 @@ impl<'a, 'tcx> EvalCtxt<'a, 'tcx> {
     pub(in crate::solve) fn probe_trait_candidate(
         &mut self,
         source: CandidateSource,
-    ) -> TraitProbeCtxt<'_, 'a, 'tcx, impl FnOnce(&QueryResult<'tcx>) -> inspect::ProbeKind<'tcx>>
+    ) -> TraitProbeCtxt<'_, 'a, 'tcx, impl use<'tcx> FnOnce(&QueryResult<'tcx>) -> inspect::ProbeKind<'tcx>>
     {
         TraitProbeCtxt {
             cx: ProbeCtxt {

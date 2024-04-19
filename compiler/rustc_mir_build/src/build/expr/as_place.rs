@@ -219,7 +219,7 @@ fn strip_prefix<'a, 'tcx>(
     mut base_ty: Ty<'tcx>,
     projections: &'a [PlaceElem<'tcx>],
     prefix_projections: &[HirProjection<'tcx>],
-) -> impl Iterator<Item = PlaceElem<'tcx>> + 'a {
+) -> impl use<'a, 'tcx> Iterator<Item = PlaceElem<'tcx>> {
     let mut iter = projections
         .iter()
         .copied()

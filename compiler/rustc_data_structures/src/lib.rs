@@ -40,6 +40,9 @@
 #![feature(unwrap_infallible)]
 // tidy-alphabetical-end
 
+#![feature(precise_capturing)]
+#![allow(incomplete_features)]
+
 #[macro_use]
 extern crate tracing;
 #[macro_use]

@@ -4,6 +4,8 @@
 )]
 #![cfg_attr(all(feature = "nightly", test), feature(stmt_expr_attributes))]
 #![cfg_attr(feature = "nightly", allow(internal_features))]
+#![feature(precise_capturing)]
+#![allow(incomplete_features)]
 
 pub mod bit_set;
 #[cfg(feature = "nightly")]

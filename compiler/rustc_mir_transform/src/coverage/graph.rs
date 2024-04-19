@@ -399,7 +399,7 @@ impl<'a> TraverseCoverageGraphWithLoops<'a> {
 
     /// For each loop on the loop context stack (top-down), yields a list of BCBs
     /// within that loop that have an outgoing edge back to the loop header.
-    pub(super) fn reloop_bcbs_per_loop(&self) -> impl Iterator<Item = &[BasicCoverageBlock]> {
+    pub(super) fn reloop_bcbs_per_loop(&self) -> impl use<'_> Iterator<Item = &[BasicCoverageBlock]> {
         self.context_stack
             .iter()
             .rev()

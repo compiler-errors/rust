@@ -121,14 +121,14 @@ impl<T> UnordItems<T, std::iter::Empty<T>> {
 
 impl<'a, T: Clone + 'a, I: Iterator<Item = &'a T>> UnordItems<&'a T, I> {
     #[inline]
-    pub fn cloned(self) -> UnordItems<T, impl Iterator<Item = T>> {
+    pub fn cloned(self) -> UnordItems<T, impl use<T, I> Iterator<Item = T>> {
         UnordItems(self.0.cloned())
     }
 }
 
 impl<'a, T: Copy + 'a, I: Iterator<Item = &'a T>> UnordItems<&'a T, I> {
     #[inline]
-    pub fn copied(self) -> UnordItems<T, impl Iterator<Item = T>> {
+    pub fn copied(self) -> UnordItems<T, impl use<T, I> Iterator<Item = T>> {
         UnordItems(self.0.copied())
     }
 }
@@ -591,7 +591,7 @@ impl<K: Eq + Hash, V> UnordMap<K, V> {
     /// `cache_sort_key` when the [ToStableHashKey::to_stable_hash_key] implementation
     /// for `K` is expensive (e.g. a `DefId -> DefPathHash` lookup).
     #[inline]
-    pub fn values_sorted<HCX>(&self, hcx: &HCX, cache_sort_key: bool) -> impl Iterator<Item = &V>
+    pub fn values_sorted<HCX>(&self, hcx: &HCX, cache_sort_key: bool) -> impl use<'_, HCX, K, V> Iterator<Item = &V>
     where
         K: ToStableHashKey<HCX>,
     {

@@ -7,6 +7,9 @@
 #![feature(box_patterns)]
 #![feature(control_flow_enum)]
 
+#![feature(precise_capturing)]
+#![allow(incomplete_features)]
+
 #[macro_use]
 extern crate tracing;
 

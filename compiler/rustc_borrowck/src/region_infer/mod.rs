@@ -582,7 +582,7 @@ impl<'tcx> RegionInferenceContext<'tcx> {
     }
 
     /// Returns an iterator over all the region indices.
-    pub fn regions(&self) -> impl Iterator<Item = RegionVid> + 'tcx {
+    pub fn regions(&self) -> impl use<'tcx> Iterator<Item = RegionVid> {
         self.definitions.indices()
     }
 
@@ -635,7 +635,7 @@ impl<'tcx> RegionInferenceContext<'tcx> {
     pub(crate) fn placeholders_contained_in<'a>(
         &'a self,
         r: RegionVid,
-    ) -> impl Iterator<Item = ty::PlaceholderRegion> + 'a {
+    ) -> impl use<'a> Iterator<Item = ty::PlaceholderRegion> {
         let scc = self.constraint_sccs.scc(r);
         self.scc_values.placeholders_contained_in(scc)
     }

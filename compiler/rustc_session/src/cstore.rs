@@ -172,7 +172,7 @@ impl ExternCrate {
     }
 
     #[inline]
-    pub fn rank(&self) -> impl PartialOrd {
+    pub fn rank(&self) -> impl use<> PartialOrd {
         // Prefer:
         // - direct extern crate to indirect
         // - shorter paths to longer

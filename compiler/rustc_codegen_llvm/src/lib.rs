@@ -15,6 +15,9 @@
 #![feature(let_chains)]
 #![feature(impl_trait_in_assoc_type)]
 
+#![feature(precise_capturing)]
+#![allow(incomplete_features)]
+
 #[macro_use]
 extern crate rustc_macros;
 #[macro_use]

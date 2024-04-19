@@ -5,7 +5,6 @@ use crate::rmeta::table::IsDefault;
 use crate::rmeta::*;
 
 use rustc_ast as ast;
-use rustc_data_structures::captures::Captures;
 use rustc_data_structures::fingerprint::Fingerprint;
 use rustc_data_structures::owned_slice::OwnedSlice;
 use rustc_data_structures::sync::{Lock, Lrc, OnceLock};
@@ -936,7 +935,7 @@ impl CrateRoot {
     pub(crate) fn decode_crate_deps<'a>(
         &self,
         metadata: &'a MetadataBlob,
-    ) -> impl ExactSizeIterator<Item = CrateDep> + Captures<'a> {
+    ) -> impl use<'a> ExactSizeIterator<Item = CrateDep> {
         self.crate_deps.decode(metadata)
     }
 }
@@ -1259,7 +1258,7 @@ impl<'a, 'tcx> CrateMetadataRef<'a> {
         self,
         id: DefIndex,
         sess: &'a Session,
-    ) -> impl Iterator<Item = ModChild> + 'a {
+    ) -> impl use<'a> Iterator<Item = ModChild> {
         iter::from_coroutine(move || {
             if let Some(data) = &self.root.proc_macro_data {
                 // If we are loading as a proc macro, we want to return
@@ -1312,7 +1311,7 @@ impl<'a, 'tcx> CrateMetadataRef<'a> {
     fn get_associated_item_or_field_def_ids(
         self,
         id: DefIndex,
-    ) -> impl Iterator<Item = DefId> + 'a {
+    ) -> impl use<'a> Iterator<Item = DefId> {
         self.root
             .tables
             .associated_item_or_field_def_ids
@@ -1363,7 +1362,7 @@ impl<'a, 'tcx> CrateMetadataRef<'a> {
         self,
         id: DefIndex,
         sess: &'a Session,
-    ) -> impl Iterator<Item = ast::Attribute> + 'a {
+    ) -> impl use<'a> Iterator<Item = ast::Attribute> {
         self.root
             .tables
             .attributes
@@ -1400,12 +1399,12 @@ impl<'a, 'tcx> CrateMetadataRef<'a> {
     }
 
     /// Decodes all traits in the crate (for rustdoc and rustc diagnostics).
-    fn get_traits(self) -> impl Iterator<Item = DefId> + 'a {
+    fn get_traits(self) -> impl use<'a> Iterator<Item = DefId> {
         self.root.traits.decode(self).map(move |index| self.local_def_id(index))
     }
 
     /// Decodes all trait impls in the crate (for rustdoc).
-    fn get_trait_impls(self) -> impl Iterator<Item = DefId> + 'a {
+    fn get_trait_impls(self) -> impl use<'a> Iterator<Item = DefId> {
         self.cdata.trait_impls.values().flat_map(move |impls| {
             impls.decode(self).map(move |(impl_index, _)| self.local_def_id(impl_index))
         })
@@ -1446,7 +1445,7 @@ impl<'a, 'tcx> CrateMetadataRef<'a> {
         }
     }
 
-    fn get_native_libraries(self, sess: &'a Session) -> impl Iterator<Item = NativeLib> + 'a {
+    fn get_native_libraries(self, sess: &'a Session) -> impl use<'a> Iterator<Item = NativeLib> {
         self.root.native_libraries.decode((self, sess))
     }
 
@@ -1459,7 +1458,7 @@ impl<'a, 'tcx> CrateMetadataRef<'a> {
             .decode((self, sess))
     }
 
-    fn get_foreign_modules(self, sess: &'a Session) -> impl Iterator<Item = ForeignModule> + '_ {
+    fn get_foreign_modules(self, sess: &'a Session) -> impl use<'a> Iterator<Item = ForeignModule> {
         self.root.foreign_modules.decode((self, sess))
     }
 
@@ -1792,7 +1791,7 @@ impl<'a, 'tcx> CrateMetadataRef<'a> {
             .decode(self)
     }
 
-    fn get_doc_link_traits_in_scope(self, index: DefIndex) -> impl Iterator<Item = DefId> + 'a {
+    fn get_doc_link_traits_in_scope(self, index: DefIndex) -> impl use<'a> Iterator<Item = DefId> {
         self.root
             .tables
             .doc_link_traits_in_scope

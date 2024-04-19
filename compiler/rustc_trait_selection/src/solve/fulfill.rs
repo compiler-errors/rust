@@ -61,7 +61,7 @@ impl<'tcx> ObligationStorage<'tcx> {
         obligations
     }
 
-    fn unstalled_for_select(&mut self) -> impl Iterator<Item = PredicateObligation<'tcx>> {
+    fn unstalled_for_select(&mut self) -> impl use<'tcx> Iterator<Item = PredicateObligation<'tcx>> {
         mem::take(&mut self.pending).into_iter()
     }
 

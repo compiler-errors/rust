@@ -62,7 +62,7 @@ impl<N: Idx, S: Idx + Ord> Sccs<N, S> {
     /// meaning that if `S1 -> S2`, we will visit `S2` first and `S1` after.
     /// This is convenient when the edges represent dependencies: when you visit
     /// `S1`, the value for `S2` will already have been computed.
-    pub fn all_sccs(&self) -> impl Iterator<Item = S> {
+    pub fn all_sccs(&self) -> impl use<N, S> Iterator<Item = S> {
         (0..self.scc_data.len()).map(S::new)
     }
 

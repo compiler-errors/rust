@@ -14,6 +14,9 @@
 #![feature(stmt_expr_attributes)]
 #![feature(try_blocks)]
 
+#![feature(precise_capturing)]
+#![allow(incomplete_features)]
+
 #[macro_use]
 extern crate rustc_middle;
 #[macro_use]
