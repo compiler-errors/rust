@@ -60,6 +60,7 @@ mod expect;
 mod for_loops_over_fallibles;
 mod foreign_modules;
 pub mod hidden_unicode_codepoints;
+mod impl_trait_overcaptures;
 mod internal;
 mod invalid_from_utf8;
 mod late;
@@ -99,6 +100,7 @@ use drop_forget_useless::*;
 use enum_intrinsics_non_enums::EnumIntrinsicsNonEnums;
 use for_loops_over_fallibles::*;
 use hidden_unicode_codepoints::*;
+use impl_trait_overcaptures::ImplTraitOvercaptures;
 use internal::*;
 use invalid_from_utf8::*;
 use let_underscore::*;
@@ -233,6 +235,7 @@ late_lint_methods!(
             MissingDoc: MissingDoc,
             AsyncFnInTrait: AsyncFnInTrait,
             NonLocalDefinitions: NonLocalDefinitions::default(),
+            ImplTraitOvercaptures: ImplTraitOvercaptures,
         ]
     ]
 );
