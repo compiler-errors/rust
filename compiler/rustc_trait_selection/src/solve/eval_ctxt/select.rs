@@ -156,9 +156,7 @@ fn to_selection<'tcx>(
             }
             CandidateSource::BuiltinImpl(builtin) => ImplSource::Builtin(builtin, make_nested()),
             CandidateSource::ParamEnv(_) => ImplSource::Param(make_nested()),
-            CandidateSource::AliasBound => {
-                ImplSource::Builtin(BuiltinImplSource::Misc, make_nested())
-            }
+            CandidateSource::AliasBound => ImplSource::Param(make_nested()),
             CandidateSource::CoherenceUnknowable => {
                 span_bug!(span, "didn't expect to select an unknowable candidate")
             }
