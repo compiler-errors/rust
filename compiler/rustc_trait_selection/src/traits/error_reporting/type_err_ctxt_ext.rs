@@ -1533,9 +1533,7 @@ impl<'tcx> TypeErrCtxt<'_, 'tcx> {
                     *err,
                 );
                 let code = error.obligation.cause.code().peel_derives().peel_match_impls();
-                if let ObligationCauseCode::SpannedWhereClause(..)
-                | ObligationCauseCode::WhereClause(..)
-                | ObligationCauseCode::SpannedWhereClauseInExpr(..)
+                if let ObligationCauseCode::WhereClause(..)
                 | ObligationCauseCode::WhereClauseInExpr(..) = code
                 {
                     self.note_obligation_cause_code(
@@ -1610,11 +1608,9 @@ impl<'tcx> TypeErrCtxt<'_, 'tcx> {
 
                 let is_normalized_term_expected = !matches!(
                     obligation.cause.code().peel_derives(),
-                    ObligationCauseCode::WhereClause(_)
-                        | ObligationCauseCode::SpannedWhereClause(_, _)
-                        | ObligationCauseCode::WhereClauseInExpr(..)
-                        | ObligationCauseCode::SpannedWhereClauseInExpr(..)
-                        | ObligationCauseCode::Coercion { .. }
+                    |ObligationCauseCode::WhereClause(..)| ObligationCauseCode::WhereClauseInExpr(
+                        ..
+                    ) | ObligationCauseCode::Coercion { .. }
                 );
 
                 let (expected, actual) = if is_normalized_term_expected {
@@ -2445,7 +2441,7 @@ impl<'tcx> TypeErrCtxt<'_, 'tcx> {
                     }
                 }
 
-                if let ObligationCauseCode::WhereClause(def_id)
+                if let ObligationCauseCode::WhereClause(def_id, _)
                 | ObligationCauseCode::WhereClauseInExpr(def_id, ..) = *obligation.cause.code()
                 {
                     self.suggest_fully_qualified_path(&mut err, def_id, span, trait_ref.def_id());
@@ -2881,12 +2877,15 @@ impl<'tcx> TypeErrCtxt<'_, 'tcx> {
         else {
             return;
         };
-        let (ObligationCauseCode::SpannedWhereClause(item_def_id, span)
-        | ObligationCauseCode::SpannedWhereClauseInExpr(item_def_id, span, ..)) =
+        let (ObligationCauseCode::WhereClause(item_def_id, span)
+        | ObligationCauseCode::WhereClauseInExpr(item_def_id, span, ..)) =
             *obligation.cause.code().peel_derives()
         else {
             return;
         };
+        if span.is_dummy() {
+            return;
+        }
         debug!(?pred, ?item_def_id, ?span);
 
         let (Some(node), true) = (
@@ -3179,10 +3178,7 @@ impl<'tcx> TypeErrCtxt<'_, 'tcx> {
             ObligationCauseCode::RustCall => {
                 err.primary_message("functions with the \"rust-call\" ABI must take a single non-self tuple argument");
             }
-            ObligationCauseCode::SpannedWhereClause(def_id, _)
-            | ObligationCauseCode::WhereClause(def_id)
-                if self.tcx.is_fn_trait(*def_id) =>
-            {
+            ObligationCauseCode::WhereClause(def_id, _) if self.tcx.is_fn_trait(*def_id) => {
                 err.code(E0059);
                 err.primary_message(format!(
                     "type parameter to bare `{}` trait must be a tuple",

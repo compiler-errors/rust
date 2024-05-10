@@ -1203,8 +1203,13 @@ impl<'tcx> TypeErrCtxt<'_, 'tcx> {
 
         let code = match obligation.cause.code() {
             ObligationCauseCode::FunctionArg { parent_code, .. } => parent_code,
-            c @ ObligationCauseCode::WhereClause(_)
-            | c @ ObligationCauseCode::WhereClauseInExpr(..) => c,
+            // FIXME(compiler-errors): This is kind of a mess, but required for obligations
+            // that come from a path expr to affect the *call* expr.
+            c @ ObligationCauseCode::WhereClauseInExpr(_, _, hir_id, _)
+                if self.tcx.hir().span(*hir_id).lo() == span.lo() =>
+            {
+                c
+            }
             c if matches!(
                 span.ctxt().outer_expn_data().kind,
                 ExpnKind::Desugaring(DesugaringKind::ForLoop)
@@ -1260,8 +1265,7 @@ impl<'tcx> TypeErrCtxt<'_, 'tcx> {
             let mut_ref_self_ty_satisfies_pred = mk_result(trait_pred_and_mut_ref);
 
             let (ref_inner_ty_satisfies_pred, ref_inner_ty_mut) =
-                if let ObligationCauseCode::WhereClause(_)
-                | ObligationCauseCode::WhereClauseInExpr(..) = obligation.cause.code()
+                if let ObligationCauseCode::WhereClauseInExpr(..) = obligation.cause.code()
                     && let ty::Ref(_, ty, mutability) = old_pred.self_ty().skip_binder().kind()
                 {
                     (
@@ -1401,10 +1405,8 @@ impl<'tcx> TypeErrCtxt<'_, 'tcx> {
 
         if let ObligationCauseCode::ImplDerived(cause) = &*code {
             try_borrowing(cause.derived.parent_trait_pred, &[])
-        } else if let ObligationCauseCode::SpannedWhereClause(_, _)
-        | ObligationCauseCode::WhereClause(_)
-        | ObligationCauseCode::WhereClauseInExpr(..)
-        | ObligationCauseCode::SpannedWhereClauseInExpr(..) = code
+        } else if let ObligationCauseCode::WhereClause(..)
+        | ObligationCauseCode::WhereClauseInExpr(..) = code
         {
             try_borrowing(poly_trait_pred, &never_suggest_borrow)
         } else {
@@ -2100,10 +2102,10 @@ impl<'tcx> TypeErrCtxt<'_, 'tcx> {
         cause: &ObligationCauseCode<'tcx>,
         err: &mut Diag<'tcx>,
     ) {
-        // First, look for an `SpannedWhereClauseInExpr`, which means we can get
+        // First, look for an `WhereClauseInExpr`, which means we can get
         // the uninstantiated predicate list of the called function. And check
         // that the predicate that we failed to satisfy is a `Fn`-like trait.
-        if let ObligationCauseCode::SpannedWhereClauseInExpr(def_id, _, _, idx) = cause
+        if let ObligationCauseCode::WhereClauseInExpr(def_id, _, _, idx) = cause
             && let predicates = self.tcx.predicates_of(def_id).instantiate_identity(self.tcx)
             && let Some(pred) = predicates.predicates.get(*idx)
             && let ty::ClauseKind::Trait(trait_pred) = pred.kind().skip_binder()
@@ -2744,12 +2746,10 @@ impl<'tcx> TypeErrCtxt<'_, 'tcx> {
             ObligationCauseCode::TupleElem => {
                 err.note("only the last element of a tuple may have a dynamically sized type");
             }
-            ObligationCauseCode::WhereClause(_) | ObligationCauseCode::WhereClauseInExpr(..) => {
-                // We hold the `DefId` of the item introducing the obligation, but displaying it
-                // doesn't add user usable information. It always point at an associated item.
-            }
-            ObligationCauseCode::SpannedWhereClause(item_def_id, span)
-            | ObligationCauseCode::SpannedWhereClauseInExpr(item_def_id, span, ..) => {
+            ObligationCauseCode::WhereClause(item_def_id, span)
+            | ObligationCauseCode::WhereClauseInExpr(item_def_id, span, ..)
+                if !span.is_dummy() =>
+            {
                 let item_name = tcx.def_path_str(item_def_id);
                 let short_item_name = with_forced_trimmed_paths!(tcx.def_path_str(item_def_id));
                 let mut multispan = MultiSpan::from(span);
@@ -2879,6 +2879,10 @@ impl<'tcx> TypeErrCtxt<'_, 'tcx> {
                 if let Some(help) = help {
                     err.help(help);
                 }
+            }
+            ObligationCauseCode::WhereClause(..) | ObligationCauseCode::WhereClauseInExpr(..) => {
+                // We hold the `DefId` of the item introducing the obligation, but displaying it
+                // doesn't add user usable information. It always point at an associated item.
             }
             ObligationCauseCode::Coercion { source, target } => {
                 let source =
@@ -3800,7 +3804,7 @@ impl<'tcx> TypeErrCtxt<'_, 'tcx> {
             // to an associated type (as seen from `trait_pred`) in the predicate. Like in
             // trait_pred `S: Sum<<Self as Iterator>::Item>` and predicate `i32: Sum<&()>`
             let mut type_diffs = vec![];
-            if let ObligationCauseCode::SpannedWhereClauseInExpr(def_id, _, _, idx) = parent_code
+            if let ObligationCauseCode::WhereClauseInExpr(def_id, _, _, idx) = parent_code
                 && let Some(node_args) = typeck_results.node_args_opt(call_hir_id)
                 && let where_clauses =
                     self.tcx.predicates_of(def_id).instantiate(self.tcx, node_args)
