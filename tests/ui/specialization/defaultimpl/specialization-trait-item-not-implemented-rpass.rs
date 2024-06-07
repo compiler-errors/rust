@@ -30,5 +30,5 @@ impl Foo for MyStruct {
 }
 
 fn main() {
-    assert!(MyStruct.foo_two() == "generic");
+    assert_eq!(MyStruct.foo_two(), "generic");
 }

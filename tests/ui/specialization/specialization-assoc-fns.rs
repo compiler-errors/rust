@@ -24,6 +24,6 @@ fn main() {
     let v1: Vec<i32> = Foo::mk();
     let v2: Vec<u8> = Foo::mk();
 
-    assert!(v1.len() == 0);
-    assert!(v2.len() == 1);
+    assert_eq!(v1.len(), 0);
+    assert_eq!(v2.len(), 1);
 }

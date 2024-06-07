@@ -73,12 +73,12 @@ impl Bar for Vec<i64> {
 }
 
 fn test_bar() {
-    assert!(0u8.bar() == 0);
-    assert!(0i32.bar() == 1);
-    assert!("hello".bar() == 0);
-    assert!(vec![()].bar() == 2);
-    assert!(vec![0i32].bar() == 2);
-    assert!(vec![0i64].bar() == 3);
+    assert_eq!(0u8.bar(), 0);
+    assert_eq!(0i32.bar(), 1);
+    assert_eq!("hello".bar(), 0);
+    assert_eq!(vec![()].bar(), 2);
+    assert_eq!(vec![0i32].bar(), 2);
+    assert_eq!(vec![0i64].bar(), 3);
 }
 
 fn main() {

@@ -28,5 +28,5 @@ impl WithAssoc for u8 {
 impl Trait<u8> for u8 {}
 
 fn main() {
-    assert!(3u8.convert() == 3u8);
+    assert_eq!(3u8.convert(), 3u8);
 }
