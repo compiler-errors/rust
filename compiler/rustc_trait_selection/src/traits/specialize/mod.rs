@@ -462,9 +462,7 @@ fn report_conflicting_impls<'tcx>(
     };
 
     // Don't report overlap errors if the header references error
-    if let Err(err) = (overlap.trait_ref, overlap.self_ty).error_reported() {
-        return Err(err);
-    }
+    (overlap.trait_ref, overlap.self_ty).error_reported()?;
 
     match used_to_be_allowed {
         None => {

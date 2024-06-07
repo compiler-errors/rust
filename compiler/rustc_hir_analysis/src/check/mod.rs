@@ -639,9 +639,7 @@ pub fn check_function_signature<'tcx>(
     }
 
     let outlives_env = OutlivesEnvironment::new(param_env);
-    if let Err(e) = ocx.resolve_regions_and_report_errors(local_id, &outlives_env) {
-        return Err(e);
-    }
+    ocx.resolve_regions_and_report_errors(local_id, &outlives_env)?;
 
     Ok(())
 }
