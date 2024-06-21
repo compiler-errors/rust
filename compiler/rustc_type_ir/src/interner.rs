@@ -175,6 +175,8 @@ pub trait Interner:
         args: impl IntoIterator<Item: Into<Self::GenericArg>>,
     ) -> Self::GenericArgs;
 
+    fn debug_assert_args_compatible(self, def_id: Self::DefId, args: Self::GenericArgs);
+
     fn intern_canonical_goal_evaluation_step(
         self,
         step: CanonicalGoalEvaluationStep<Self>,
