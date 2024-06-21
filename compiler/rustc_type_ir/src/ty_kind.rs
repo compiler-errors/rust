@@ -388,7 +388,7 @@ impl<I: Interner> fmt::Debug for TyKind<I> {
             Tuple(t) => {
                 write!(f, "(")?;
                 let mut count = 0;
-                for ty in *t {
+                for ty in t.into_iter() {
                     if count > 0 {
                         write!(f, ", ")?;
                     }

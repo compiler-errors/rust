@@ -320,7 +320,7 @@ impl<I: Interner> ExistentialTraitRef<I> {
 
         ExistentialTraitRef {
             def_id: trait_ref.def_id,
-            args: interner.mk_args(&trait_ref.args[1..]),
+            args: interner.mk_args(&trait_ref.args.as_slice()[1..]),
         }
     }
 
@@ -379,7 +379,7 @@ impl<I: Interner> ExistentialProjection<I> {
     pub fn trait_ref(&self, interner: I) -> ExistentialTraitRef<I> {
         let def_id = interner.parent(self.def_id);
         let args_count = interner.generics_of(def_id).count() - 1;
-        let args = interner.mk_args(&self.args[..args_count]);
+        let args = interner.mk_args(&self.args.as_slice()[..args_count]);
         ExistentialTraitRef { def_id, args }
     }
 
@@ -391,7 +391,7 @@ impl<I: Interner> ExistentialProjection<I> {
             projection_term: AliasTerm::new(
                 interner,
                 self.def_id,
-                [self_ty.into()].into_iter().chain(self.args),
+                [self_ty.into()].into_iter().chain(self.args.into_iter()),
             ),
             term: self.term,
         }
@@ -403,7 +403,7 @@ impl<I: Interner> ExistentialProjection<I> {
 
         Self {
             def_id: projection_predicate.projection_term.def_id,
-            args: interner.mk_args(&projection_predicate.projection_term.args[1..]),
+            args: interner.mk_args(&projection_predicate.projection_term.args.as_slice()[1..]),
             term: projection_predicate.term,
         }
     }

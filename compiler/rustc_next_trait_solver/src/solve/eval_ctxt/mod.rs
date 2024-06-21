@@ -875,7 +875,7 @@ where
 
     pub(super) fn fresh_args_for_item(&mut self, def_id: I::DefId) -> I::GenericArgs {
         let args = self.delegate.fresh_args_for_item(def_id);
-        for arg in args {
+        for arg in args.into_iter() {
             self.inspect.add_var_value(arg);
         }
         args
@@ -979,7 +979,9 @@ where
                     result: *result,
                 })
                 .enter(|ecx| {
-                    for (a, b) in std::iter::zip(candidate_key.args, key.args) {
+                    for (a, b) in
+                        std::iter::zip(candidate_key.args.into_iter(), key.args.into_iter())
+                    {
                         ecx.eq(param_env, a, b)?;
                     }
                     ecx.eq(param_env, candidate_ty, ty)?;

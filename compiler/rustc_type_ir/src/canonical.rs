@@ -298,7 +298,7 @@ impl<I: Interner> CanonicalVarValues<I> {
 
     pub fn is_identity_modulo_regions(&self) -> bool {
         let mut var = ty::BoundVar::ZERO;
-        for arg in self.var_values {
+        for arg in self.var_values.into_iter() {
             match arg.kind() {
                 ty::GenericArgKind::Lifetime(r) => {
                     if matches!(r.kind(), ty::ReBound(ty::INNERMOST, br) if var == br.var()) {
@@ -371,7 +371,7 @@ impl<I: Interner> CanonicalVarValues<I> {
 
 impl<'a, I: Interner> IntoIterator for &'a CanonicalVarValues<I> {
     type Item = I::GenericArg;
-    type IntoIter = <I::GenericArgs as IntoIterator>::IntoIter;
+    type IntoIter = <I::GenericArgs as SliceLike>::IntoIter;
 
     fn into_iter(self) -> Self::IntoIter {
         self.var_values.into_iter()
@@ -382,6 +382,6 @@ impl<I: Interner> Index<ty::BoundVar> for CanonicalVarValues<I> {
     type Output = I::GenericArg;
 
     fn index(&self, value: ty::BoundVar) -> &I::GenericArg {
-        &self.var_values[value.as_usize()]
+        &self.var_values.as_slice()[value.as_usize()]
     }
 }

@@ -121,7 +121,7 @@ where
                     ecx.add_goals(
                         GoalSource::Misc,
                         cx.own_predicates_of(goal.predicate.def_id())
-                            .iter_instantiated(cx, &goal.predicate.alias.args)
+                            .iter_instantiated(cx, goal.predicate.alias.args)
                             .map(|pred| goal.with(cx, pred)),
                     );
 
@@ -163,13 +163,13 @@ where
 
         ecx.probe_trait_candidate(CandidateSource::Impl(impl_def_id)).enter(|ecx| {
             let impl_args = ecx.fresh_args_for_item(impl_def_id);
-            let impl_trait_ref = impl_trait_ref.instantiate(cx, &impl_args);
+            let impl_trait_ref = impl_trait_ref.instantiate(cx, impl_args);
 
             ecx.eq(goal.param_env, goal_trait_ref, impl_trait_ref)?;
 
             let where_clause_bounds = cx
                 .predicates_of(impl_def_id)
-                .iter_instantiated(cx, &impl_args)
+                .iter_instantiated(cx, impl_args)
                 .map(|pred| goal.with(cx, pred));
             ecx.add_goals(GoalSource::ImplWhereBound, where_clause_bounds);
 
@@ -177,7 +177,7 @@ where
             ecx.add_goals(
                 GoalSource::Misc,
                 cx.own_predicates_of(goal.predicate.def_id())
-                    .iter_instantiated(cx, &goal.predicate.alias.args)
+                    .iter_instantiated(cx, goal.predicate.alias.args)
                     .map(|pred| goal.with(cx, pred)),
             );
 
@@ -254,7 +254,7 @@ where
                 kind => panic!("expected projection, found {kind:?}"),
             };
 
-            ecx.instantiate_normalizes_to_term(goal, term.instantiate(cx, &target_args));
+            ecx.instantiate_normalizes_to_term(goal, term.instantiate(cx, target_args));
             ecx.evaluate_added_goals_and_make_canonical_response(Certainty::Yes)
         })
     }
@@ -463,7 +463,7 @@ where
             tupled_inputs_ty,
             tupled_upvars_ty,
             coroutine_captures_by_ref_ty,
-        ] = **goal.predicate.alias.args
+        ] = *goal.predicate.alias.args.as_slice()
         else {
             panic!();
         };
@@ -563,14 +563,14 @@ where
                 ty::Adt(def, args) if def.is_struct() => match def.struct_tail_ty(cx) {
                     None => Ty::new_unit(cx),
                     Some(tail_ty) => {
-                        Ty::new_projection(cx, metadata_def_id, [tail_ty.instantiate(cx, &args)])
+                        Ty::new_projection(cx, metadata_def_id, [tail_ty.instantiate(cx, args)])
                     }
                 },
                 ty::Adt(_, _) => Ty::new_unit(cx),
 
                 ty::Tuple(elements) => match elements.last() {
                     None => Ty::new_unit(cx),
-                    Some(&tail_ty) => Ty::new_projection(cx, metadata_def_id, [tail_ty]),
+                    Some(tail_ty) => Ty::new_projection(cx, metadata_def_id, [tail_ty]),
                 },
 
                 ty::Infer(
@@ -890,7 +890,7 @@ where
         } else {
             let target_args = self.fresh_args_for_item(target_container_def_id);
             let target_trait_ref =
-                cx.impl_trait_ref(target_container_def_id).instantiate(cx, &target_args);
+                cx.impl_trait_ref(target_container_def_id).instantiate(cx, target_args);
             // Relate source impl to target impl by equating trait refs.
             self.eq(goal.param_env, impl_trait_ref, target_trait_ref)?;
             // Also add predicates since they may be needed to constrain the
@@ -898,7 +898,7 @@ where
             self.add_goals(
                 GoalSource::Misc,
                 cx.predicates_of(target_container_def_id)
-                    .iter_instantiated(cx, &target_args)
+                    .iter_instantiated(cx, target_args)
                     .map(|pred| goal.with(cx, pred)),
             );
             goal.predicate.alias.args.rebase_onto(cx, impl_trait_ref.def_id, target_args)

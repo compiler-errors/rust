@@ -76,12 +76,12 @@ where
         ecx.probe_trait_candidate(CandidateSource::Impl(impl_def_id)).enter(|ecx| {
             let impl_args = ecx.fresh_args_for_item(impl_def_id);
             ecx.record_impl_args(impl_args);
-            let impl_trait_ref = impl_trait_ref.instantiate(cx, &impl_args);
+            let impl_trait_ref = impl_trait_ref.instantiate(cx, impl_args);
 
             ecx.eq(goal.param_env, goal.predicate.trait_ref, impl_trait_ref)?;
             let where_clause_bounds = cx
                 .predicates_of(impl_def_id)
-                .iter_instantiated(cx, &impl_args)
+                .iter_instantiated(cx, impl_args)
                 .map(|pred| goal.with(cx, pred));
             ecx.add_goals(GoalSource::ImplWhereBound, where_clause_bounds);
 
@@ -185,7 +185,7 @@ where
         ecx.probe_builtin_trait_candidate(BuiltinImplSource::Misc).enter(|ecx| {
             let nested_obligations = cx
                 .predicates_of(goal.predicate.def_id())
-                .iter_instantiated(cx, &goal.predicate.trait_ref.args)
+                .iter_instantiated(cx, goal.predicate.trait_ref.args)
                 .map(|p| goal.with(cx, p));
             // FIXME(-Znext-solver=coinductive): Should this be `GoalSource::ImplWhereBound`?
             ecx.add_goals(GoalSource::Misc, nested_obligations);
@@ -372,7 +372,7 @@ where
         ecx: &mut EvalCtxt<'_, D>,
         goal: Goal<I, Self>,
     ) -> Result<Candidate<I>, NoSolution> {
-        let [closure_fn_kind_ty, goal_kind_ty] = **goal.predicate.trait_ref.args else {
+        let [closure_fn_kind_ty, goal_kind_ty] = *goal.predicate.trait_ref.args.as_slice() else {
             panic!();
         };
 
@@ -846,7 +846,7 @@ where
             };
 
         self.probe_trait_candidate(source).enter(|ecx| {
-            for bound in b_data {
+            for bound in b_data.into_iter() {
                 match bound.skip_binder() {
                     // Check that a's supertrait (upcast_principal) is compatible
                     // with the target (b_ty).
@@ -948,18 +948,15 @@ where
 
         let tail_field_ty = def.struct_tail_ty(cx).unwrap();
 
-        let a_tail_ty = tail_field_ty.instantiate(cx, &a_args);
-        let b_tail_ty = tail_field_ty.instantiate(cx, &b_args);
+        let a_tail_ty = tail_field_ty.instantiate(cx, a_args);
+        let b_tail_ty = tail_field_ty.instantiate(cx, b_args);
 
         // Instantiate just the unsizing params from B into A. The type after
         // this instantiation must be equal to B. This is so we don't unsize
         // unrelated type parameters.
-        let new_a_args = cx.mk_args_from_iter(
-            a_args
-                .iter()
-                .enumerate()
-                .map(|(i, a)| if unsizing_params.contains(i as u32) { b_args[i] } else { *a }),
-        );
+        let new_a_args = cx.mk_args_from_iter(a_args.into_iter().enumerate().map(|(i, a)| {
+            if unsizing_params.contains(i as u32) { b_args.get(i).unwrap() } else { a }
+        }));
         let unsized_a_ty = Ty::new_adt(cx, def, new_a_args);
 
         // Finally, we require that `TailA: Unsize<TailB>` for the tail field
@@ -1000,7 +997,7 @@ where
         let Goal { predicate: (_a_ty, b_ty), .. } = goal;
 
         let (&a_last_ty, a_rest_tys) = a_tys.split_last().unwrap();
-        let &b_last_ty = b_tys.last().unwrap();
+        let b_last_ty = b_tys.last().unwrap();
 
         // Instantiate just the tail field of B., and require that they're equal.
         let unsized_a_ty = Ty::new_tup_from_iter(cx, a_rest_tys.iter().copied().chain([b_last_ty]));
