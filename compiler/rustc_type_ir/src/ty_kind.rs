@@ -1005,7 +1005,7 @@ impl<I: Interner> ty::Binder<I, FnSig<I>> {
     #[inline]
     #[track_caller]
     pub fn input(self, index: usize) -> ty::Binder<I, I::Ty> {
-        self.map_bound(|fn_sig| fn_sig.inputs()[index])
+        self.map_bound(|fn_sig| fn_sig.inputs().get(index).unwrap())
     }
 
     pub fn inputs_and_output(self) -> ty::Binder<I, I::Tys> {
@@ -1046,7 +1046,7 @@ impl<I: Interner> fmt::Debug for FnSig<I> {
 
         write!(f, "fn(")?;
         let (inputs, output) = sig.split_inputs_and_output();
-        for (i, ty) in inputs.iter().enumerate() {
+        for (i, ty) in inputs.into_iter().enumerate() {
             if i > 0 {
                 write!(f, ", ")?;
             }

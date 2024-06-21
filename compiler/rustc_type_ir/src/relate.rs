@@ -184,8 +184,8 @@ impl<I: Interner> Relate<I> for ty::FnSig<I> {
             return Err(TypeError::ArgCount);
         }
 
-        let inputs_and_output = iter::zip(a_inputs.iter(), b_inputs.iter())
-            .map(|(&a, &b)| ((a, b), false))
+        let inputs_and_output = iter::zip(a_inputs.into_iter(), b_inputs.into_iter())
+            .map(|(a, b)| ((a, b), false))
             .chain(iter::once(((a.output(), b.output()), true)))
             .map(|((a, b), is_output)| {
                 if is_output {
