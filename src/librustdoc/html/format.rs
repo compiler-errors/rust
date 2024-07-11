@@ -412,6 +412,16 @@ impl clean::GenericBound {
                 })?;
                 ty.print(cx).fmt(f)
             }
+            clean::GenericBound::Use(args) => {
+                write!(f, "use<")?;
+                for (i, arg) in args.iter().enumerate() {
+                    if i > 0 {
+                        write!(f, ", ")?;
+                    }
+                    arg.fmt(f)?;
+                }
+                write!(f, ">")
+            }
         })
     }
 }
