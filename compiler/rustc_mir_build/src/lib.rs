@@ -7,6 +7,7 @@
 #![feature(box_patterns)]
 #![feature(if_let_guard)]
 #![feature(let_chains)]
+#![feature(precise_capturing)]
 #![feature(try_blocks)]
 // tidy-alphabetical-end
 

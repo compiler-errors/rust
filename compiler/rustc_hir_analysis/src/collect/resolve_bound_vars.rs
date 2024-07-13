@@ -114,7 +114,7 @@ enum Scope<'a> {
         /// If this binder comes from a where clause, specify how it was created.
         /// This is used to diagnose inaccessible lifetimes in APIT:
         /// ```ignore (illustrative)
-        /// fn foo(x: impl for<'a> Trait<'a, Assoc = impl Copy + 'a>) {}
+        /// fn foo(x: impl for<'a> Trait<'a, Assoc = impl Copy + use<'a>>) {}
         /// ```
         where_bound_origin: Option<hir::PredicateOrigin>,
     },
@@ -1294,7 +1294,7 @@ impl<'a, 'tcx> BoundVarContext<'a, 'tcx> {
         // responsibility of lowering. This may create a mismatch between the resolution
         // AST found (`region_def_id`) which points to HRTB, and what HIR allows.
         // ```
-        // fn foo(x: impl for<'a> Trait<'a, Assoc = impl Copy + 'a>) {}
+        // fn foo(x: impl for<'a> Trait<'a, Assoc = impl Copy + use<'a>>) {}
         // ```
         //
         // In such case, walk back the binders to diagnose it properly.

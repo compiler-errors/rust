@@ -118,7 +118,7 @@ pub fn inspect_typeck<'tcx>(
 fn typeck_with_fallback<'tcx>(
     tcx: TyCtxt<'tcx>,
     def_id: LocalDefId,
-    fallback: impl Fn() -> Ty<'tcx> + 'tcx,
+    fallback: impl Fn() -> Ty<'tcx>,
     inspector: Option<ObligationInspector<'tcx>>,
 ) -> &'tcx ty::TypeckResults<'tcx> {
     // Closures' typeck results come from their outermost function,

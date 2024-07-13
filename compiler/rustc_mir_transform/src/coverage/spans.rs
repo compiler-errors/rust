@@ -1,6 +1,5 @@
 use std::collections::VecDeque;
 
-use rustc_data_structures::captures::Captures;
 use rustc_data_structures::fx::FxHashSet;
 use rustc_middle::mir;
 use rustc_span::Span;
@@ -174,8 +173,11 @@ fn divide_spans_into_buckets(input_covspans: Vec<Covspan>, holes: &[Hole]) -> Ve
 /// satisfying the predicate.
 fn drain_front_while<'a, T>(
     queue: &'a mut VecDeque<T>,
-    mut pred_fn: impl FnMut(&T) -> bool,
-) -> impl Iterator<Item = T> + Captures<'a> {
+    mut pred_fn: F,
+) -> impl Iterator<Item = T> + use<'a, T, F>
+where
+    F: FnMut(&T) -> bool,
+{
     std::iter::from_fn(move || if pred_fn(queue.front()?) { queue.pop_front() } else { None })
 }
 

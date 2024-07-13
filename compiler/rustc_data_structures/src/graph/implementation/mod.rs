@@ -192,11 +192,17 @@ impl<N: Debug, E: Debug> Graph<N, E> {
         AdjacentEdges { graph: self, direction, next: first_edge }
     }
 
-    pub fn successor_nodes(&self, source: NodeIndex) -> impl Iterator<Item = NodeIndex> + '_ {
+    pub fn successor_nodes(
+        &self,
+        source: NodeIndex,
+    ) -> impl Iterator<Item = NodeIndex> + use<'_, N, E> {
         self.outgoing_edges(source).targets()
     }
 
-    pub fn predecessor_nodes(&self, target: NodeIndex) -> impl Iterator<Item = NodeIndex> + '_ {
+    pub fn predecessor_nodes(
+        &self,
+        target: NodeIndex,
+    ) -> impl Iterator<Item = NodeIndex> + use<'_, N, E> {
         self.incoming_edges(target).sources()
     }
 
@@ -254,11 +260,11 @@ pub struct AdjacentEdges<'g, N, E> {
 }
 
 impl<'g, N: Debug, E: Debug> AdjacentEdges<'g, N, E> {
-    fn targets(self) -> impl Iterator<Item = NodeIndex> + 'g {
+    fn targets(self) -> impl Iterator<Item = NodeIndex> + use<'g, N, E> {
         self.map(|(_, edge)| edge.target)
     }
 
-    fn sources(self) -> impl Iterator<Item = NodeIndex> + 'g {
+    fn sources(self) -> impl Iterator<Item = NodeIndex> + use<'g, N, E> {
         self.map(|(_, edge)| edge.source)
     }
 }

@@ -13,7 +13,6 @@ use crate::ty::{self, List, Ty, TyCtxt};
 use crate::ty::{AdtDef, Instance, InstanceKind, UserTypeAnnotationIndex};
 use crate::ty::{GenericArg, GenericArgsRef};
 
-use rustc_data_structures::captures::Captures;
 use rustc_errors::{DiagArgName, DiagArgValue, DiagMessage, ErrorGuaranteed, IntoDiagArg};
 use rustc_hir::def::{CtorKind, Namespace};
 use rustc_hir::def_id::{DefId, CRATE_DEF_ID};
@@ -547,7 +546,7 @@ impl<'tcx> Body<'tcx> {
 
     /// Returns an iterator over all user-declared mutable locals.
     #[inline]
-    pub fn mut_vars_iter<'a>(&'a self) -> impl Iterator<Item = Local> + Captures<'tcx> + 'a {
+    pub fn mut_vars_iter<'a>(&'a self) -> impl Iterator<Item = Local> + use<'tcx, 'a> {
         (self.arg_count + 1..self.local_decls.len()).filter_map(move |index| {
             let local = Local::new(index);
             let decl = &self.local_decls[local];
@@ -557,9 +556,7 @@ impl<'tcx> Body<'tcx> {
 
     /// Returns an iterator over all user-declared mutable arguments and locals.
     #[inline]
-    pub fn mut_vars_and_args_iter<'a>(
-        &'a self,
-    ) -> impl Iterator<Item = Local> + Captures<'tcx> + 'a {
+    pub fn mut_vars_and_args_iter<'a>(&'a self) -> impl Iterator<Item = Local> + use<'tcx, 'a> {
         (1..self.local_decls.len()).filter_map(move |index| {
             let local = Local::new(index);
             let decl = &self.local_decls[local];
@@ -589,7 +586,9 @@ impl<'tcx> Body<'tcx> {
     }
 
     #[inline]
-    pub fn drain_vars_and_temps<'a>(&'a mut self) -> impl Iterator<Item = LocalDecl<'tcx>> + 'a {
+    pub fn drain_vars_and_temps<'a>(
+        &'a mut self,
+    ) -> impl Iterator<Item = LocalDecl<'tcx>> + use<'a, 'tcx> {
         self.local_decls.drain(self.arg_count + 1..)
     }
 

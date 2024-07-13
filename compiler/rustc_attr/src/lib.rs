@@ -8,6 +8,7 @@
 #![allow(internal_features)]
 #![doc(rust_logo)]
 #![feature(let_chains)]
+#![feature(precise_capturing)]
 #![feature(rustdoc_internals)]
 // tidy-alphabetical-end
 

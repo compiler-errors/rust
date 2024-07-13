@@ -62,7 +62,7 @@ fn intern_shallow<'rt, 'tcx, T, M: CompileTimeMachine<'tcx, T>>(
     ecx: &'rt mut InterpCx<'tcx, M>,
     alloc_id: AllocId,
     mutability: Mutability,
-) -> Result<impl Iterator<Item = CtfeProvenance> + 'tcx, ()> {
+) -> Result<impl Iterator<Item = CtfeProvenance> + use<'tcx, T, M>, ()> {
     trace!("intern_shallow {:?}", alloc_id);
     // remove allocation
     // FIXME(#120456) - is `swap_remove` correct?

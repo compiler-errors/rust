@@ -68,6 +68,7 @@ This API is completely unstable and subject to change.
 #![feature(iter_intersperse)]
 #![feature(let_chains)]
 #![feature(never_type)]
+#![feature(precise_capturing)]
 #![feature(rustdoc_internals)]
 #![feature(slice_partition_dedup)]
 #![feature(try_blocks)]

@@ -5,6 +5,7 @@
 #![feature(hash_raw_entry)]
 #![feature(let_chains)]
 #![feature(min_specialization)]
+#![feature(precise_capturing)]
 // tidy-alphabetical-end
 
 pub mod cache;

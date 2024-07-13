@@ -11,8 +11,8 @@ use rustc_span::def_id::LocalDefId;
 
 pub use rustc_middle::traits::query::OutlivesBound;
 
-pub type BoundsCompat<'a, 'tcx: 'a> = impl Iterator<Item = OutlivesBound<'tcx>> + 'a;
-pub type Bounds<'a, 'tcx: 'a> = impl Iterator<Item = OutlivesBound<'tcx>> + 'a;
+pub type BoundsCompat<'a, 'tcx: 'a> = impl Iterator<Item = OutlivesBound<'tcx>>;
+pub type Bounds<'a, 'tcx: 'a> = impl Iterator<Item = OutlivesBound<'tcx>>;
 
 /// Implied bounds are region relationships that we deduce
 /// automatically. The idea is that (e.g.) a caller must check that a

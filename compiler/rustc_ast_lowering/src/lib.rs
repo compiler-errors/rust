@@ -36,6 +36,7 @@
 #![feature(assert_matches)]
 #![feature(box_patterns)]
 #![feature(let_chains)]
+#![feature(precise_capturing)]
 #![feature(rustdoc_internals)]
 // tidy-alphabetical-end
 
@@ -44,7 +45,6 @@ use rustc_ast::node_id::NodeMap;
 use rustc_ast::ptr::P;
 use rustc_ast::{self as ast, *};
 use rustc_ast_pretty::pprust;
-use rustc_data_structures::captures::Captures;
 use rustc_data_structures::fingerprint::Fingerprint;
 use rustc_data_structures::fx::FxIndexSet;
 use rustc_data_structures::sorted_map::SortedMap;
@@ -526,8 +526,8 @@ impl<'a, 'hir> LoweringContext<'a, 'hir> {
     ///
     /// This function also applies remapping from `get_remapped_def_id`.
     /// These are used when synthesizing opaque types from `-> impl Trait` return types and so forth.
-    /// For example, in a function like `fn foo<'a>() -> impl Debug + 'a`,
-    /// we would create an opaque type `type FooReturn<'a1> = impl Debug + 'a1`.
+    /// For example, in a function like `fn foo<'a>() -> impl Debug + use<'a>`,
+    /// we would create an opaque type `type FooReturn<'a1> = impl Debug + use<'a1>`.
     /// When lowering the `Debug + 'a` bounds, we add a remapping to map `'a` to `'a1`.
     fn opt_local_def_id(&self, node: NodeId) -> Option<LocalDefId> {
         self.orig_opt_local_def_id(node).map(|local_def_id| self.get_remapped_def_id(local_def_id))
@@ -545,13 +545,13 @@ impl<'a, 'hir> LoweringContext<'a, 'hir> {
         //
         // Consider:
         //
-        // `fn test<'a, 'b>() -> impl Trait<&'a u8, Ty = impl Sized + 'b> {}`
+        // `fn test<'a, 'b>() -> impl Trait<&'a u8, Ty = impl Sized + use<'b>> {}`
         //
         // We would end with a generics_def_id_map like:
         //
         // `[[fn#'b -> impl_trait#'b], [fn#'b -> impl_sized#'b]]`
         //
-        // for the opaque type generated on `impl Sized + 'b`, we want the result to be: impl_sized#'b.
+        // for the opaque type generated on `impl Sized + use<'b>`, we want the result to be: impl_sized#'b.
         // So, if we were trying to find first from the start (outermost) would give the wrong result, impl_trait#'b.
         self.generics_def_id_map
             .iter()
@@ -617,7 +617,7 @@ impl<'a, 'hir> LoweringContext<'a, 'hir> {
     /// refer to the values instead.
     ///
     /// The remapping is used when one piece of AST expands to multiple
-    /// pieces of HIR. For example, the function `fn foo<'a>(...) -> impl Debug + 'a`,
+    /// pieces of HIR. For example, the function `fn foo<'a>(...) -> impl Debug + use<'a>`,
     /// expands to both a function definition (`foo`) and a TAIT for the return value,
     /// both of which have a lifetime parameter `'a`. The remapping allows us to
     /// rewrite the `'a` in the return value to refer to the
@@ -1496,7 +1496,7 @@ impl<'a, 'hir> LoweringContext<'a, 'hir> {
     /// ```rust
     /// use std::fmt::Debug;
     ///
-    /// fn test<'a, T: Debug>(x: &'a T) -> impl Debug + 'a {
+    /// fn test<'a, T: Debug>(x: &'a T) -> impl Debug + use<'a> {
     ///     x
     /// }
     /// ```
@@ -1504,7 +1504,7 @@ impl<'a, 'hir> LoweringContext<'a, 'hir> {
     /// we will create a TAIT definition in the HIR like
     ///
     /// ```rust,ignore (pseudo-Rust)
-    /// type TestReturn<'a, T, 'x> = impl Debug + 'x
+    /// type TestReturn<'a, T, 'x> = impl Debug + use<'x>
     /// ```
     ///
     /// and return a type like `TestReturn<'static, T, 'a>`, so that the function looks like:
@@ -1582,7 +1582,7 @@ impl<'a, 'hir> LoweringContext<'a, 'hir> {
                             .map(|(ident, id, _)| Lifetime { id, ident })
                             .collect()
                     } else {
-                        // in fn return position, like the `fn test<'a>() -> impl Debug + 'a`
+                        // in fn return position, like the `fn test<'a>() -> impl Debug + use<'a>`
                         // example, we only need to duplicate lifetimes that appear in the
                         // bounds, since those are the only ones that are captured by the opaque.
                         lifetime_collector::lifetimes_in_bounds(self.resolver, bounds)
@@ -2118,7 +2118,7 @@ impl<'a, 'hir> LoweringContext<'a, 'hir> {
         &'s mut self,
         params: &'s [GenericParam],
         source: hir::GenericParamSource,
-    ) -> impl Iterator<Item = hir::GenericParam<'hir>> + Captures<'a> + Captures<'s> {
+    ) -> impl Iterator<Item = hir::GenericParam<'hir>> + use<'a, 's, 'hir> {
         params.iter().map(move |param| self.lower_generic_param(param, source))
     }
 
@@ -2282,7 +2282,7 @@ impl<'a, 'hir> LoweringContext<'a, 'hir> {
         &'s mut self,
         bounds: &'s [GenericBound],
         itctx: ImplTraitContext,
-    ) -> impl Iterator<Item = hir::GenericBound<'hir>> + Captures<'s> + Captures<'a> {
+    ) -> impl Iterator<Item = hir::GenericBound<'hir>> + use<'s, 'a, 'hir> {
         bounds.iter().map(move |bound| self.lower_param_bound(bound, itctx))
     }
 

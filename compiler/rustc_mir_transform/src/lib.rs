@@ -11,6 +11,7 @@
 #![feature(map_try_insert)]
 #![feature(never_type)]
 #![feature(option_get_or_insert_default)]
+#![feature(precise_capturing)]
 #![feature(round_char_boundary)]
 #![feature(try_blocks)]
 #![feature(yeet_expr)]

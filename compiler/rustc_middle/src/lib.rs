@@ -53,6 +53,7 @@
 #![feature(negative_impls)]
 #![feature(never_type)]
 #![feature(new_uninit)]
+#![feature(precise_capturing)]
 #![feature(ptr_alignment_type)]
 #![feature(rustc_attrs)]
 #![feature(rustdoc_internals)]

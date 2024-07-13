@@ -171,11 +171,11 @@ impl HasBottom for ConditionSet<'_> {
 }
 
 impl<'a> ConditionSet<'a> {
-    fn iter(self) -> impl Iterator<Item = Condition> + 'a {
+    fn iter(self) -> impl Iterator<Item = Condition> + use<'a> {
         self.0.iter().copied()
     }
 
-    fn iter_matches(self, value: ScalarInt) -> impl Iterator<Item = Condition> + 'a {
+    fn iter_matches(self, value: ScalarInt) -> impl Iterator<Item = Condition> + use<'a> {
         self.iter().filter(move |c| c.matches(value))
     }
 

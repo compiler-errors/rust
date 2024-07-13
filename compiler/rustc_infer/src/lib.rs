@@ -25,6 +25,7 @@
 #![feature(iter_intersperse)]
 #![feature(iterator_try_collect)]
 #![feature(let_chains)]
+#![feature(precise_capturing)]
 #![feature(rustdoc_internals)]
 #![feature(try_blocks)]
 #![feature(yeet_expr)]

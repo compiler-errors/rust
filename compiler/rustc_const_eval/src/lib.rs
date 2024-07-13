@@ -9,6 +9,7 @@
 #![feature(is_none_or)]
 #![feature(let_chains)]
 #![feature(never_type)]
+#![feature(precise_capturing)]
 #![feature(rustdoc_internals)]
 #![feature(slice_ptr_get)]
 #![feature(strict_provenance)]

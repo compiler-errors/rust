@@ -825,7 +825,7 @@ impl<'infcx, 'tcx> MirBorrowckCtxt<'_, '_, 'infcx, 'tcx> {
     /// help: to allow this `impl Trait` to capture borrowed data with lifetime `'1`, add `'_` as
     ///       a constraint
     ///    |
-    /// LL |     fn iter_values_anon(&self) -> impl Iterator<Item=u32> + 'a {
+    /// LL |     fn iter_values_anon(&self) -> impl Iterator<Item=u32> + use<'a> {
     ///    |                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
     /// ```
     #[allow(rustc::diagnostic_outside_of_impl)]

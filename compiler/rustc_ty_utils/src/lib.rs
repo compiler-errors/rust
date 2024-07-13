@@ -15,6 +15,7 @@
 #![feature(iterator_try_collect)]
 #![feature(let_chains)]
 #![feature(never_type)]
+#![feature(precise_capturing)]
 #![feature(rustdoc_internals)]
 // tidy-alphabetical-end
 

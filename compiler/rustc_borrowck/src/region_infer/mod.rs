@@ -554,7 +554,7 @@ impl<'tcx> RegionInferenceContext<'tcx> {
     }
 
     /// Returns an iterator over all the region indices.
-    pub fn regions(&self) -> impl Iterator<Item = RegionVid> + 'tcx {
+    pub fn regions(&self) -> impl Iterator<Item = RegionVid> + use<'tcx> {
         self.definitions.indices()
     }
 
@@ -567,7 +567,9 @@ impl<'tcx> RegionInferenceContext<'tcx> {
     }
 
     /// Returns an iterator over all the outlives constraints.
-    pub fn outlives_constraints(&self) -> impl Iterator<Item = OutlivesConstraint<'tcx>> + '_ {
+    pub fn outlives_constraints(
+        &self,
+    ) -> impl Iterator<Item = OutlivesConstraint<'tcx>> + use<'_, 'tcx> {
         self.constraints.outlives().iter().copied()
     }
 
@@ -607,7 +609,7 @@ impl<'tcx> RegionInferenceContext<'tcx> {
     pub(crate) fn placeholders_contained_in<'a>(
         &'a self,
         r: RegionVid,
-    ) -> impl Iterator<Item = ty::PlaceholderRegion> + 'a {
+    ) -> impl Iterator<Item = ty::PlaceholderRegion> + use<'a> {
         let scc = self.constraint_sccs.scc(r);
         self.scc_values.placeholders_contained_in(scc)
     }

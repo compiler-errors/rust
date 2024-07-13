@@ -8,6 +8,7 @@
 #![feature(closure_track_caller)]
 #![feature(let_chains)]
 #![feature(never_type)]
+#![feature(precise_capturing)]
 #![feature(rustc_attrs)]
 #![feature(variant_count)]
 // tidy-alphabetical-end

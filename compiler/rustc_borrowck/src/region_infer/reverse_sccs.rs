@@ -21,7 +21,7 @@ impl ReverseSccGraph {
     pub(super) fn upper_bounds<'a>(
         &'a self,
         scc0: ConstraintSccIndex,
-    ) -> impl Iterator<Item = RegionVid> + 'a {
+    ) -> impl Iterator<Item = RegionVid> + use<'a> {
         let mut duplicates = FxIndexSet::default();
         graph::depth_first_search(&self.graph, scc0)
             .flat_map(move |scc1| {

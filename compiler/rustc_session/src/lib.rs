@@ -4,6 +4,7 @@
 #![feature(let_chains)]
 #![feature(map_many_mut)]
 #![feature(option_get_or_insert_default)]
+#![feature(precise_capturing)]
 #![feature(rustc_attrs)]
 // tidy-alphabetical-end
 

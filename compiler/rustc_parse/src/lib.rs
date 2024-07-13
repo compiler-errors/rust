@@ -10,6 +10,7 @@
 #![feature(if_let_guard)]
 #![feature(iter_intersperse)]
 #![feature(let_chains)]
+#![feature(precise_capturing)]
 // tidy-alphabetical-end
 
 use rustc_ast as ast;

@@ -632,7 +632,7 @@ where
     ///     fn foo(&self);
     /// }
     /// // results in the following builtin impl
-    /// impl<'a, T: Trait + 'a> Unsize<dyn Trait + 'a> for T {}
+    /// impl<'a, T: Trait + 'a> Unsize<dyn Trait + use<'a>> for T {}
     /// ```
     fn consider_structural_builtin_unsize_candidates(
         ecx: &mut EvalCtxt<'_, D>,
@@ -757,9 +757,9 @@ where
     /// trait Super {}
     /// trait Trait: Super {}
     /// // results in builtin impls upcasting to a super trait
-    /// impl<'a, 'b: 'a> Unsize<dyn Super + 'a> for dyn Trait + 'b {}
+    /// impl<'a, 'b: 'a> Unsize<dyn Super + 'a> for dyn Trait + use<'b> {}
     /// // and impls removing auto trait bounds.
-    /// impl<'a, 'b: 'a> Unsize<dyn Trait + 'a> for dyn Trait + Send + 'b {}
+    /// impl<'a, 'b: 'a> Unsize<dyn Trait + 'a> for dyn Trait + Send + use<'b> {}
     /// ```
     fn consider_builtin_dyn_upcast_candidates(
         &mut self,

@@ -14,6 +14,7 @@
 #![feature(impl_trait_in_assoc_type)]
 #![feature(iter_intersperse)]
 #![feature(let_chains)]
+#![feature(precise_capturing)]
 #![feature(rustdoc_internals)]
 // tidy-alphabetical-end
 

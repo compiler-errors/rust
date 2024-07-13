@@ -200,7 +200,7 @@ impl<'tcx> Children {
     }
 }
 
-fn iter_children(children: &Children) -> impl Iterator<Item = DefId> + '_ {
+fn iter_children(children: &Children) -> impl Iterator<Item = DefId> + use<'_> {
     let nonblanket = children.non_blanket_impls.iter().flat_map(|(_, v)| v.iter());
     children.blanket_impls.iter().chain(nonblanket).cloned()
 }
@@ -208,7 +208,7 @@ fn iter_children(children: &Children) -> impl Iterator<Item = DefId> + '_ {
 fn filtered_children(
     children: &mut Children,
     st: SimplifiedType,
-) -> impl Iterator<Item = DefId> + '_ {
+) -> impl Iterator<Item = DefId> + use<'_> {
     let nonblanket = children.non_blanket_impls.entry(st).or_default().iter();
     children.blanket_impls.iter().chain(nonblanket).cloned()
 }

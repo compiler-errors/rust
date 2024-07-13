@@ -22,7 +22,9 @@
 // tidy-alphabetical-start
 // We want to be able to build this crate with a stable compiler,
 // so no `#![feature]` attributes should be added.
-#![deny(unstable_features)]
+
+#![feature(precise_capturing)]
+
 // tidy-alphabetical-end
 
 mod cursor;
@@ -269,7 +271,7 @@ pub fn validate_raw_str(input: &str, prefix_len: u32) -> Result<(), RawStrError>
 }
 
 /// Creates an iterator that produces tokens from the input string.
-pub fn tokenize(input: &str) -> impl Iterator<Item = Token> + '_ {
+pub fn tokenize(input: &str) -> impl Iterator<Item = Token> + use<'_> {
     let mut cursor = Cursor::new(input);
     std::iter::from_fn(move || {
         let token = cursor.advance_token();

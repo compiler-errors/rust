@@ -13,6 +13,7 @@
 #![feature(macro_metavar_expr)]
 #![feature(min_specialization)]
 #![feature(never_type)]
+#![feature(precise_capturing)]
 #![feature(proc_macro_internals)]
 #![feature(rustdoc_internals)]
 #![feature(trusted_len)]

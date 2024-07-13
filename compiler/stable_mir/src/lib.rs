@@ -10,6 +10,8 @@
     html_root_url = "https://doc.rust-lang.org/nightly/nightly-rustc/",
     test(attr(allow(unused_variables), deny(warnings)))
 )]
+#![feature(precise_capturing)]
+
 //!
 //! This crate shall contain all type definitions and APIs that we expect third-party tools to invoke to
 //! interact with the compiler.

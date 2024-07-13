@@ -3,6 +3,7 @@
 #![feature(box_patterns)]
 #![feature(exact_size_is_empty)]
 #![feature(let_chains)]
+#![feature(precise_capturing)]
 #![feature(try_blocks)]
 // tidy-alphabetical-end
 

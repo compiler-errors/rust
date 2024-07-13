@@ -24,6 +24,7 @@
 #![feature(if_let_guard)]
 #![feature(let_chains)]
 #![feature(never_type)]
+#![feature(precise_capturing)]
 #![feature(rustdoc_internals)]
 #![feature(type_alias_impl_trait)]
 #![feature(unwrap_infallible)]
