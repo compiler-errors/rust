@@ -37,7 +37,7 @@ pub struct FreeRegionMap<'tcx> {
 }
 
 impl<'tcx> FreeRegionMap<'tcx> {
-    pub fn elements(&self) -> impl Iterator<Item = Region<'tcx>> + use<'_, 'tcx> {
+    pub fn elements(&self) -> impl Iterator<Item = Region<'tcx>> {
         self.relation.elements().copied()
     }
 

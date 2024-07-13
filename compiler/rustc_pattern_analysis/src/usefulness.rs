@@ -842,7 +842,7 @@ impl<Cx: PatCx> PlaceInfo<Cx> {
         &'a self,
         cx: &'a Cx,
         ctor: &'a Constructor<Cx>,
-    ) -> impl Iterator<Item = Self> + ExactSizeIterator + use<'a, Cx> {
+    ) -> impl Iterator<Item = Self> + ExactSizeIterator {
         let ctor_sub_tys = cx.ctor_sub_tys(ctor, &self.ty);
         let ctor_sub_validity = self.validity.specialize(ctor);
         ctor_sub_tys.map(move |(ty, PrivateUninhabitedField(private_uninhabited))| PlaceInfo {
@@ -980,13 +980,13 @@ impl<'p, Cx: PatCx> PatStack<'p, Cx> {
         self.pats[0]
     }
 
-    fn iter(&self) -> impl Iterator<Item = PatOrWild<'p, Cx>> + use<'p, '_, Cx> {
+    fn iter(&self) -> impl Iterator<Item = PatOrWild<'p, Cx>> {
         self.pats.iter().copied()
     }
 
     // Recursively expand the first or-pattern into its subpatterns. Only useful if the pattern is
     // an or-pattern. Panics if `self` is empty.
-    fn expand_or_pat(&self) -> impl Iterator<Item = PatStack<'p, Cx>> + use<'p, '_, Cx> {
+    fn expand_or_pat(&self) -> impl Iterator<Item = PatStack<'p, Cx>> {
         self.head().flatten_or_pat().into_iter().map(move |pat| {
             let mut new = self.clone();
             new.pats[0] = pat;
@@ -1069,13 +1069,13 @@ impl<'p, Cx: PatCx> MatrixRow<'p, Cx> {
         self.pats.head()
     }
 
-    fn iter(&self) -> impl Iterator<Item = PatOrWild<'p, Cx>> + use<'p, '_, Cx> {
+    fn iter(&self) -> impl Iterator<Item = PatOrWild<'p, Cx>> {
         self.pats.iter()
     }
 
     // Recursively expand the first or-pattern into its subpatterns. Only useful if the pattern is
     // an or-pattern. Panics if `self` is empty.
-    fn expand_or_pat(&self) -> impl Iterator<Item = MatrixRow<'p, Cx>> + use<'p, '_, Cx> {
+    fn expand_or_pat(&self) -> impl Iterator<Item = MatrixRow<'p, Cx>> {
         self.pats.expand_or_pat().map(|patstack| MatrixRow {
             pats: patstack,
             parent_row: self.parent_row,
@@ -1198,7 +1198,7 @@ impl<'p, Cx: PatCx> Matrix<'p, Cx> {
     }
 
     /// Iterate over the first pattern of each row.
-    fn heads(&self) -> impl Iterator<Item = PatOrWild<'p, Cx>> + Clone + use<'p, '_, Cx> {
+    fn heads(&self) -> impl Iterator<Item = PatOrWild<'p, Cx>> + Clone {
         self.rows().map(|r| r.head())
     }
 

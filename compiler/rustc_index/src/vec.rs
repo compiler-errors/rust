@@ -1,4 +1,4 @@
-#[cfg(feature = "rustc_serialize")]
+#[cfg(feature = "nightly")]
 use rustc_serialize::{Decodable, Decoder, Encodable, Encoder};
 
 use std::borrow::{Borrow, BorrowMut};
@@ -134,10 +134,7 @@ impl<I: Idx, T> IndexVec<I, T> {
     }
 
     #[inline]
-    pub fn drain<R: RangeBounds<usize>>(
-        &mut self,
-        range: R,
-    ) -> impl Iterator<Item = T> + use<'_, I, T, R> {
+    pub fn drain<R: RangeBounds<usize>>(&mut self, range: R) -> impl Iterator<Item = T> {
         self.raw.drain(range)
     }
 
@@ -145,7 +142,7 @@ impl<I: Idx, T> IndexVec<I, T> {
     pub fn drain_enumerated<R: RangeBounds<usize>>(
         &mut self,
         range: R,
-    ) -> impl Iterator<Item = (I, T)> + use<'_, I, T, R> {
+    ) -> impl Iterator<Item = (I, T)> {
         let begin = match range.start_bound() {
             std::ops::Bound::Included(i) => *i,
             std::ops::Bound::Excluded(i) => i.checked_add(1).unwrap(),
@@ -325,14 +322,14 @@ impl<I: Idx, T, const N: usize> From<[T; N]> for IndexVec<I, T> {
     }
 }
 
-#[cfg(feature = "rustc_serialize")]
+#[cfg(feature = "nightly")]
 impl<S: Encoder, I: Idx, T: Encodable<S>> Encodable<S> for IndexVec<I, T> {
     fn encode(&self, s: &mut S) {
         Encodable::encode(&self.raw, s);
     }
 }
 
-#[cfg(feature = "rustc_serialize")]
+#[cfg(feature = "nightly")]
 impl<D: Decoder, I: Idx, T: Decodable<D>> Decodable<D> for IndexVec<I, T> {
     fn decode(d: &mut D) -> Self {
         IndexVec::from_raw(Vec::<T>::decode(d))

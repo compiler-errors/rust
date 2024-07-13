@@ -30,9 +30,7 @@ impl<'tcx, V> Locals<'tcx, V> {
         Locals { values: IndexVec::default() }
     }
 
-    pub(super) fn indices(
-        &self,
-    ) -> impl DoubleEndedIterator<Item = mir::Local> + Clone + use<'tcx, '_, V> {
+    pub(super) fn indices(&self) -> impl DoubleEndedIterator<Item = mir::Local> + Clone {
         self.values.indices()
     }
 }

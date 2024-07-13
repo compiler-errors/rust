@@ -1,7 +1,9 @@
+cargo-features = ["edition2024"]
+
 [package]
 name = "rustc_query_system"
 version = "0.0.0"
-edition = "2021"
+edition = "2024"
 
 [dependencies]
 # tidy-alphabetical-start
@@ -26,5 +28,5 @@ tracing = "0.1"
 
 [features]
 # tidy-alphabetical-start
-rustc_use_parallel_compiler = ["rustc-rayon-core"]
+rustc_use_parallel_compiler = ["dep:rustc-rayon-core"]
 # tidy-alphabetical-end

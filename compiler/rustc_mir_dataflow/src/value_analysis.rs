@@ -974,7 +974,7 @@ impl Map {
     }
 
     /// Iterate over all direct children.
-    fn children(&self, parent: PlaceIndex) -> impl Iterator<Item = PlaceIndex> + use<'_> {
+    fn children(&self, parent: PlaceIndex) -> impl Iterator<Item = PlaceIndex> {
         Children::new(self, parent)
     }
 

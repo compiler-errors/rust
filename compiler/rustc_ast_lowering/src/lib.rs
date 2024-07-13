@@ -2118,7 +2118,7 @@ impl<'a, 'hir> LoweringContext<'a, 'hir> {
         &'s mut self,
         params: &'s [GenericParam],
         source: hir::GenericParamSource,
-    ) -> impl Iterator<Item = hir::GenericParam<'hir>> + use<'a, 's, 'hir> {
+    ) -> impl Iterator<Item = hir::GenericParam<'hir>> {
         params.iter().map(move |param| self.lower_generic_param(param, source))
     }
 
@@ -2282,7 +2282,7 @@ impl<'a, 'hir> LoweringContext<'a, 'hir> {
         &'s mut self,
         bounds: &'s [GenericBound],
         itctx: ImplTraitContext,
-    ) -> impl Iterator<Item = hir::GenericBound<'hir>> + use<'s, 'a, 'hir> {
+    ) -> impl Iterator<Item = hir::GenericBound<'hir>> {
         bounds.iter().map(move |bound| self.lower_param_bound(bound, itctx))
     }
 

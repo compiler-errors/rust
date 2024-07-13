@@ -37,25 +37,25 @@ impl ModuleItems {
     /// include foreign items. If you want to e.g. get all functions, use `definitions()` below.
     ///
     /// However, this does include the `impl` blocks themselves.
-    pub fn free_items(&self) -> impl Iterator<Item = ItemId> + use<'_> {
+    pub fn free_items(&self) -> impl Iterator<Item = ItemId> {
         self.free_items.iter().copied()
     }
 
-    pub fn trait_items(&self) -> impl Iterator<Item = TraitItemId> + use<'_> {
+    pub fn trait_items(&self) -> impl Iterator<Item = TraitItemId> {
         self.trait_items.iter().copied()
     }
 
     /// Returns all items that are associated with some `impl` block (both inherent and trait impl
     /// blocks).
-    pub fn impl_items(&self) -> impl Iterator<Item = ImplItemId> + use<'_> {
+    pub fn impl_items(&self) -> impl Iterator<Item = ImplItemId> {
         self.impl_items.iter().copied()
     }
 
-    pub fn foreign_items(&self) -> impl Iterator<Item = ForeignItemId> + use<'_> {
+    pub fn foreign_items(&self) -> impl Iterator<Item = ForeignItemId> {
         self.foreign_items.iter().copied()
     }
 
-    pub fn owners(&self) -> impl Iterator<Item = OwnerId> + use<'_> {
+    pub fn owners(&self) -> impl Iterator<Item = OwnerId> {
         self.free_items
             .iter()
             .map(|id| id.owner_id)
@@ -64,7 +64,7 @@ impl ModuleItems {
             .chain(self.foreign_items.iter().map(|id| id.owner_id))
     }
 
-    pub fn definitions(&self) -> impl Iterator<Item = LocalDefId> + use<'_> {
+    pub fn definitions(&self) -> impl Iterator<Item = LocalDefId> {
         self.owners().map(|id| id.def_id)
     }
 

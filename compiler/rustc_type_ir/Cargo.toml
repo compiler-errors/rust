@@ -1,7 +1,9 @@
+cargo-features = ["edition2024"]
+
 [package]
 name = "rustc_type_ir"
 version = "0.0.0"
-edition = "2021"
+edition = "2024"
 
 [dependencies]
 # tidy-alphabetical-start
@@ -25,9 +27,9 @@ nightly = [
     "smallvec/may_dangle",
     "smallvec/union",
     "rustc_index/nightly",
-    "rustc_serialize",
-    "rustc_span",
-    "rustc_data_structures",
-    "rustc_macros",
+    "dep:rustc_serialize",
+    "dep:rustc_span",
+    "dep:rustc_data_structures",
+    "dep:rustc_macros",
     "rustc_ast_ir/nightly"
 ]

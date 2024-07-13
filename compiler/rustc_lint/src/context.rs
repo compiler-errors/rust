@@ -156,9 +156,7 @@ impl LintStore {
         &self.lints
     }
 
-    pub fn get_lint_groups<'t>(
-        &'t self,
-    ) -> impl Iterator<Item = (&'static str, Vec<LintId>, bool)> + use<'t> {
+    pub fn get_lint_groups(&self) -> impl Iterator<Item = (&'static str, Vec<LintId>, bool)> {
         self.lint_groups
             .iter()
             .filter(|(_, LintGroup { depr, .. })| {

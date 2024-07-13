@@ -1866,7 +1866,7 @@ impl<R: Idx, C: Idx> SparseBitMatrix<R, C> {
 
     /// Iterates through all the columns set to true in a given row of
     /// the matrix.
-    pub fn iter(&self, row: R) -> impl Iterator<Item = C> + use<'_, R, C> {
+    pub fn iter(&self, row: R) -> impl Iterator<Item = C> {
         self.row(row).into_iter().flat_map(|r| r.iter())
     }
 

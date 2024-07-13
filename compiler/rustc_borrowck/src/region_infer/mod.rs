@@ -554,7 +554,7 @@ impl<'tcx> RegionInferenceContext<'tcx> {
     }
 
     /// Returns an iterator over all the region indices.
-    pub fn regions(&self) -> impl Iterator<Item = RegionVid> + use<'tcx> {
+    pub fn regions(&self) -> impl Iterator<Item = RegionVid> {
         self.definitions.indices()
     }
 
@@ -567,9 +567,7 @@ impl<'tcx> RegionInferenceContext<'tcx> {
     }
 
     /// Returns an iterator over all the outlives constraints.
-    pub fn outlives_constraints(
-        &self,
-    ) -> impl Iterator<Item = OutlivesConstraint<'tcx>> + use<'_, 'tcx> {
+    pub fn outlives_constraints(&self) -> impl Iterator<Item = OutlivesConstraint<'tcx>> {
         self.constraints.outlives().iter().copied()
     }
 

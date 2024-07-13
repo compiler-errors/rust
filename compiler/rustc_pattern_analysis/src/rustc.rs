@@ -160,7 +160,7 @@ impl<'p, 'tcx: 'p> RustcPatCtxt<'p, 'tcx> {
         &self,
         ty: RevealedTy<'tcx>,
         variant: &'tcx VariantDef,
-    ) -> impl Iterator<Item = (&'tcx FieldDef, RevealedTy<'tcx>)> + use<'p, 'tcx, '_> {
+    ) -> impl Iterator<Item = (&'tcx FieldDef, RevealedTy<'tcx>)> {
         let ty::Adt(_, args) = ty.kind() else { bug!() };
         variant.fields.iter().map(move |field| {
             let ty = field.ty(self.tcx, args);

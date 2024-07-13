@@ -100,7 +100,7 @@ impl LivenessValues {
     }
 
     /// Iterate through each region that has a value in this set.
-    pub(crate) fn regions(&self) -> impl Iterator<Item = RegionVid> + use<'_> {
+    pub(crate) fn regions(&self) -> impl Iterator<Item = RegionVid> {
         self.points.as_ref().expect("use with_specific_points").rows()
     }
 
@@ -108,7 +108,7 @@ impl LivenessValues {
     // We are passing query instability implications to the caller.
     #[rustc_lint_query_instability]
     #[allow(rustc::potential_query_instability)]
-    pub(crate) fn live_regions_unordered(&self) -> impl Iterator<Item = RegionVid> + use<'_> {
+    pub(crate) fn live_regions_unordered(&self) -> impl Iterator<Item = RegionVid> {
         self.live_regions.as_ref().unwrap().iter().copied()
     }
 
@@ -177,7 +177,7 @@ impl LivenessValues {
     }
 
     /// Returns an iterator of all the points where `region` is live.
-    fn live_points(&self, region: RegionVid) -> impl Iterator<Item = PointIndex> + use<'_> {
+    fn live_points(&self, region: RegionVid) -> impl Iterator<Item = PointIndex> {
         let Some(points) = &self.points else {
             unreachable!(
                 "Should be using LivenessValues::with_specific_points to ask whether live at a location"
@@ -363,10 +363,7 @@ impl<N: Idx> RegionValues<N> {
     }
 
     /// Returns the locations contained within a given region `r`.
-    pub(crate) fn locations_outlived_by<'a>(
-        &'a self,
-        r: N,
-    ) -> impl Iterator<Item = Location> + use<'a, N> {
+    pub(crate) fn locations_outlived_by<'a>(&'a self, r: N) -> impl Iterator<Item = Location> {
         self.points.row(r).into_iter().flat_map(move |set| {
             set.iter()
                 .take_while(move |&p| self.elements.point_in_range(p))
@@ -378,7 +375,7 @@ impl<N: Idx> RegionValues<N> {
     pub(crate) fn universal_regions_outlived_by<'a>(
         &'a self,
         r: N,
-    ) -> impl Iterator<Item = RegionVid> + use<'a, N> {
+    ) -> impl Iterator<Item = RegionVid> {
         self.free_regions.row(r).into_iter().flat_map(|set| set.iter())
     }
 
@@ -386,7 +383,7 @@ impl<N: Idx> RegionValues<N> {
     pub(crate) fn placeholders_contained_in<'a>(
         &'a self,
         r: N,
-    ) -> impl Iterator<Item = ty::PlaceholderRegion> + use<'a, N> {
+    ) -> impl Iterator<Item = ty::PlaceholderRegion> {
         self.placeholders
             .row(r)
             .into_iter()
@@ -395,10 +392,7 @@ impl<N: Idx> RegionValues<N> {
     }
 
     /// Returns all the elements contained in a given region's value.
-    pub(crate) fn elements_contained_in<'a>(
-        &'a self,
-        r: N,
-    ) -> impl Iterator<Item = RegionElement> + use<'a, N> {
+    pub(crate) fn elements_contained_in(&self, r: N) -> impl Iterator<Item = RegionElement> {
         let points_iter = self.locations_outlived_by(r).map(RegionElement::Location);
 
         let free_regions_iter =

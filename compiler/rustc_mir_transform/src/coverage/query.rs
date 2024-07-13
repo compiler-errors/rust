@@ -96,7 +96,7 @@ fn coverage_ids_info<'tcx>(
 
 fn all_coverage_in_mir_body<'a, 'tcx>(
     body: &'a Body<'tcx>,
-) -> impl Iterator<Item = &'a CoverageKind> + use<'tcx, 'a> {
+) -> impl Iterator<Item = &'a CoverageKind> {
     body.basic_blocks.iter().flat_map(|bb_data| &bb_data.statements).filter_map(|statement| {
         match statement.kind {
             StatementKind::Coverage(ref kind) if !is_inlined(body, statement) => Some(kind),

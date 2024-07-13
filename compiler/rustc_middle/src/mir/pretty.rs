@@ -1414,11 +1414,11 @@ pub fn write_allocations<'tcx>(
 ) -> io::Result<()> {
     fn alloc_ids_from_alloc(
         alloc: ConstAllocation<'_>,
-    ) -> impl DoubleEndedIterator<Item = AllocId> + use<'_> {
+    ) -> impl DoubleEndedIterator<Item = AllocId> {
         alloc.inner().provenance().ptrs().values().map(|p| p.alloc_id())
     }
 
-    fn alloc_ids_from_const_val(val: ConstValue<'_>) -> impl Iterator<Item = AllocId> + use<'_> {
+    fn alloc_ids_from_const_val(val: ConstValue<'_>) -> impl Iterator<Item = AllocId> {
         match val {
             ConstValue::Scalar(interpret::Scalar::Ptr(ptr, _)) => {
                 Either::Left(std::iter::once(ptr.provenance.alloc_id()))

@@ -52,7 +52,7 @@ impl<I: Idx> IntervalSet<I> {
         self.map.clear();
     }
 
-    pub fn iter(&self) -> impl Iterator<Item = I> + use<'_, I>
+    pub fn iter(&self) -> impl Iterator<Item = I>
     where
         I: Step,
     {
@@ -60,7 +60,7 @@ impl<I: Idx> IntervalSet<I> {
     }
 
     /// Iterates through intervals stored in the set, in order.
-    pub fn iter_intervals(&self) -> impl Iterator<Item = std::ops::Range<I>> + use<'_, I>
+    pub fn iter_intervals(&self) -> impl Iterator<Item = std::ops::Range<I>>
     where
         I: Step,
     {

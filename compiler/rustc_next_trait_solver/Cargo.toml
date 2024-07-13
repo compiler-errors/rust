@@ -1,7 +1,9 @@
+cargo-features = ["edition2024"]
+
 [package]
 name = "rustc_next_trait_solver"
 version = "0.0.0"
-edition = "2021"
+edition = "2024"
 
 [dependencies]
 # tidy-alphabetical-start
@@ -21,9 +23,9 @@ tracing = "0.1"
 default = ["nightly"]
 nightly = [
     "rustc_ast_ir/nightly",
-    "rustc_data_structures",
+    "dep:rustc_data_structures",
     "rustc_index/nightly",
-    "rustc_macros",
-    "rustc_serialize",
+    "dep:rustc_macros",
+    "dep:rustc_serialize",
     "rustc_type_ir/nightly",
 ]

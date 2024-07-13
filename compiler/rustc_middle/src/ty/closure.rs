@@ -417,16 +417,11 @@ impl BorrowKind {
     }
 }
 
-pub fn analyze_coroutine_closure_captures<'a, 'tcx: 'a, P, C, F, T>(
-    parent_captures: P,
-    child_captures: C,
-    mut for_each: F,
-) -> impl Iterator<Item = T> + use<'a, 'tcx, P, C, T, F>
-where
-    P: IntoIterator<Item = &'a CapturedPlace<'tcx>>,
-    C: IntoIterator<Item = &'a CapturedPlace<'tcx>>,
-    F: FnMut((usize, &'a CapturedPlace<'tcx>), (usize, &'a CapturedPlace<'tcx>)) -> T,
-{
+pub fn analyze_coroutine_closure_captures<'a, 'tcx: 'a, T>(
+    parent_captures: impl IntoIterator<Item = &'a CapturedPlace<'tcx>>,
+    child_captures: impl IntoIterator<Item = &'a CapturedPlace<'tcx>>,
+    mut for_each: impl FnMut((usize, &'a CapturedPlace<'tcx>), (usize, &'a CapturedPlace<'tcx>)) -> T,
+) -> impl Iterator<Item = T> {
     std::iter::from_coroutine(
         #[coroutine]
         move || {

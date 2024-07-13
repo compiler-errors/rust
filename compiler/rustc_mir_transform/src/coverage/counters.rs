@@ -211,7 +211,7 @@ impl CoverageCounters {
     /// with a counter *expression*, along with the ID of that expression.
     pub(super) fn bcb_nodes_with_coverage_expressions(
         &self,
-    ) -> impl Iterator<Item = (BasicCoverageBlock, ExpressionId)> + use<'_> {
+    ) -> impl Iterator<Item = (BasicCoverageBlock, ExpressionId)> {
         self.bcb_counters.iter_enumerated().filter_map(|(bcb, &counter_kind)| match counter_kind {
             // Yield the BCB along with its associated expression ID.
             Some(BcbCounter::Expression { id }) => Some((bcb, id)),

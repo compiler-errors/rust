@@ -628,7 +628,7 @@ impl Step for Size {
 
     #[inline]
     unsafe fn forward_unchecked(start: Self, count: usize) -> Self {
-        Self::from_bytes(u64::forward_unchecked(start.bytes(), count))
+        Self::from_bytes(unsafe { u64::forward_unchecked(start.bytes(), count) })
     }
 
     #[inline]
@@ -643,7 +643,7 @@ impl Step for Size {
 
     #[inline]
     unsafe fn backward_unchecked(start: Self, count: usize) -> Self {
-        Self::from_bytes(u64::backward_unchecked(start.bytes(), count))
+        Self::from_bytes(unsafe { u64::backward_unchecked(start.bytes(), count) })
     }
 }
 
@@ -1253,9 +1253,7 @@ impl<FieldIdx: Idx> FieldsShape<FieldIdx> {
 
     /// Gets source indices of the fields by increasing offsets.
     #[inline]
-    pub fn index_by_increasing_offset(
-        &self,
-    ) -> impl ExactSizeIterator<Item = usize> + use<'_, FieldIdx> {
+    pub fn index_by_increasing_offset(&self) -> impl ExactSizeIterator<Item = usize> {
         let mut inverse_small = [0u8; 64];
         let mut inverse_big = IndexVec::new();
         let use_small = self.count() <= inverse_small.len();

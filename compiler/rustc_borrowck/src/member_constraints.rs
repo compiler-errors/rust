@@ -148,9 +148,7 @@ impl<'tcx, R> MemberConstraintSet<'tcx, R>
 where
     R: Copy + Hash + Eq,
 {
-    pub(crate) fn all_indices(
-        &self,
-    ) -> impl Iterator<Item = NllMemberConstraintIndex> + use<'tcx, '_, R> {
+    pub(crate) fn all_indices(&self) -> impl Iterator<Item = NllMemberConstraintIndex> {
         self.constraints.indices()
     }
 
@@ -160,7 +158,7 @@ where
     pub(crate) fn indices(
         &self,
         member_region_vid: R,
-    ) -> impl Iterator<Item = NllMemberConstraintIndex> + use<'tcx, '_, R> {
+    ) -> impl Iterator<Item = NllMemberConstraintIndex> {
         let mut next = self.first_constraints.get(&member_region_vid).cloned();
         std::iter::from_fn(move || -> Option<NllMemberConstraintIndex> {
             if let Some(current) = next {

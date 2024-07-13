@@ -1896,7 +1896,7 @@ impl CrateMetadata {
         cdata
     }
 
-    pub(crate) fn dependencies(&self) -> impl Iterator<Item = CrateNum> + use<'_> {
+    pub(crate) fn dependencies(&self) -> impl Iterator<Item = CrateNum> {
         self.dependencies.iter().copied()
     }
 

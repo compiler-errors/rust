@@ -173,11 +173,8 @@ fn divide_spans_into_buckets(input_covspans: Vec<Covspan>, holes: &[Hole]) -> Ve
 /// satisfying the predicate.
 fn drain_front_while<'a, T>(
     queue: &'a mut VecDeque<T>,
-    mut pred_fn: F,
-) -> impl Iterator<Item = T> + use<'a, T, F>
-where
-    F: FnMut(&T) -> bool,
-{
+    mut pred_fn: impl FnMut(&T) -> bool,
+) -> impl Iterator<Item = T> {
     std::iter::from_fn(move || if pred_fn(queue.front()?) { queue.pop_front() } else { None })
 }
 

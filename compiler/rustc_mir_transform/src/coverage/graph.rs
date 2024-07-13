@@ -537,7 +537,7 @@ fn find_loop_backedges(
 fn short_circuit_preorder<'a, 'tcx, F, Iter>(
     body: &'a mir::Body<'tcx>,
     filtered_successors: F,
-) -> impl Iterator<Item = BasicBlock> + use<'a, 'tcx, F, Iter>
+) -> impl Iterator<Item = BasicBlock>
 where
     F: Fn(BasicBlock) -> Iter,
     Iter: IntoIterator<Item = BasicBlock>,

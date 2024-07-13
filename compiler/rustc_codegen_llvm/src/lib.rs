@@ -6,6 +6,7 @@
 
 // tidy-alphabetical-start
 #![allow(internal_features)]
+#![allow(unsafe_op_in_unsafe_fn)]
 #![doc(html_root_url = "https://doc.rust-lang.org/nightly/nightly-rustc/")]
 #![doc(rust_logo)]
 #![feature(exact_size_is_empty)]

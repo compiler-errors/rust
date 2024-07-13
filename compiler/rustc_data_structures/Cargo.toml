@@ -1,7 +1,9 @@
+cargo-features = ["edition2024"]
+
 [package]
 name = "rustc_data_structures"
 version = "0.0.0"
-edition = "2021"
+edition = "2024"
 
 [dependencies]
 # tidy-alphabetical-start
@@ -56,5 +58,5 @@ portable-atomic = "1.5.1"
 
 [features]
 # tidy-alphabetical-start
-rustc_use_parallel_compiler = ["indexmap/rustc-rayon", "rustc-rayon"]
+rustc_use_parallel_compiler = ["indexmap/rustc-rayon", "dep:rustc-rayon"]
 # tidy-alphabetical-end

@@ -1,7 +1,9 @@
+cargo-features = ["edition2024"]
+
 [package]
 name = "rustc_index"
 version = "0.0.0"
-edition = "2021"
+edition = "2024"
 
 [dependencies]
 # tidy-alphabetical-start
@@ -15,5 +17,5 @@ smallvec = "1.8.1"
 [features]
 # tidy-alphabetical-start
 default = ["nightly"]
-nightly = ["rustc_serialize", "rustc_macros", "rustc_index_macros/nightly"]
+nightly = ["dep:rustc_serialize", "dep:rustc_macros", "rustc_index_macros/nightly"]
 # tidy-alphabetical-end

@@ -538,7 +538,7 @@ impl<'tcx> AdtDef<'tcx> {
     pub fn discriminants(
         self,
         tcx: TyCtxt<'tcx>,
-    ) -> impl Iterator<Item = (VariantIdx, Discr<'tcx>)> + use<'tcx> {
+    ) -> impl Iterator<Item = (VariantIdx, Discr<'tcx>)> {
         assert!(self.is_enum());
         let repr_type = self.repr().discr_type();
         let initial = repr_type.initial_discriminant(tcx);

@@ -1778,7 +1778,7 @@ fn polarity_of_impl(
 fn early_bound_lifetimes_from_generics<'a, 'tcx: 'a>(
     tcx: TyCtxt<'tcx>,
     generics: &'a hir::Generics<'a>,
-) -> impl Iterator<Item = &'a hir::GenericParam<'a>> + use<'tcx, 'a> {
+) -> impl Iterator<Item = &'a hir::GenericParam<'a>> {
     generics.params.iter().filter(move |param| match param.kind {
         GenericParamKind::Lifetime { .. } => !tcx.is_late_bound(param.hir_id),
         _ => false,

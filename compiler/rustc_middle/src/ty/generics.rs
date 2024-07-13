@@ -389,11 +389,14 @@ impl<'tcx> GenericPredicates<'tcx> {
         &self,
         tcx: TyCtxt<'tcx>,
         args: GenericArgsRef<'tcx>,
-    ) -> impl Iterator<Item = (Clause<'tcx>, Span)> + DoubleEndedIterator + ExactSizeIterator {
+    ) -> impl Iterator<Item = (Clause<'tcx>, Span)> + DoubleEndedIterator + ExactSizeIterator + use<'tcx>
+    {
         EarlyBinder::bind(self.predicates).iter_instantiated_copied(tcx, args)
     }
 
-    pub fn instantiate_own_identity(&self) -> impl Iterator<Item = (Clause<'tcx>, Span)> {
+    pub fn instantiate_own_identity(
+        &self,
+    ) -> impl Iterator<Item = (Clause<'tcx>, Span)> + use<'tcx> {
         EarlyBinder::bind(self.predicates).iter_identity_copied()
     }
 
