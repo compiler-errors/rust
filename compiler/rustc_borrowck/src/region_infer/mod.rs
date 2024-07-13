@@ -607,7 +607,7 @@ impl<'tcx> RegionInferenceContext<'tcx> {
     pub(crate) fn placeholders_contained_in<'a>(
         &'a self,
         r: RegionVid,
-    ) -> impl Iterator<Item = ty::PlaceholderRegion> + use<'a> {
+    ) -> impl Iterator<Item = ty::PlaceholderRegion> {
         let scc = self.constraint_sccs.scc(r);
         self.scc_values.placeholders_contained_in(scc)
     }

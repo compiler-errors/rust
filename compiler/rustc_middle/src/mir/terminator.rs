@@ -411,8 +411,8 @@ pub use helper::*;
 
 mod helper {
     use super::*;
-    pub type Successors<'a> = impl DoubleEndedIterator<Item = BasicBlock> + use<'a>;
-    pub type SuccessorsMut<'a> = impl DoubleEndedIterator<Item = &'a mut BasicBlock> + use<'a>;
+    pub type Successors<'a> = impl DoubleEndedIterator<Item = BasicBlock>;
+    pub type SuccessorsMut<'a> = impl DoubleEndedIterator<Item = &'a mut BasicBlock>;
     impl<'tcx> TerminatorKind<'tcx> {
         #[inline]
         pub fn successors(&self) -> Successors<'_> {

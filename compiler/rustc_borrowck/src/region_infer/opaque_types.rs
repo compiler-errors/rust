@@ -24,10 +24,10 @@ impl<'tcx> RegionInferenceContext<'tcx> {
     /// Resolve any opaque types that were encountered while borrow checking
     /// this item. This is then used to get the type in the `type_of` query.
     ///
-    /// For example consider `fn f<'a>(x: &'a i32) -> impl Sized + use<'a> { x }`.
+    /// For example consider `fn f<'a>(x: &'a i32) -> impl Sized + 'a { x }`.
     /// This is lowered to give HIR something like
     ///
-    /// type f<'a>::_Return<'_x> = impl Sized + use<'_x>;
+    /// type f<'a>::_Return<'_x> = impl Sized + '_x;
     /// fn f<'a>(x: &'a i32) -> f<'a>::_Return<'a> { x }
     ///
     /// When checking the return type record the type from the return and the
@@ -49,7 +49,7 @@ impl<'tcx> RegionInferenceContext<'tcx> {
     /// this would result in `&'a i32`. We only consider regions in the args
     /// in case there is an equal region that does not. For example, this should
     /// be allowed:
-    /// `fn f<'a: 'b, 'b: 'a>(x: *mut &'b i32) -> impl Sized + use<'a> { x }`
+    /// `fn f<'a: 'b, 'b: 'a>(x: *mut &'b i32) -> impl Sized + 'a { x }`
     ///
     /// This will then allow `infer_opaque_definition_from_instantiation` to
     /// determine that `_Return<'_x> = &'_x i32`.

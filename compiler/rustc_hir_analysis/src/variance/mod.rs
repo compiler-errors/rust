@@ -77,7 +77,7 @@ fn variance_of_opaque(tcx: TyCtxt<'_>, item_def_id: LocalDefId) -> &[ty::Varianc
 
     // Opaque types may only use regions that are bound. So for
     // ```rust
-    // type Foo<'a, 'b, 'c> = impl Trait<'a> + use<'b>;
+    // type Foo<'a, 'b, 'c> = impl Trait<'a> + 'b;
     // ```
     // we may not use `'c` in the hidden type.
     struct OpaqueTypeLifetimeCollector<'tcx> {

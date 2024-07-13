@@ -841,7 +841,7 @@ impl<'a, 'tcx> FulfillProcessor<'a, 'tcx> {
 fn args_infer_vars<'a, 'tcx>(
     selcx: &SelectionContext<'a, 'tcx>,
     args: ty::Binder<'tcx, GenericArgsRef<'tcx>>,
-) -> impl Iterator<Item = TyOrConstInferVar> + use<'tcx> {
+) -> impl Iterator<Item = TyOrConstInferVar> {
     selcx
         .infcx
         .resolve_vars_if_possible(args)

@@ -395,7 +395,7 @@ pub fn suggest_new_region_bound(
                     // With this check we avoid suggesting redundant bounds. This
                     // would happen if there are nested impl/dyn traits and only
                     // one of them has the bound we'd suggest already there, like
-                    // in `impl Foo<X = dyn Bar> + use<'_>`.
+                    // in `impl Foo<X = dyn Bar> + '_`.
                     if let Some(explicit_static) = &explicit_static {
                         err.span_suggestion_verbose(
                             lt.ident.span,
