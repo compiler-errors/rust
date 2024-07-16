@@ -142,7 +142,7 @@ pub enum RegionKind<I: Interner> {
     /// or bound variables from a `for<'a>`-binder.
     ///
     /// While inside of a function, e.g. during typeck, the late-bound function parameters
-    /// can be converted to `ReLateParam` by calling `tcx.liberate_late_bound_regions`.
+    /// can be converted to `ReLateParam` by calling `cx.liberate_late_bound_regions`.
     ///
     /// Bound regions inside of types **must not** be erased, as they impact trait
     /// selection and the `TypeId` of that type. `for<'a> fn(&'a ())` and
@@ -151,7 +151,7 @@ pub enum RegionKind<I: Interner> {
 
     /// Late-bound function parameters are represented using a `ReBound`. When
     /// inside of a function, we convert these bound variables to placeholder
-    /// parameters via `tcx.liberate_late_bound_regions`. They are then treated
+    /// parameters via `cx.liberate_late_bound_regions`. They are then treated
     /// the same way as `ReEarlyParam` while inside of the function.
     ///
     /// See <https://rustc-dev-guide.rust-lang.org/early-late-bound-params/early-late-bound-summary.html> for

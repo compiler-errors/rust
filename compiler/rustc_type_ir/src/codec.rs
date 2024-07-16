@@ -18,8 +18,8 @@ pub const SHORTHAND_OFFSET: usize = 0x80;
 ///
 /// `Decodable` can still be implemented in cases where `Decodable` is required
 /// by a trait bound.
-pub trait RefDecodable<'tcx, D: TyDecoder> {
-    fn decode(d: &mut D) -> &'tcx Self;
+pub trait RefDecodable<'cx, D: TyDecoder> {
+    fn decode(d: &mut D) -> &'cx Self;
 }
 
 pub trait TyEncoder: SpanEncoder {

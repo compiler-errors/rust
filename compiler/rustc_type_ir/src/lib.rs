@@ -397,7 +397,7 @@ impl<I: Interner> inherent::BoundVarLike<I> for BoundVar {
 /// desugaring) argument that the closure expects.
 ///
 /// You can get the environment type of a closure using
-/// `tcx.closure_env_ty()`.
+/// `cx.closure_env_ty()`.
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
 #[cfg_attr(feature = "nightly", derive(Encodable, Decodable, HashStable_NoContext))]
 pub enum ClosureKind {
