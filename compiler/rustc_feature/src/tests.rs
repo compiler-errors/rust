@@ -3,7 +3,9 @@ use super::UnstableFeatures;
 #[test]
 fn rustc_bootstrap_parsing() {
     let is_bootstrap = |env, krate| {
-        std::env::set_var("RUSTC_BOOTSTRAP", env);
+        unsafe {
+            std::env::set_var("RUSTC_BOOTSTRAP", env);
+        }
         matches!(UnstableFeatures::from_environment(krate), UnstableFeatures::Cheat)
     };
     assert!(is_bootstrap("1", None));
