@@ -904,10 +904,10 @@ struct PlaceInfo<Cx: PatCx> {
 impl<Cx: PatCx> PlaceInfo<Cx> {
     /// Given a constructor for the current place, we return one `PlaceInfo` for each field of the
     /// constructor.
-    fn specialize<'a>(
-        &'a self,
-        cx: &'a Cx,
-        ctor: &'a Constructor<Cx>,
+    fn specialize(
+        &self,
+        cx: &Cx,
+        ctor: &Constructor<Cx>,
     ) -> impl Iterator<Item = Self> + ExactSizeIterator {
         let ctor_sub_tys = cx.ctor_sub_tys(ctor, &self.ty);
         let ctor_sub_validity = self.validity.specialize(ctor);

@@ -199,9 +199,9 @@ impl<'p, 'tcx: 'p> RustcPatCtxt<'p, 'tcx> {
 
     /// Returns the types of the fields for a given constructor. The result must have a length of
     /// `ctor.arity()`.
-    pub(crate) fn ctor_sub_tys<'a>(
-        &'a self,
-        ctor: &'a Constructor<'p, 'tcx>,
+    pub(crate) fn ctor_sub_tys(
+        &self,
+        ctor: &Constructor<'p, 'tcx>,
         ty: RevealedTy<'tcx>,
     ) -> impl Iterator<Item = (RevealedTy<'tcx>, PrivateUninhabitedField)> + ExactSizeIterator {
         fn reveal_and_alloc<'a, 'tcx>(
@@ -929,10 +929,10 @@ impl<'p, 'tcx: 'p> PatCx for RustcPatCtxt<'p, 'tcx> {
     fn ctor_arity(&self, ctor: &crate::constructor::Constructor<Self>, ty: &Self::Ty) -> usize {
         self.ctor_arity(ctor, *ty)
     }
-    fn ctor_sub_tys<'a>(
-        &'a self,
-        ctor: &'a crate::constructor::Constructor<Self>,
-        ty: &'a Self::Ty,
+    fn ctor_sub_tys(
+        &self,
+        ctor: &crate::constructor::Constructor<Self>,
+        ty: &Self::Ty,
     ) -> impl Iterator<Item = (Self::Ty, PrivateUninhabitedField)> + ExactSizeIterator {
         self.ctor_sub_tys(ctor, *ty)
     }

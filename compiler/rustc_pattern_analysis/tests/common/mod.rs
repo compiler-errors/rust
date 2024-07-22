@@ -160,10 +160,10 @@ impl PatCx for Cx {
         ty.sub_tys(ctor).len()
     }
 
-    fn ctor_sub_tys<'a>(
-        &'a self,
-        ctor: &'a Constructor<Self>,
-        ty: &'a Self::Ty,
+    fn ctor_sub_tys(
+        &self,
+        ctor: &Constructor<Self>,
+        ty: &Self::Ty,
     ) -> impl Iterator<Item = (Self::Ty, PrivateUninhabitedField)> + ExactSizeIterator {
         ty.sub_tys(ctor).into_iter().map(|ty| (ty, PrivateUninhabitedField(false)))
     }

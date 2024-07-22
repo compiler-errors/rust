@@ -334,8 +334,8 @@ impl<'tcx> UniversalRegions<'tcx> {
     }
 
     /// Gets an iterator over all the early-bound regions that have names.
-    pub fn named_universal_regions<'s>(
-        &'s self,
+    pub fn named_universal_regions(
+        &self,
     ) -> impl Iterator<Item = (ty::Region<'tcx>, ty::RegionVid)> {
         self.indices.indices.iter().map(|(&r, &v)| (r, v))
     }
