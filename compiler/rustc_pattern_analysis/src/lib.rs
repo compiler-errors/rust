@@ -28,9 +28,6 @@ pub use rustc_index::{Idx, IndexVec}; // re-exported to avoid rustc_index versio
 use crate::constructor::{Constructor, ConstructorSet, IntRange};
 use crate::pat::DeconstructedPat;
 
-pub trait Captures<'a> {}
-impl<'a, T: ?Sized> Captures<'a> for T {}
-
 /// `bool` newtype that indicates whether this is a privately uninhabited field that we should skip
 /// during analysis.
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
@@ -64,7 +61,7 @@ pub trait PatCx: Sized + fmt::Debug {
         &'a self,
         ctor: &'a Constructor<Self>,
         ty: &'a Self::Ty,
-    ) -> impl Iterator<Item = (Self::Ty, PrivateUninhabitedField)> + ExactSizeIterator + Captures<'a>;
+    ) -> impl Iterator<Item = (Self::Ty, PrivateUninhabitedField)> + ExactSizeIterator;
 
     /// The set of all the constructors for `ty`.
     ///

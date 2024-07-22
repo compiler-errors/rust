@@ -22,7 +22,7 @@ use crate::{maybe_recover_from_interpolated_ty_qpath, maybe_whole};
 
 /// Signals whether parsing a type should allow `+`.
 ///
-/// For example, let T be the type `impl Default + 'static`
+/// For example, let T be the type `impl Default `
 /// With `AllowPlus::Yes`, T will be parsed successfully
 /// With `AllowPlus::No`, parsing T will return a parse error
 #[derive(Copy, Clone, PartialEq)]

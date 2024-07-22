@@ -2436,7 +2436,7 @@ fn determine_place_ancestry_relation<'tcx>(
 ///    c: C<'a>,
 /// }
 ///
-/// fn foo<'a, 'b>(m: &'a MyStruct<'b>) -> impl FnMut() + 'static {
+/// fn foo<'a, 'b>(m: &'a MyStruct<'b>) -> impl FnMut()  {
 ///     || drop(&*m.a.field_of_a)
 ///     // Here we really do want to capture `*m.a` because that outlives `'static`
 ///

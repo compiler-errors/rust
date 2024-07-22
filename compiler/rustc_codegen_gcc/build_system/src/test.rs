@@ -1086,7 +1086,7 @@ fn test_failing_ui_pattern_tests(env: &Env, args: &TestArg) -> Result<(), String
 fn retain_files_callback<'a>(
     file_path: &'a str,
     test_type: &'a str,
-) -> impl Fn(&Path) -> Result<bool, String> + 'a {
+) -> impl Fn(&Path) -> Result<bool, String> {
     move |rust_path| {
         let files = std::fs::read_to_string(file_path).unwrap_or_default();
         let first_file_name = files.lines().next().unwrap_or("");
@@ -1149,7 +1149,7 @@ fn retain_files_callback<'a>(
 fn remove_files_callback<'a>(
     file_path: &'a str,
     test_type: &'a str,
-) -> impl Fn(&Path) -> Result<bool, String> + 'a {
+) -> impl Fn(&Path) -> Result<bool, String> {
     move |rust_path| {
         let files = std::fs::read_to_string(file_path).unwrap_or_default();
         let first_file_name = files.lines().next().unwrap_or("");
