@@ -25,6 +25,7 @@
 #![feature(iter_intersperse)]
 #![feature(let_chains)]
 #![feature(never_type)]
+#![feature(precise_capturing)]
 #![feature(rustdoc_internals)]
 #![feature(try_blocks)]
 #![feature(type_alias_impl_trait)]

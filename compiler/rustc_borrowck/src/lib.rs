@@ -8,6 +8,7 @@
 #![feature(control_flow_enum)]
 #![feature(let_chains)]
 #![feature(never_type)]
+#![feature(precise_capturing)]
 #![feature(rustc_attrs)]
 #![feature(rustdoc_internals)]
 #![feature(stmt_expr_attributes)]
