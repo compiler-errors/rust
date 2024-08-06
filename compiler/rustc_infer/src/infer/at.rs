@@ -187,28 +187,6 @@ impl<'a, 'tcx> At<'a, 'tcx> {
         })
     }
 
-    /// Equates `expected` and `found` while structurally relating aliases.
-    /// This should only be used inside of the next generation trait solver
-    /// when relating rigid aliases.
-    pub fn eq_structurally_relating_aliases<T>(
-        self,
-        expected: T,
-        actual: T,
-    ) -> InferResult<'tcx, ()>
-    where
-        T: ToTrace<'tcx>,
-    {
-        assert!(self.infcx.next_trait_solver());
-        let mut fields = CombineFields::new(
-            self.infcx,
-            ToTrace::to_trace(self.cause, expected, actual),
-            self.param_env,
-            DefineOpaqueTypes::Yes,
-        );
-        fields.equate(StructurallyRelateAliases::Yes).relate(expected, actual)?;
-        Ok(InferOk { value: (), obligations: fields.into_obligations() })
-    }
-
     pub fn relate<T>(
         self,
         define_opaque_types: DefineOpaqueTypes,
@@ -231,50 +209,6 @@ impl<'a, 'tcx> At<'a, 'tcx> {
             // "modulo variance" basically.
             ty::Bivariant => panic!("Bivariant given to `relate()`"),
         }
-    }
-
-    /// Used in the new solver since we don't care about tracking an `ObligationCause`.
-    pub fn relate_no_trace<T>(
-        self,
-        expected: T,
-        variance: ty::Variance,
-        actual: T,
-    ) -> Result<Vec<Goal<'tcx, ty::Predicate<'tcx>>>, NoSolution>
-    where
-        T: Relate<TyCtxt<'tcx>>,
-    {
-        let mut fields = CombineFields::new(
-            self.infcx,
-            TypeTrace::dummy(self.cause),
-            self.param_env,
-            DefineOpaqueTypes::Yes,
-        );
-        fields.sub().relate_with_variance(
-            variance,
-            ty::VarianceDiagInfo::default(),
-            expected,
-            actual,
-        )?;
-        Ok(fields.goals)
-    }
-
-    /// Used in the new solver since we don't care about tracking an `ObligationCause`.
-    pub fn eq_structurally_relating_aliases_no_trace<T>(
-        self,
-        expected: T,
-        actual: T,
-    ) -> Result<Vec<Goal<'tcx, ty::Predicate<'tcx>>>, NoSolution>
-    where
-        T: Relate<TyCtxt<'tcx>>,
-    {
-        let mut fields = CombineFields::new(
-            self.infcx,
-            TypeTrace::dummy(self.cause),
-            self.param_env,
-            DefineOpaqueTypes::Yes,
-        );
-        fields.equate(StructurallyRelateAliases::Yes).relate(expected, actual)?;
-        Ok(fields.goals)
     }
 
     /// Computes the least-upper-bound, or mutual supertype, of two
