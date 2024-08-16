@@ -666,13 +666,16 @@ impl<'hir> Map<'hir> {
 
     /// Returns the defining scope for an opaque type definition.
     pub fn get_defining_scope(self, id: HirId) -> HirId {
-        let mut scope = id;
-        loop {
-            scope = self.get_enclosing_scope(scope).unwrap_or(CRATE_HIR_ID);
-            if scope == CRATE_HIR_ID || !matches!(self.tcx.hir_node(scope), Node::Block(_)) {
-                return scope;
+        for (id, owner) in self.parent_owner_iter(id) {
+            match owner {
+                // Skip through type aliases
+                OwnerNode::Item(Item { kind: ItemKind::TyAlias { .. }, .. })
+                | OwnerNode::TraitItem(TraitItem { kind: TraitItemKind::Type { .. }, .. })
+                | OwnerNode::ImplItem(ImplItem { kind: ImplItemKind::Type { .. }, .. }) => continue,
+                _ => return id.into(),
             }
         }
+        CRATE_HIR_ID
     }
 
     pub fn get_foreign_abi(self, hir_id: HirId) -> Abi {
