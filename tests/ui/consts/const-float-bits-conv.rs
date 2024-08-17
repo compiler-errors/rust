@@ -4,7 +4,8 @@
 #![feature(const_float_bits_conv)]
 #![feature(const_float_classify)]
 #![allow(unused_macro_rules)]
-
+#![feature(f16)]
+#![feature(f128)]
 // Don't promote
 const fn nop<T>(x: T) -> T { x }
 
@@ -26,6 +27,36 @@ macro_rules! const_assert {
 fn has_broken_floats() -> bool {
     // i586 targets are broken due to <https://github.com/rust-lang/rust/issues/114479>.
     std::env::var("TARGET").is_ok_and(|v| v.contains("i586"))
+}
+
+fn f16(){
+    const_assert!((1f16).to_bits(), 0x3c00);
+    const_assert!(u16::from_be_bytes(1f16.to_be_bytes()), 0x3c00);
+    const_assert!((12.5f16).to_bits(), 0x4a40);
+    const_assert!(u16::from_le_bytes(12.5f16.to_le_bytes()), 0x4a40);
+    const_assert!((1337f16).to_bits(), 0x6539);
+    const_assert!(u16::from_ne_bytes(1337f16.to_ne_bytes()), 0x6539);
+    const_assert!((-14.25f16).to_bits(), 0xcb20);
+    const_assert!(f16::from_bits(0x3c00), 1.0);
+    const_assert!(f16::from_be_bytes(0x3c00u16.to_be_bytes()), 1.0);
+    const_assert!(f16::from_bits(0x4a40), 12.5);
+    const_assert!(f16::from_le_bytes(0x4a40u16.to_le_bytes()), 12.5);
+    const_assert!(f16::from_bits(0x5be0), 252.0);
+    const_assert!(f16::from_ne_bytes(0x5be0u16.to_ne_bytes()), 252.0);
+    const_assert!(f16::from_bits(0xcb20), -14.25);
+
+    // Check that NaNs roundtrip their bits regardless of signalingness
+    // 0xA is 0b1010; 0x5 is 0b0101 -- so these two together clobbers all the mantissa bits
+    // NOTE: These names assume `f{BITS}::NAN` is a quiet NAN and IEEE754-2008's NaN rules apply!
+    const QUIET_NAN: u16 = f16::NAN.to_bits() ^ 0x02AA;
+    const SIGNALING_NAN: u16 = 0x7eaa;
+
+    const_assert!(f16::from_bits(QUIET_NAN).is_nan());
+    const_assert!(f16::from_bits(SIGNALING_NAN).is_nan());
+    const_assert!(f16::from_bits(QUIET_NAN).to_bits(), QUIET_NAN);
+    if !has_broken_floats() {
+        const_assert!(f16::from_bits(SIGNALING_NAN).to_bits(), SIGNALING_NAN);
+    }
 }
 
 fn f32() {
@@ -88,7 +119,39 @@ fn f64() {
     }
 }
 
+fn f128() {
+    const_assert!((1f128).to_bits(), 0x3fff0000000000000000000000000000);
+    const_assert!(u128::from_be_bytes(1f128.to_be_bytes()), 0x3fff0000000000000000000000000000);
+    const_assert!((12.5f128).to_bits(), 0x40029000000000000000000000000000);
+    const_assert!(u128::from_le_bytes(12.5f128.to_le_bytes()), 0x40029000000000000000000000000000);
+    const_assert!((1337f128).to_bits(), 0x40094e40000000000000000000000000);
+    const_assert!(u128::from_ne_bytes(1337f128.to_ne_bytes()), 0x40094e40000000000000000000000000);
+    const_assert!((-14.25f128).to_bits(), 0xc002c800000000000000000000000000);
+    const_assert!(f128::from_bits(0x3fff0000000000000000000000000000), 1.0);
+    const_assert!(f128::from_be_bytes(0x3fff0000000000000000000000000000u128.to_be_bytes()), 1.0);
+    const_assert!(f128::from_bits(0x40029000000000000000000000000000), 12.5);
+    const_assert!(f128::from_le_bytes(0x40029000000000000000000000000000u128.to_le_bytes()), 12.5);
+    const_assert!(f128::from_bits(0x40094e40000000000000000000000000), 1337.0);
+    assert_eq!(f128::from_ne_bytes(0x40094e40000000000000000000000000u128.to_ne_bytes()), 1337.0);
+    const_assert!(f128::from_bits(0xc002c800000000000000000000000000), -14.25);
+
+    // Check that NaNs roundtrip their bits regardless of signalingness
+    // 0xA is 0b1010; 0x5 is 0b0101 -- so these two together clobbers all the mantissa bits
+    // NOTE: These names assume `f{BITS}::NAN` is a quiet NAN and IEEE754-2008's NaN rules apply!
+    const QUIET_NAN: u128 = f128::NAN.to_bits() | 0x0008_0000_0000_0000_0000_0000_0000_0000;
+    const SIGNALING_NAN: u128 = QUIET_NAN | 0x0000_0001_0000_0000_0000_0000_0000_0000;
+
+    const_assert!(f128::from_bits(QUIET_NAN).is_nan());
+    const_assert!(f128::from_bits(SIGNALING_NAN).is_nan());
+    const_assert!(f128::from_bits(QUIET_NAN).to_bits(), QUIET_NAN);
+    if !has_broken_floats() {
+        const_assert!(f128::from_bits(SIGNALING_NAN).to_bits(), SIGNALING_NAN);
+    }
+}
+
 fn main() {
+    f16();
     f32();
     f64();
+    f128();
 }
