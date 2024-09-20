@@ -318,7 +318,12 @@ impl<'tcx> Const<'tcx> {
             Const::Ty(_, c) => {
                 // We want to consistently have a "clean" value for type system constants (i.e., no
                 // data hidden in the padding), so we always go through a valtree here.
-                let (ty, val) = c.eval(tcx, param_env, span)?;
+                let (ty, val) = c.as_valtree().ok_or_else(|| {
+                    tcx.dcx().span_delayed_bug(
+                        span,
+                        "`mir::Const::eval` called for type system const that is not a valtree",
+                    )
+                })?;
                 Ok(tcx.valtree_to_const_val((ty, val)))
             }
             Const::Unevaluated(uneval, _) => {
