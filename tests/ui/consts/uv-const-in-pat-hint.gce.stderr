@@ -1,0 +1,11 @@
+warning: the feature `generic_const_exprs` is incomplete and may not be safe to use and/or cause compiler crashes
+  --> $DIR/uv-const-in-pat-hint.rs:5:26
+   |
+LL | #![cfg_attr(gce, feature(generic_const_exprs))]
+   |                          ^^^^^^^^^^^^^^^^^^^
+   |
+   = note: see issue #76560 <https://github.com/rust-lang/rust/issues/76560> for more information
+   = note: `#[warn(incomplete_features)]` on by default
+
+warning: 1 warning emitted
+
