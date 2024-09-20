@@ -606,7 +606,7 @@ impl<'mir, 'tcx> ConstPropagator<'mir, 'tcx> {
                     Value::Immediate(src) => src.len(&self.ecx).ok()?,
                     Value::Aggregate { fields, .. } => fields.len() as u64,
                     Value::Uninit => match place.ty(self.local_decls(), self.tcx).ty.kind() {
-                        ty::Array(_, n) => n.try_eval_target_usize(self.tcx, self.param_env)?,
+                        ty::Array(_, n) => n.try_eval_target_usize(self.tcx)?,
                         _ => return None,
                     },
                 };

@@ -1105,7 +1105,7 @@ impl<'tcx> Ty<'tcx> {
         // The way we evaluate the `N` in `[T; N]` here only works since we use
         // `simd_size_and_type` post-monomorphization. It will probably start to ICE
         // if we use it in generic code. See the `simd-array-trait` ui test.
-        (f0_len.eval_target_usize(tcx, ParamEnv::empty()), *f0_elem_ty)
+        (f0_len.eval_target_usize(tcx), *f0_elem_ty)
     }
 
     #[inline]

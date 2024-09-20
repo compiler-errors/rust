@@ -185,24 +185,14 @@ fn push_debuginfo_type_name<'tcx>(
                 push_debuginfo_type_name(tcx, inner_type, true, output, visited);
                 match len.kind() {
                     ty::ConstKind::Param(param) => write!(output, ",{}>", param.name).unwrap(),
-                    _ => write!(
-                        output,
-                        ",{}>",
-                        len.eval_target_usize(tcx, ty::ParamEnv::reveal_all())
-                    )
-                    .unwrap(),
+                    _ => write!(output, ",{}>", len.eval_target_usize(tcx)).unwrap(),
                 }
             } else {
                 output.push('[');
                 push_debuginfo_type_name(tcx, inner_type, true, output, visited);
                 match len.kind() {
                     ty::ConstKind::Param(param) => write!(output, "; {}]", param.name).unwrap(),
-                    _ => write!(
-                        output,
-                        "; {}]",
-                        len.eval_target_usize(tcx, ty::ParamEnv::reveal_all())
-                    )
-                    .unwrap(),
+                    _ => write!(output, "; {}]", len.eval_target_usize(tcx)).unwrap(),
                 }
             }
         }
@@ -697,7 +687,7 @@ fn push_const_param<'tcx>(tcx: TyCtxt<'tcx>, ct: ty::Const<'tcx>, output: &mut S
                     write!(output, "{val}")
                 }
                 ty::Bool => {
-                    let val = ct.try_eval_bool(tcx, ty::ParamEnv::reveal_all()).unwrap();
+                    let val = ct.try_eval_bool().unwrap();
                     write!(output, "{val}")
                 }
                 _ => {

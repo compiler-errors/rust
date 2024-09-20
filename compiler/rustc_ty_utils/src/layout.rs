@@ -315,7 +315,7 @@ fn layout_of_uncached<'tcx>(
             }
 
             let count = count
-                .try_eval_target_usize(tcx, param_env)
+                .try_eval_target_usize(tcx)
                 .ok_or_else(|| error(cx, LayoutError::Unknown(ty)))?;
             let element = cx.layout_of(element)?;
             let size = element

@@ -391,11 +391,7 @@ impl<'tcx, M: Machine<'tcx>> InterpCx<'tcx, M> {
         match (src_pointee_ty.kind(), dest_pointee_ty.kind()) {
             (&ty::Array(_, length), &ty::Slice(_)) => {
                 let ptr = self.read_pointer(src)?;
-                let val = Immediate::new_slice(
-                    ptr,
-                    length.eval_target_usize(*self.tcx, self.param_env),
-                    self,
-                );
+                let val = Immediate::new_slice(ptr, length.eval_target_usize(*self.tcx), self);
                 self.write_immediate(val, dest)
             }
             (ty::Dynamic(data_a, _, ty::Dyn), ty::Dynamic(data_b, _, ty::Dyn)) => {

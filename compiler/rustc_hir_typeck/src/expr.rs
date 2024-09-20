@@ -1492,7 +1492,7 @@ impl<'a, 'tcx> FnCtxt<'a, 'tcx> {
     ) -> Ty<'tcx> {
         let tcx = self.tcx;
         let count = self.lower_array_length(count);
-        if let Some(count) = count.try_eval_target_usize(tcx, self.param_env) {
+        if let Some(count) = count.try_eval_target_usize(tcx) {
             self.suggest_array_len(expr, count);
         }
 
@@ -1567,7 +1567,7 @@ impl<'a, 'tcx> FnCtxt<'a, 'tcx> {
 
         // If the length is 0, we don't create any elements, so we don't copy any. If the length is 1, we
         // don't copy that one element, we move it. Only check for Copy if the length is larger.
-        if count.try_eval_target_usize(tcx, self.param_env).is_none_or(|len| len > 1) {
+        if count.try_eval_target_usize(tcx).is_none_or(|len| len > 1) {
             let lang_item = self.tcx.require_lang_item(LangItem::Copy, None);
             let code = traits::ObligationCauseCode::RepeatElementCopy {
                 is_constable,
@@ -2801,7 +2801,7 @@ impl<'a, 'tcx> FnCtxt<'a, 'tcx> {
     ) {
         err.span_label(field.span, "unknown field");
         if let (Some(len), Ok(user_index)) =
-            (len.try_eval_target_usize(self.tcx, self.param_env), field.as_str().parse::<u64>())
+            (len.try_eval_target_usize(self.tcx), field.as_str().parse::<u64>())
         {
             let help = "instead of using tuple indexing, use array indexing";
             let applicability = if len < user_index {
