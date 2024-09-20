@@ -36,7 +36,7 @@ use rustc_middle::ty::{
     self, GenericArgs, GenericArgsRef, Ty, TyCtxt, TypeFolder, TypeSuperVisitable, Upcast,
 };
 use rustc_span::def_id::DefId;
-use rustc_span::Span;
+use rustc_span::{Span, DUMMY_SP};
 use tracing::{debug, instrument};
 
 pub use self::coherence::{
@@ -368,7 +368,7 @@ pub fn normalize_param_env_or_error<'tcx>(
                     // should actually be okay since without `feature(generic_const_exprs)` the only
                     // const arguments that have a non-empty param env are array repeat counts. These
                     // do not appear in the type system though.
-                    c.normalize(self.0, ty::ParamEnv::empty())
+                    c.normalize_inner(self.0, ty::ParamEnv::empty(), DUMMY_SP)
                 }
             }
 

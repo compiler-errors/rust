@@ -1794,14 +1794,7 @@ impl<'a, 'tcx> TypeErrCtxt<'a, 'tcx> {
                         return false;
                     }
 
-                    let cand = self.resolve_vars_if_possible(impl_trait_ref).fold_with(
-                        &mut BottomUpFolder {
-                            tcx: self.tcx,
-                            ty_op: |ty| ty,
-                            lt_op: |lt| lt,
-                            ct_op: |ct| ct.normalize(self.tcx, ty::ParamEnv::empty()),
-                        },
-                    );
+                    let cand = self.resolve_vars_if_possible(impl_trait_ref);
                     if cand.references_error() {
                         return false;
                     }
@@ -1928,7 +1921,7 @@ impl<'a, 'tcx> TypeErrCtxt<'a, 'tcx> {
                     tcx: self.tcx,
                     ty_op: |ty| ty,
                     lt_op: |lt| lt,
-                    ct_op: |ct| ct.normalize(self.tcx, ty::ParamEnv::empty()),
+                    ct_op: |ct| ct.normalize_inner(self.tcx, ty::ParamEnv::empty(), DUMMY_SP),
                 });
                 cand
             })

@@ -35,10 +35,10 @@ note: ...which requires computing type of opaque `Foo::{opaque#0}`...
 LL | type Foo = impl Sized;
    |            ^^^^^^^^^^
 note: ...which requires type-checking `main`...
-  --> $DIR/opaque_types.rs:11:1
+  --> $DIR/opaque_types.rs:12:5
    |
-LL | fn main() {
-   | ^^^^^^^^^
+LL |     foo::<42>();
+   |     ^^^^^^^^^^^
 note: ...which requires evaluating type-level constant...
   --> $DIR/opaque_types.rs:12:11
    |
@@ -83,10 +83,10 @@ LL | type Foo = impl Sized;
    |            ^^^^^^^^^^
    |
 note: ...which requires type-checking `main`...
-  --> $DIR/opaque_types.rs:11:1
+  --> $DIR/opaque_types.rs:12:5
    |
-LL | fn main() {
-   | ^^^^^^^^^
+LL |     foo::<42>();
+   |     ^^^^^^^^^^^
 note: ...which requires evaluating type-level constant...
   --> $DIR/opaque_types.rs:12:11
    |

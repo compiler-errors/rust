@@ -1244,8 +1244,8 @@ fn generic_simd_intrinsic<'ll, 'tcx>(
     if name == sym::simd_shuffle_generic {
         let idx = fn_args[2]
             .expect_const()
-            .eval(tcx, ty::ParamEnv::reveal_all(), span)
-            .unwrap()
+            .as_valtree()
+            .expect("expected to codegen monomorphic const")
             .1
             .unwrap_branch();
         let n = idx.len() as u64;

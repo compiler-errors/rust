@@ -449,7 +449,6 @@ impl<'tcx> Const<'tcx> {
     /// contains const generic parameters or pointers).
     pub fn try_eval_bits(self, tcx: TyCtxt<'tcx>, param_env: ParamEnv<'tcx>) -> Option<u128> {
         let (ty, scalar) = self.try_eval_scalar_int()?;
-        assert!(ty.has_non_region_param(), "cannot `try_eval_bits` on non-int type");
         let size = tcx.layout_of(param_env.and(ty)).ok()?.size;
         // if `ty` does not depend on generic parameters, use an empty param_env
         Some(scalar.to_bits(size))
@@ -488,6 +487,7 @@ impl<'tcx> Const<'tcx> {
         }
     }
 
+    // TODO: Unify
     /// Attempts to convert to a `ValTree`
     pub fn try_to_valtree(self) -> Option<ty::ValTree<'tcx>> {
         match self.kind() {

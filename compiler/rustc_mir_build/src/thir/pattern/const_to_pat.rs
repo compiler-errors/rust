@@ -1,4 +1,3 @@
-use either::Either;
 use rustc_apfloat::Float;
 use rustc_hir as hir;
 use rustc_index::Idx;
@@ -86,38 +85,59 @@ impl<'tcx> ConstToPat<'tcx> {
         let pat_from_kind = |kind| Box::new(Pat { span: self.span, ty, kind });
 
         // Get a valtree. If that fails, this const is definitely not valid for use as a pattern.
-        let valtree = match c.eval_valtree(self.tcx(), self.param_env, self.span) {
-            Ok((_, valtree)) => valtree,
-            Err(Either::Right(e)) => {
-                let err = match e {
-                    ErrorHandled::Reported(..) => {
-                        // Let's tell the use where this failing const occurs.
-                        self.tcx().dcx().emit_err(CouldNotEvalConstPattern { span: self.span })
+        // TODOwO:
+        let valtree = match c.kind() {
+            ty::ConstKind::Value(_, valtree) => valtree,
+            ty::ConstKind::Unevaluated(uv) => {
+                match self.tcx().const_eval_resolve_for_typeck(self.param_env, uv, self.span) {
+                    Ok(Ok(valtree)) => valtree,
+                    Ok(Err(bad_ty)) => {
+                        // The pattern cannot be turned into a valtree.
+                        let e = match bad_ty.kind() {
+                            ty::Adt(def, ..) => {
+                                assert!(def.is_union());
+                                self.tcx().dcx().emit_err(UnionPattern { span: self.span })
+                            }
+                            ty::FnPtr(..) | ty::RawPtr(..) => {
+                                self.tcx().dcx().emit_err(PointerPattern { span: self.span })
+                            }
+                            _ => self
+                                .tcx()
+                                .dcx()
+                                .emit_err(InvalidPattern { span: self.span, non_sm_ty: bad_ty }),
+                        };
+                        return pat_from_kind(PatKind::Error(e));
                     }
-                    ErrorHandled::TooGeneric(_) => self
-                        .tcx()
+                    Err(e) => {
+                        let err =
+                            match e {
+                                ErrorHandled::Reported(..) => {
+                                    // Let's tell the use where this failing const occurs.
+                                    self.tcx()
+                                        .dcx()
+                                        .emit_err(CouldNotEvalConstPattern { span: self.span })
+                                }
+                                ErrorHandled::TooGeneric(_) => self.tcx().dcx().emit_err(
+                                    ConstPatternDependsOnGenericParameter { span: self.span },
+                                ),
+                            };
+                        return pat_from_kind(PatKind::Error(err));
+                    }
+                }
+            }
+            ty::ConstKind::Param(_) | ty::ConstKind::Expr(_) => {
+                return pat_from_kind(PatKind::Error(
+                    self.tcx()
                         .dcx()
                         .emit_err(ConstPatternDependsOnGenericParameter { span: self.span }),
-                };
+                ));
+            }
+            ty::ConstKind::Error(err) => {
                 return pat_from_kind(PatKind::Error(err));
             }
-            Err(Either::Left(bad_ty)) => {
-                // The pattern cannot be turned into a valtree.
-                let e = match bad_ty.kind() {
-                    ty::Adt(def, ..) => {
-                        assert!(def.is_union());
-                        self.tcx().dcx().emit_err(UnionPattern { span: self.span })
-                    }
-                    ty::FnPtr(..) | ty::RawPtr(..) => {
-                        self.tcx().dcx().emit_err(PointerPattern { span: self.span })
-                    }
-                    _ => self
-                        .tcx()
-                        .dcx()
-                        .emit_err(InvalidPattern { span: self.span, non_sm_ty: bad_ty }),
-                };
-                return pat_from_kind(PatKind::Error(e));
-            }
+            ty::ConstKind::Infer(_)
+            | ty::ConstKind::Bound(_, _)
+            | ty::ConstKind::Placeholder(_) => unreachable!(),
         };
 
         // Convert the valtree to a const.
