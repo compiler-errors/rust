@@ -29,7 +29,7 @@ use rustc_middle::bug;
 use rustc_middle::ty::{Const, ImplSubject};
 
 use super::*;
-use crate::infer::relate::{Relate, StructurallyRelateAliases, TypeRelation};
+use crate::infer::relate::{Relate, TypeRelation};
 use crate::traits::Obligation;
 
 /// Whether we should define opaque types or just treat them opaquely.
@@ -169,7 +169,7 @@ impl<'a, 'tcx> At<'a, 'tcx> {
         T: Relate<TyCtxt<'tcx>>,
     {
         let mut fields = CombineFields::new(self.infcx, trace, self.param_env, define_opaque_types);
-        fields.equate(StructurallyRelateAliases::No).relate(expected, actual)?;
+        fields.equate().relate(expected, actual)?;
         Ok(InferOk {
             value: (),
             obligations: fields

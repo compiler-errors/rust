@@ -22,7 +22,6 @@ use rustc_middle::traits::solve::Goal;
 pub use rustc_middle::ty::relate::combine::*;
 use rustc_middle::ty::{self, TyCtxt, Upcast};
 
-use super::StructurallyRelateAliases;
 use super::glb::Glb;
 use super::lub::Lub;
 use super::type_relating::TypeRelating;
@@ -68,19 +67,16 @@ impl<'infcx, 'tcx> CombineFields<'infcx, 'tcx> {
         self.infcx.tcx
     }
 
-    pub fn equate<'a>(
-        &'a mut self,
-        structurally_relate_aliases: StructurallyRelateAliases,
-    ) -> TypeRelating<'a, 'infcx, 'tcx> {
-        TypeRelating::new(self, structurally_relate_aliases, ty::Invariant)
+    pub fn equate<'a>(&'a mut self) -> TypeRelating<'a, 'infcx, 'tcx> {
+        TypeRelating::new(self, ty::Invariant)
     }
 
     pub fn sub<'a>(&'a mut self) -> TypeRelating<'a, 'infcx, 'tcx> {
-        TypeRelating::new(self, StructurallyRelateAliases::No, ty::Covariant)
+        TypeRelating::new(self, ty::Covariant)
     }
 
     pub fn sup<'a>(&'a mut self) -> TypeRelating<'a, 'infcx, 'tcx> {
-        TypeRelating::new(self, StructurallyRelateAliases::No, ty::Contravariant)
+        TypeRelating::new(self, ty::Contravariant)
     }
 
     pub fn lub<'a>(&'a mut self) -> Lub<'a, 'infcx, 'tcx> {

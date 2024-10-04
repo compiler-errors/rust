@@ -36,7 +36,7 @@ impl<'tcx> TypeRelation<TyCtxt<'tcx>> for Lub<'_, '_, 'tcx> {
         b: T,
     ) -> RelateResult<'tcx, T> {
         match variance {
-            ty::Invariant => self.fields.equate(StructurallyRelateAliases::No).relate(a, b),
+            ty::Invariant => self.fields.equate().relate(a, b),
             ty::Covariant => self.relate(a, b),
             // FIXME(#41044) -- not correct, need test
             ty::Bivariant => Ok(a),
