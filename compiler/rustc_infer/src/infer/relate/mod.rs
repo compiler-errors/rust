@@ -3,7 +3,7 @@
 //! As well as the implementation of `Relate` for interned things (`Ty`/`Const`/etc).
 
 pub use rustc_middle::ty::relate::RelateResult;
-pub use rustc_next_trait_solver::relate::*;
+pub use rustc_type_ir::relate::*;
 
 pub use self::combine::{CombineFields, PredicateEmittingRelation};
 

@@ -7,7 +7,7 @@ use rustc_span::Span;
 use tracing::{debug, instrument};
 
 use super::StructurallyRelateAliases;
-use super::combine::{CombineFields, PredicateEmittingRelation};
+use super::combine::{CombineFields, InferCtxtCombineExt, PredicateEmittingRelation};
 use super::lattice::{self, LatticeDir};
 use crate::infer::{DefineOpaqueTypes, InferCtxt, SubregionOrigin};
 use crate::traits::ObligationCause;

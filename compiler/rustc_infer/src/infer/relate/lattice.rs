@@ -21,7 +21,7 @@ use rustc_middle::ty::relate::RelateResult;
 use rustc_middle::ty::{self, Ty, TyVar};
 use tracing::instrument;
 
-use super::combine::PredicateEmittingRelation;
+use super::combine::{InferCtxtCombineExt, PredicateEmittingRelation};
 use crate::infer::{DefineOpaqueTypes, InferCtxt};
 use crate::traits::ObligationCause;
 
