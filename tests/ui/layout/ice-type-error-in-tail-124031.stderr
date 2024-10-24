@@ -7,6 +7,16 @@ LL |     type RefTarget;
 LL | impl Trait for () {}
    | ^^^^^^^^^^^^^^^^^ missing `RefTarget` in implementation
 
-error: aborting due to 1 previous error
+error[E0512]: cannot transmute between types of different sizes, or dependently-sized types
+  --> $DIR/ice-type-error-in-tail-124031.rs:18:9
+   |
+LL |         std::mem::transmute::<Option<()>, Option<&Other>>(None);
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: source type: `Option<()>` (8 bits)
+   = note: target type: `Option<&Other>` (64 bits)
 
-For more information about this error, try `rustc --explain E0046`.
+error: aborting due to 2 previous errors
+
+Some errors have detailed explanations: E0046, E0512.
+For more information about an error, try `rustc --explain E0046`.
