@@ -2292,10 +2292,11 @@ impl<'test> TestCx<'test> {
 
         let mut normalize_path = |from: &Path, to: &str| {
             let mut from = from.display().to_string();
+            normalized = normalized.replace(&from, to);
             if json {
                 from = from.replace("\\", "\\\\");
+                normalized = normalized.replace(&from, to);
             }
-            normalized = normalized.replace(&from, to);
         };
 
         let parent_dir = self.testpaths.file.parent().unwrap();
