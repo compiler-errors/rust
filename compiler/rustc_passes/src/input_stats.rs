@@ -339,6 +339,7 @@ impl<'v> hir_visit::Visitor<'v> for StatCollector<'v> {
             Tup,
             Path,
             OpaqueDef,
+            TraitAscription,
             TraitObject,
             Typeof,
             Infer,

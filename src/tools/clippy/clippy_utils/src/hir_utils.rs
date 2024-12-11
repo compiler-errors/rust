@@ -1245,7 +1245,8 @@ impl<'a, 'tcx> SpanlessHash<'a, 'tcx> {
             | TyKind::Infer
             | TyKind::Never
             | TyKind::InferDelegation(..)
-            | TyKind::OpaqueDef(_) => {},
+            | TyKind::OpaqueDef(_)
+            | TyKind::TraitAscription(_) => {},
         }
     }
 

@@ -289,6 +289,9 @@ impl<'a> State<'a> {
                 self.print_ty_fn(f.abi, f.safety, f.decl, None, f.generic_params, f.param_names);
             }
             hir::TyKind::OpaqueDef(..) => self.word("/*impl Trait*/"),
+            hir::TyKind::TraitAscription(bounds) => {
+                self.print_bounds("impl", bounds);
+            }
             hir::TyKind::Path(ref qpath) => self.print_qpath(qpath, false),
             hir::TyKind::TraitObject(bounds, lifetime, syntax) => {
                 if syntax == ast::TraitObjectSyntax::Dyn {
