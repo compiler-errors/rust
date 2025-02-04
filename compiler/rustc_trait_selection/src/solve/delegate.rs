@@ -176,10 +176,10 @@ impl<'tcx> rustc_next_trait_solver::delegate::SolverDelegate for SolverDelegate<
     }
 
     fn inject_new_hidden_type_unchecked(&self, key: ty::OpaqueTypeKey<'tcx>, hidden_ty: Ty<'tcx>) {
-        self.0.inject_new_hidden_type_unchecked(key, ty::OpaqueHiddenType {
-            ty: hidden_ty,
-            span: DUMMY_SP,
-        })
+        self.0.inject_new_hidden_type_unchecked(
+            key,
+            ty::OpaqueHiddenType { ty: hidden_ty, span: DUMMY_SP },
+        )
     }
 
     fn reset_opaque_types(&self) {
