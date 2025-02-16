@@ -40,8 +40,8 @@ use tracing::{debug, instrument};
 
 use crate::callee::{self, DeferredCallResolution};
 use crate::errors::{self, CtorIsPrivate};
-use crate::method::{self, MethodCallee};
-use crate::{BreakableCtxt, Diverges, Expectation, FnCtxt, LoweredTy, rvalue_scopes};
+use crate::method::{self, LookupExpectation, MethodCallee};
+use crate::{BreakableCtxt, Diverges, FnCtxt, LoweredTy, rvalue_scopes};
 
 impl<'a, 'tcx> FnCtxt<'a, 'tcx> {
     /// Produces warning on the given node, if the current point in the
@@ -832,7 +832,7 @@ impl<'a, 'tcx> FnCtxt<'a, 'tcx> {
                         hir_id,
                         ty.normalized,
                         error,
-                        Expectation::NoExpectation,
+                        LookupExpectation::None,
                         trait_missing_method && span.edition().at_least_rust_2021(), // emits missing method for trait only after edition 2021
                     );
                 }

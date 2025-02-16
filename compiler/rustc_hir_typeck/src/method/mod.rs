@@ -91,6 +91,34 @@ pub(crate) enum CandidateSource {
     Trait(DefId /* trait id */),
 }
 
+/// A diagnostic-only type for method lookup expectation.
+///
+/// Since method lookup machinery is used for both path-based and `.` method-based
+/// lookup, we need to distinguish when the expression must be evaluate to a type
+/// versus when its return type must be equal to a type.
+#[derive(Copy, Clone, Debug)]
+pub(crate) enum LookupExpectation<'tcx> {
+    None,
+    /// Expectation for a call expression to have a return of a given type.
+    ///
+    /// For example, `f.method()` returning `u8`.
+    ReturnType(Ty<'tcx>),
+    /// Expectation for a path expression to have a given type.
+    ///
+    /// For example, `Ty::CONST` should have type `u8`.
+    #[allow(unused)]
+    Type(Ty<'tcx>),
+}
+
+impl<'tcx> LookupExpectation<'tcx> {
+    fn as_return_type(self) -> Option<Ty<'tcx>> {
+        match self {
+            LookupExpectation::ReturnType(ty) => Some(ty),
+            LookupExpectation::None | LookupExpectation::Type(_) => None,
+        }
+    }
+}
+
 impl<'a, 'tcx> FnCtxt<'a, 'tcx> {
     /// Determines whether the type `self_ty` supports a visible method named `method_name` or not.
     #[instrument(level = "debug", skip(self))]

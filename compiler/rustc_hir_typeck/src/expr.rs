@@ -48,6 +48,7 @@ use crate::errors::{
     ReturnLikeStatementKind, ReturnStmtOutsideOfFnBody, StructExprNonExhaustive,
     TypeMismatchFruTypo, YieldExprOutsideOfCoroutine,
 };
+use crate::method::LookupExpectation;
 use crate::{
     BreakableCtxt, CoroutineTypes, Diverges, FnCtxt, Needs, cast, fatally_break_rust,
     report_unexpected_variant_res, type_error_struct,
@@ -1603,6 +1604,9 @@ impl<'a, 'tcx> FnCtxt<'a, 'tcx> {
                 if segment.ident.name == kw::Empty {
                     span_bug!(rcvr.span, "empty method name")
                 } else {
+                    let expected = expected
+                        .only_has_type(self)
+                        .map_or(LookupExpectation::None, LookupExpectation::ReturnType);
                     Err(self.report_method_error(expr.hir_id, rcvr_t, error, expected, false))
                 }
             }

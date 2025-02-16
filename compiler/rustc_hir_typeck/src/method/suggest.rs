@@ -42,9 +42,9 @@ use rustc_trait_selection::traits::{
 use tracing::{debug, info, instrument};
 
 use super::probe::{AutorefOrPtrAdjustment, IsSuggestion, Mode, ProbeScope};
-use super::{CandidateSource, MethodError, NoMatchData};
+use super::{CandidateSource, LookupExpectation, MethodError, NoMatchData};
+use crate::FnCtxt;
 use crate::errors::{self, CandidateTraitNote, NoAssociatedItem};
-use crate::{Expectation, FnCtxt};
 
 impl<'a, 'tcx> FnCtxt<'a, 'tcx> {
     fn is_slice_ty(&self, ty: Ty<'tcx>, span: Span) -> bool {
@@ -147,7 +147,7 @@ impl<'a, 'tcx> FnCtxt<'a, 'tcx> {
         call_id: HirId,
         rcvr_ty: Ty<'tcx>,
         error: MethodError<'tcx>,
-        expected: Expectation<'tcx>,
+        expected: LookupExpectation<'tcx>,
         trait_missing_method: bool,
     ) -> ErrorGuaranteed {
         // NOTE: Reporting a method error should also suppress any unused trait errors,
@@ -579,7 +579,7 @@ impl<'a, 'tcx> FnCtxt<'a, 'tcx> {
         args: Option<&'tcx [hir::Expr<'tcx>]>,
         sugg_span: Span,
         mut no_match_data: NoMatchData<'tcx>,
-        expected: Expectation<'tcx>,
+        expected: LookupExpectation<'tcx>,
         trait_missing_method: bool,
     ) -> ErrorGuaranteed {
         let mode = no_match_data.mode;
@@ -753,7 +753,7 @@ impl<'a, 'tcx> FnCtxt<'a, 'tcx> {
                 rcvr_ty,
                 cal,
                 span,
-                expected.only_has_type(self),
+                expected.as_return_type(),
             );
         }
         if let Some(span) =
@@ -823,14 +823,14 @@ impl<'a, 'tcx> FnCtxt<'a, 'tcx> {
                     output_ty,
                     call_expr,
                     ProbeScope::AllTraits,
-                    expected.only_has_type(self),
+                    expected.as_return_type(),
                 );
                 probe.is_ok()
             });
             self.note_internal_mutation_in_method(
                 &mut err,
                 rcvr_expr,
-                expected.to_option(self),
+                expected.as_return_type(),
                 rcvr_ty,
             );
         }
@@ -1514,7 +1514,7 @@ impl<'a, 'tcx> FnCtxt<'a, 'tcx> {
                 span,
                 rcvr_ty,
                 item_name,
-                expected.only_has_type(self),
+                expected.as_return_type(),
             );
         }
 
@@ -1567,7 +1567,7 @@ impl<'a, 'tcx> FnCtxt<'a, 'tcx> {
                 no_match_data.out_of_scope_traits.clone(),
                 static_candidates,
                 unsatisfied_bounds,
-                expected.only_has_type(self),
+                expected.as_return_type(),
                 trait_missing_method,
             );
         }
