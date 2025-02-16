@@ -200,7 +200,7 @@ impl<'a, 'tcx> FnCtxt<'a, 'tcx> {
         }
 
         match error {
-            MethodError::NoMatch(mut no_match_data) => self.report_no_match_method_error(
+            MethodError::NoMatch(no_match_data) => self.report_no_match_method_error(
                 span,
                 rcvr_ty,
                 item_name,
@@ -208,7 +208,7 @@ impl<'a, 'tcx> FnCtxt<'a, 'tcx> {
                 source,
                 args,
                 sugg_span,
-                &mut no_match_data,
+                no_match_data,
                 expected,
                 trait_missing_method,
             ),
@@ -578,7 +578,7 @@ impl<'a, 'tcx> FnCtxt<'a, 'tcx> {
         source: SelfSource<'tcx>,
         args: Option<&'tcx [hir::Expr<'tcx>]>,
         sugg_span: Span,
-        no_match_data: &mut NoMatchData<'tcx>,
+        mut no_match_data: NoMatchData<'tcx>,
         expected: Expectation<'tcx>,
         trait_missing_method: bool,
     ) -> ErrorGuaranteed {
@@ -1728,7 +1728,7 @@ impl<'a, 'tcx> FnCtxt<'a, 'tcx> {
             );
         }
 
-        self.note_derefed_ty_has_method(&mut err, source, rcvr_ty, item_name, expected);
+        self.note_derefed_ty_has_method(&mut err, source, rcvr_ty, item_name);
         err.emit()
     }
 
@@ -1739,7 +1739,7 @@ impl<'a, 'tcx> FnCtxt<'a, 'tcx> {
         item_name: Ident,
         item_kind: &str,
         source: SelfSource<'tcx>,
-        no_match_data: &NoMatchData<'tcx>,
+        no_match_data: NoMatchData<'tcx>,
     ) {
         if no_match_data.unsatisfied_predicates.is_empty()
             && let Mode::MethodCall = no_match_data.mode
@@ -3176,7 +3176,6 @@ impl<'a, 'tcx> FnCtxt<'a, 'tcx> {
         self_source: SelfSource<'tcx>,
         rcvr_ty: Ty<'tcx>,
         item_name: Ident,
-        expected: Expectation<'tcx>,
     ) {
         let SelfSource::QPath(ty) = self_source else {
             return;
@@ -3185,7 +3184,7 @@ impl<'a, 'tcx> FnCtxt<'a, 'tcx> {
             if let Ok(pick) = self.probe_for_name(
                 Mode::Path,
                 item_name,
-                expected.only_has_type(self),
+                None,
                 IsSuggestion(true),
                 deref_ty,
                 ty.hir_id,
