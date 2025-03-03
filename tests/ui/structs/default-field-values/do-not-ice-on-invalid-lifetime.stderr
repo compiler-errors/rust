@@ -1,5 +1,5 @@
 error[E0106]: missing lifetime specifier
-  --> $DIR/do-not-ice-on-invalid-lifetime.rs:3:12
+  --> $DIR/do-not-ice-on-invalid-lifetime.rs:4:12
    |
 LL |     x: Vec<A> = Vec::new(),
    |            ^ expected named lifetime parameter
@@ -9,6 +9,17 @@ help: consider using the `'a` lifetime
 LL |     x: Vec<A<'a>> = Vec::new(),
    |             ++++
 
+error: default value for field cannot depend on generic parameters
+  --> $DIR/do-not-ice-on-invalid-lifetime.rs:4:17
+   |
+LL | struct A<'a> {
+   | ------------ in this struct
+LL |
+LL |     x: Vec<A> = Vec::new(),
+   |        ------   ^^^^^^^^^^
+   |        |
+   |        this field references generic parameters
+
 error[E0392]: lifetime parameter `'a` is never used
   --> $DIR/do-not-ice-on-invalid-lifetime.rs:2:10
    |
@@ -17,7 +28,7 @@ LL | struct A<'a> {
    |
    = help: consider removing `'a`, referring to it in a field, or using a marker such as `PhantomData`
 
-error: aborting due to 2 previous errors
+error: aborting due to 3 previous errors
 
 Some errors have detailed explanations: E0106, E0392.
 For more information about an error, try `rustc --explain E0106`.

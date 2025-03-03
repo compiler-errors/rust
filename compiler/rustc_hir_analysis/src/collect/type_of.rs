@@ -62,10 +62,25 @@ fn anon_const_type_of<'tcx>(icx: &ItemCtxt<'tcx>, def_id: LocalDefId) -> Ty<'tcx
             return ty;
         }
 
-        Node::Field(&hir::FieldDef { default: Some(c), def_id: field_def_id, .. })
-            if c.hir_id == hir_id =>
-        {
-            tcx.type_of(field_def_id).instantiate_identity()
+        Node::Field(&hir::FieldDef {
+            default: Some(c), def_id: field_def_id, ty: hir_ty, ..
+        }) if c.hir_id == hir_id => {
+            let ty = tcx.type_of(field_def_id).instantiate_identity();
+            if !ty.has_param() || tcx.features().generic_const_exprs() {
+                ty
+            } else {
+                let mut diag = tcx.dcx().struct_span_err(
+                    c.span,
+                    format!("default value for field cannot depend on generic parameters"),
+                );
+                diag.span_label(hir_ty.span, "this field references generic parameters");
+                let adt_def_id = tcx.parent(field_def_id.to_def_id());
+                let adt = tcx.def_descr(adt_def_id);
+                diag.span_label(tcx.def_span(adt_def_id), format!("in this {adt}"));
+                // FIXME: We could give a feature error for GCE, but it's best not to point users
+                // to that feature since it's broken.
+                Ty::new_error(tcx, diag.emit())
+            }
         }
 
         _ => Ty::new_error_with_message(

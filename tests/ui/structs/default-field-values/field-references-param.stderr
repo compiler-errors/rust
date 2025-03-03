@@ -1,0 +1,12 @@
+error: default value for field cannot depend on generic parameters
+  --> $DIR/field-references-param.rs:12:15
+   |
+LL | struct Z<const X: usize> {
+   | ------------------------ in this struct
+LL |     x: W<X> = W::new(),
+   |        ----   ^^^^^^^^
+   |        |
+   |        this field references generic parameters
+
+error: aborting due to 1 previous error
+
