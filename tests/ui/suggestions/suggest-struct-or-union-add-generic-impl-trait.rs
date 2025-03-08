@@ -26,5 +26,11 @@ enum Enum2 {
     //~^ ERROR expected a type, found a trait
 }
 
+struct HasGenerics<T> {
+    f: Trait,
+    //~^ ERROR expected a type, found a trait
+    t: T,
+}
+
 
 fn main() {}
