@@ -1603,7 +1603,7 @@ impl<'tcx> Liveness<'_, 'tcx> {
     /// Detect the following case
     ///
     /// ```text
-    /// fn change_object(mut a: &Ty) {
+    /// fn change_object(mut b: &Ty) {
     ///     let a = Ty::new();
     ///     b = &a;
     /// }
@@ -1613,7 +1613,7 @@ impl<'tcx> Liveness<'_, 'tcx> {
     /// parameter, instead of mutating the local binding. When encountering this we suggest:
     ///
     /// ```text
-    /// fn change_object(a: &'_ mut Ty) {
+    /// fn change_object(b: &'_ mut Ty) {
     ///     let a = Ty::new();
     ///     *b = a;
     /// }
@@ -1655,7 +1655,7 @@ impl<'tcx> Liveness<'_, 'tcx> {
                 // `&'name Ty` -> `&'name mut Ty` or `&Ty` -> `&mut Ty`
                 Some(mut_ty.ty.span.shrink_to_lo())
             };
-            let pre = if lt.ident.span.lo() == lt.ident.span.hi() { "" } else { " " };
+            let pre = if lt.ident.span.is_empty() { "" } else { " " };
             Some(errors::UnusedAssignSuggestion {
                 ty_span,
                 pre,

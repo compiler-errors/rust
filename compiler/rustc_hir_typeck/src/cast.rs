@@ -244,6 +244,7 @@ impl<'a, 'tcx> CastCheck<'tcx> {
         cast_span: Span,
         span: Span,
     ) -> Result<CastCheck<'tcx>, ErrorGuaranteed> {
+        // TODO:
         let expr_span = expr.span.find_ancestor_inside(span).unwrap_or(expr.span);
         let check = CastCheck { expr, expr_ty, expr_span, cast_ty, cast_span, span };
 
@@ -1111,6 +1112,7 @@ impl<'a, 'tcx> CastCheck<'tcx> {
         let needs_parens = expr_prec < ExprPrecedence::Unambiguous;
 
         let needs_cast = !matches!(t_c, ty::cast::IntTy::U(ty::UintTy::Usize));
+        // TODO:
         let cast_span = self.expr_span.shrink_to_hi().to(self.cast_span);
         let expr_ty = fcx.resolve_vars_if_possible(self.expr_ty);
         let cast_ty = fcx.resolve_vars_if_possible(self.cast_ty);
@@ -1140,6 +1142,7 @@ impl<'a, 'tcx> CastCheck<'tcx> {
     }
 
     fn fuzzy_provenance_int2ptr_lint(&self, fcx: &FnCtxt<'a, 'tcx>) {
+        // TODO:
         let sugg = errors::LossyProvenanceInt2PtrSuggestion {
             lo: self.expr_span.shrink_to_lo(),
             hi: self.expr_span.shrink_to_hi().to(self.cast_span),

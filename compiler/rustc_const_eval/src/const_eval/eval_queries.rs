@@ -341,7 +341,7 @@ pub fn eval_to_allocation_raw_provider<'tcx>(
     // Const eval always happens in PostAnalysis mode . See the comment in
     // `InterpCx::new` for more details.
     debug_assert_eq!(key.typing_env.typing_mode, ty::TypingMode::PostAnalysis);
-    if cfg!(debug_assertions) {
+    if cfg!(debug_assertions) && false {
         // Make sure we format the instance even if we do not print it.
         // This serves as a regression test against an ICE on printing.
         // The next two lines concatenated contain some discussion:

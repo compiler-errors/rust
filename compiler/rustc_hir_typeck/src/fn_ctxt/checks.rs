@@ -1799,6 +1799,7 @@ impl<'a, 'tcx> FnCtxt<'a, 'tcx> {
         }
 
         // Does the expected pattern type originate from an expression and what is the span?
+        // TODO:
         let (origin_expr, ty_span) = match (decl.ty, decl.init) {
             (Some(ty), _) => (None, Some(ty.span)), // Bias towards the explicit user type.
             (_, Some(init)) => {

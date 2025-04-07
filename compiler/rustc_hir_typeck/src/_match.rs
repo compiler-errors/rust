@@ -40,6 +40,7 @@ impl<'a, 'tcx> FnCtxt<'a, 'tcx> {
         // Otherwise, we have to union together the types that the arms produce and so forth.
         let scrut_diverges = self.diverges.replace(Diverges::Maybe);
 
+        // TODO:
         // #55810: Type check patterns first so we get types for all bindings.
         let scrut_span = scrut.span.find_ancestor_inside(expr.span).unwrap_or(scrut.span);
         for arm in arms {
@@ -420,6 +421,7 @@ impl<'a, 'tcx> FnCtxt<'a, 'tcx> {
         else_ty: Ty<'tcx>,
         tail_defines_return_position_impl_trait: Option<LocalDefId>,
     ) -> ObligationCause<'tcx> {
+        // TODO:
         let mut outer_span = if self.tcx.sess.source_map().is_multiline(span) {
             // The `if`/`else` isn't in one line in the output, include some context to make it
             // clear it is an if/else expression:

@@ -47,12 +47,14 @@ impl ops::BitAnd for Diverges {
 impl ops::BitOr for Diverges {
     type Output = Self;
     fn bitor(self, other: Self) -> Self {
+        // TODO:
         cmp::max(self, other)
     }
 }
 
 impl ops::BitAndAssign for Diverges {
     fn bitand_assign(&mut self, other: Self) {
+        // TODO:
         *self = *self & other;
     }
 }

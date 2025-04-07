@@ -334,6 +334,7 @@ impl<'a, 'tcx> PatCtxt<'a, 'tcx> {
             }
 
             hir::PatKind::Binding(explicit_ba, id, ident, sub) => {
+                // TODO:
                 if let Some(ident_span) = ident.span.find_ancestor_inside(span) {
                     span = span.with_hi(ident_span.hi());
                 }

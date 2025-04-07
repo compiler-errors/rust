@@ -100,6 +100,7 @@ impl<'tcx> ThirBuildCx<'tcx> {
                             }
                         }
 
+                        // TODO:
                         let span = match local.init {
                             Some(init) => local.span.with_hi(init.span.hi()),
                             None => local.span,

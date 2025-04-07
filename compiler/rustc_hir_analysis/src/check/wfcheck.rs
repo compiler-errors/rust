@@ -2297,6 +2297,7 @@ impl<'tcx> WfCheckingCtxt<'_, 'tcx> {
                 // only use the span of the predicate clause (#90869)
                 let hir_node = tcx.hir_node_by_def_id(self.body_def_id);
                 if let Some(hir::Generics { predicates, .. }) = hir_node.generics() {
+                    // TODO:
                     span = predicates
                         .iter()
                         // There seems to be no better way to find out which predicate we are in

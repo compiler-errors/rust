@@ -862,38 +862,30 @@ trait UnusedDelimLint {
         use rustc_ast::ExprKind::*;
         let (value, ctx, followed_by_block, left_pos, right_pos, is_kw) = match e.kind {
             // Do not lint `unused_braces` in `if let` expressions.
-            If(ref cond, ref block, _)
+            If(ref cond, _, _)
                 if !matches!(cond.kind, Let(..)) || Self::LINT_EXPR_IN_PATTERN_MATCHING_CTX =>
             {
-                let left = e.span.lo() + rustc_span::BytePos(2);
-                let right = block.span.lo();
-                (cond, UnusedDelimsCtx::IfCond, true, Some(left), Some(right), true)
+                (cond, UnusedDelimsCtx::IfCond, true, None, None, true)
             }
 
             // Do not lint `unused_braces` in `while let` expressions.
-            While(ref cond, ref block, ..)
+            While(ref cond, ..)
                 if !matches!(cond.kind, Let(..)) || Self::LINT_EXPR_IN_PATTERN_MATCHING_CTX =>
             {
-                let left = e.span.lo() + rustc_span::BytePos(5);
-                let right = block.span.lo();
-                (cond, UnusedDelimsCtx::WhileCond, true, Some(left), Some(right), true)
+                (cond, UnusedDelimsCtx::WhileCond, true, None, None, true)
             }
 
-            ForLoop { ref iter, ref body, .. } => {
-                (iter, UnusedDelimsCtx::ForIterExpr, true, None, Some(body.span.lo()), true)
+            ForLoop { ref iter, .. } => {
+                (iter, UnusedDelimsCtx::ForIterExpr, true, None, None, true)
             }
 
             Match(ref head, _, ast::MatchKind::Prefix)
                 if Self::LINT_EXPR_IN_PATTERN_MATCHING_CTX =>
             {
-                let left = e.span.lo() + rustc_span::BytePos(5);
-                (head, UnusedDelimsCtx::MatchScrutineeExpr, true, Some(left), None, true)
+                (head, UnusedDelimsCtx::MatchScrutineeExpr, true, None, None, true)
             }
 
-            Ret(Some(ref value)) => {
-                let left = e.span.lo() + rustc_span::BytePos(3);
-                (value, UnusedDelimsCtx::ReturnValue, false, Some(left), None, true)
-            }
+            Ret(Some(ref value)) => (value, UnusedDelimsCtx::ReturnValue, false, None, None, true),
 
             Break(_, Some(ref value)) => {
                 (value, UnusedDelimsCtx::BreakValue, false, None, None, true)

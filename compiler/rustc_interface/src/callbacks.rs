@@ -28,6 +28,36 @@ fn track_span_parent(def_id: rustc_span::def_id::LocalDefId) {
                 TaskDepsRef::EvalAlways | TaskDepsRef::Ignore | TaskDepsRef::Forbid => false,
             };
             if tracks_deps {
+                let bt = format!("{:#}", std::backtrace::Backtrace::force_capture());
+                if ![
+                    "check_decl",
+                    "lower_pattern_unadjusted",
+                    "schedule_drop",
+                    "mirror_stmts",
+                    "if_cause",
+                    "middle/region.rs:1",
+                    "rustc_hir_typeck/src/diverges.rs",
+                    "- def_span<",
+                    "rustc_passes/src/loops.rs:2",
+                    "replace_opaque_types_with_inference_vars",
+                    "lower_trait_object_ty",
+                    "lower_match_arms",
+                    "match_expr",
+                    "rustc_hir_typeck/src/cast.rs:24",
+                    "check_pat_ref",
+                    "check_expr_match",
+                    "resolve_expr",
+                    "check_false_global_bounds",
+                    "lower_let_expr",
+                    "lossy_provenance_ptr2int_lint",
+                    "fuzzy_provenance_int2ptr_lint",
+                    "annotate_mut_binding_to_immutable_binding",
+                ]
+                .iter()
+                .any(|substring| bt.contains(substring))
+                {
+                    println!("{bt}\n\n");
+                }
                 let _span = icx.tcx.source_span(def_id);
                 // Sanity check: relative span's parent must be an absolute span.
                 debug_assert_eq!(_span.data_untracked().parent, None);

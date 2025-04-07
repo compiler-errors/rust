@@ -51,6 +51,7 @@ impl<'tcx> InferCtxt<'tcx> {
                     if self.can_define_opaque_ty(def_id) && !ty.has_escaping_bound_vars() =>
                 {
                     let def_span = self.tcx.def_span(def_id);
+                    // TODO:
                     let span = if span.contains(def_span) { def_span } else { span };
                     let ty_var = self.next_ty_var(span);
                     obligations.extend(

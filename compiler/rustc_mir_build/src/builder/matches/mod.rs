@@ -375,6 +375,7 @@ impl<'a, 'tcx> Builder<'a, 'tcx> {
         let scrutinee_place =
             unpack!(block = self.lower_scrutinee(block, scrutinee_id, scrutinee_span));
 
+        // TODO:
         let match_start_span = span.shrink_to_lo().to(scrutinee_span);
         let patterns = arms
             .iter()
@@ -495,6 +496,7 @@ impl<'a, 'tcx> Builder<'a, 'tcx> {
         // all the arm blocks will rejoin here
         let end_block = self.cfg.start_new_block();
 
+        // TODO:
         let end_brace = self.source_info(
             outer_source_info.span.with_lo(outer_source_info.span.hi() - BytePos::from_usize(1)),
         );
@@ -2384,6 +2386,7 @@ impl<'a, 'tcx> Builder<'a, 'tcx> {
                 let opt_expr_place = expr_place.as_ref().map(|place| (Some(place), expr_span));
                 self.declare_bindings(
                     source_scope,
+                    // TODO:
                     pat.span.to(scope_span),
                     pat,
                     None,

@@ -23,7 +23,7 @@ use rustc_ast::Recovered;
 use rustc_data_structures::fx::{FxHashSet, FxIndexMap};
 use rustc_data_structures::unord::UnordMap;
 use rustc_errors::{
-    Applicability, Diag, DiagCtxtHandle, E0228, ErrorGuaranteed, StashKey, struct_span_code_err,
+    Applicability, Diag, DiagCtxtHandle, E0228, ErrorGuaranteed, struct_span_code_err,
 };
 use rustc_hir::def::DefKind;
 use rustc_hir::def_id::{DefId, LocalDefId};
@@ -802,9 +802,8 @@ fn lower_trait_item(tcx: TyCtxt<'_>, trait_item_id: hir::TraitItemId) {
 
         hir::TraitItemKind::Const(ty, body_id) => {
             tcx.ensure_ok().type_of(def_id);
-            if !tcx.dcx().has_stashed_diagnostic(ty.span, StashKey::ItemNoType)
-                && !(ty.is_suggestable_infer_ty() && body_id.is_some())
-            {
+            // TODO:
+            if !(ty.is_suggestable_infer_ty() && body_id.is_some()) {
                 // Account for `const C: _;`.
                 let mut visitor = HirPlaceholderCollector::default();
                 visitor.visit_trait_item(trait_item);

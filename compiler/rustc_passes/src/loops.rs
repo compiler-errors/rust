@@ -256,6 +256,7 @@ impl<'hir> Visitor<'hir> for CheckLoopVisitor<'hir> {
                     }
                 }
 
+                // TODO:
                 let sp_lo = e.span.with_lo(e.span.lo() + BytePos("break".len() as u32));
                 let label_sp = match break_label.label {
                     Some(label) => sp_lo.with_hi(label.ident.span.hi()),

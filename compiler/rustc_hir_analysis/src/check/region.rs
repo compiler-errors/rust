@@ -446,6 +446,7 @@ fn resolve_expr<'tcx>(
         // Mark this expr's scope and all parent scopes as containing `yield`.
         let mut scope = Scope { local_id: expr.hir_id.local_id, data: ScopeData::Node };
         loop {
+            // TODO:
             let span = match expr.kind {
                 hir::ExprKind::Yield(expr, hir::YieldSource::Await { .. }) => {
                     expr.span.shrink_to_hi().to(expr.span)
