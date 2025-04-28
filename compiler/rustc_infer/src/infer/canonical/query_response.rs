@@ -455,32 +455,31 @@ impl<'tcx> InferCtxt<'tcx> {
         // Create result arguments: if we found a value for a
         // given variable in the loop above, use that. Otherwise, use
         // a fresh inference variable.
-        let result_args = CanonicalVarValues {
-            var_values: self.tcx.mk_args_from_iter(
-                query_response.variables.iter().enumerate().map(|(index, info)| {
-                    if info.universe() != ty::UniverseIndex::ROOT {
-                        // A variable from inside a binder of the query. While ideally these shouldn't
-                        // exist at all, we have to deal with them for now.
-                        self.instantiate_canonical_var(cause.span, info, |u| {
-                            universe_map[u.as_usize()]
-                        })
-                    } else if info.is_existential() {
-                        match opt_values[BoundVar::new(index)] {
-                            Some(k) => k,
-                            None => self.instantiate_canonical_var(cause.span, info, |u| {
-                                universe_map[u.as_usize()]
-                            }),
-                        }
-                    } else {
-                        // For placeholders which were already part of the input, we simply map this
-                        // universal bound variable back the placeholder of the input.
-                        opt_values[BoundVar::new(index)].expect(
-                            "expected placeholder to be unified with itself during response",
-                        )
-                    }
-                }),
-            ),
-        };
+        let mut var_values = Vec::new();
+        for (index, info) in query_response.variables.iter().enumerate() {
+            let value = if info.universe() != ty::UniverseIndex::ROOT {
+                // A variable from inside a binder of the query. While ideally these shouldn't
+                // exist at all, we have to deal with them for now.
+                self.instantiate_canonical_var(cause.span, info, &var_values, |u| {
+                    universe_map[u.as_usize()]
+                })
+            } else if info.is_existential() {
+                match opt_values[BoundVar::new(index)] {
+                    Some(k) => k,
+                    None => self.instantiate_canonical_var(cause.span, info, &var_values, |u| {
+                        universe_map[u.as_usize()]
+                    }),
+                }
+            } else {
+                // For placeholders which were already part of the input, we simply map this
+                // universal bound variable back the placeholder of the input.
+                opt_values[BoundVar::new(index)]
+                    .expect("expected placeholder to be unified with itself during response")
+            };
+            var_values.push(value)
+        }
+
+        let result_args = CanonicalVarValues { var_values: self.tcx.mk_args(&var_values) };
 
         let mut obligations = PredicateObligations::new();
 
