@@ -1098,6 +1098,14 @@ where
     ) -> Result<Certainty, NoSolution> {
         self.delegate.is_transmutable(dst, src, assume)
     }
+
+    pub(crate) fn find_sup_as_registered_opaque(&self, self_ty: I::Ty) -> Option<ty::AliasTy<I>> {
+        self.delegate
+            .clone_opaque_types_for_query_response()
+            .into_iter()
+            .find(|(_, hidden_ty)| *hidden_ty == self_ty)
+            .map(|(key, _)| ty::AliasTy::new_from_args(self.cx(), key.def_id.into(), key.args))
+    }
 }
 
 /// Eagerly replace aliases with inference variables, emitting `AliasRelate`
