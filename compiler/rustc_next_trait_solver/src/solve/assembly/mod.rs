@@ -833,6 +833,8 @@ where
         goal: Goal<I, G>,
         self_ty: I::Ty,
     ) -> Vec<Candidate<I>> {
+        //println!("for goal {goal:#?} and {self_ty:?}, we found an alias: {:#?}", self.find_sup_as_registered_opaque(self_ty));
+
         let Some(alias_ty) = self.find_sup_as_registered_opaque(self_ty) else {
             return self.forced_ambiguity(MaybeCause::Ambiguity).into_iter().collect();
         };

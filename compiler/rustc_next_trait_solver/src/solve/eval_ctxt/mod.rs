@@ -1107,7 +1107,18 @@ where
         self.delegate
             .clone_opaque_types_for_query_response()
             .into_iter()
-            .find(|(_, hidden_ty)| *hidden_ty == self_ty)
+            .find(|(_, hidden_ty)| {
+                if let ty::Infer(ty::TyVar(self_vid)) = self_ty.kind() {
+                    if let ty::Infer(ty::TyVar(hidden_vid)) = hidden_ty.kind() {
+                        if self.delegate.sub_root_ty_var(self_vid)
+                            == self.delegate.sub_root_ty_var(hidden_vid)
+                        {
+                            return true;
+                        }
+                    }
+                }
+                false
+            })
             .map(|(key, _)| ty::AliasTy::new_from_args(self.cx(), key.def_id.into(), key.args))
     }
 }

@@ -110,12 +110,12 @@ impl<'tcx> InferCtxt<'tcx> {
         match cv_info.kind {
             CanonicalVarKind::Ty { universe, sub_root } => {
                 let vid = self.next_ty_var_id_in_universe(span, universe_map(universe));
-                let &ty::Infer(ty::TyVar(sub_root)) =
-                    previous_var_values[sub_root.as_usize()].expect_ty().kind()
-                else {
-                    unreachable!("expected `sub_root` to be an inference variabe");
-                };
-                self.inner.borrow_mut().type_variables().sub(vid, sub_root);
+                if let Some(prev) = previous_var_values.get(sub_root.as_usize()) {
+                    let &ty::Infer(ty::TyVar(sub_root)) = prev.expect_ty().kind() else {
+                        unreachable!("expected `sub_root` to be an inference variable");
+                    };
+                    self.inner.borrow_mut().type_variables().sub(vid, sub_root);
+                }
                 Ty::new_var(self.tcx, vid).into()
             }
             CanonicalVarKind::Int => self.next_int_var().into(),
