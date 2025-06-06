@@ -30,7 +30,7 @@ use rustc_macros::extension;
 use rustc_middle::ty::print::with_no_trimmed_paths;
 use rustc_middle::ty::{
     self, GenericArgs, GenericArgsRef, InlineConstArgs, InlineConstArgsParts, RegionVid, Ty,
-    TyCtxt, TypeFoldable, TypeVisitableExt, fold_regions,
+    TyCtxt, TypeFoldable, TypeVisitableExt, fold_regions, fold_regions_uncached,
 };
 use rustc_middle::{bug, span_bug};
 use rustc_span::{ErrorGuaranteed, kw, sym};
@@ -860,7 +860,7 @@ impl<'tcx> BorrowckInferCtxt<'tcx> {
     where
         T: TypeFoldable<TyCtxt<'tcx>>,
     {
-        fold_regions(self.infcx.tcx, value, |region, _depth| {
+        fold_regions_uncached(self.infcx.tcx, value, |region, _depth| {
             let name = region.get_name_or_anon();
             debug!(?region, ?name);
 

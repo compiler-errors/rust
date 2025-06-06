@@ -1,5 +1,5 @@
 use rustc_hir::def_id::DefId;
-use rustc_middle::ty::{self, TyCtxt, fold_regions};
+use rustc_middle::ty::{self, TyCtxt, fold_regions_uncached};
 
 /// Return the set of types that should be taken into account when checking
 /// trait bounds on a coroutine's internal state. This properly replaces
@@ -16,7 +16,7 @@ pub(crate) fn coroutine_hidden_types<'tcx>(
             .map_or_else(|| [].iter(), |l| l.field_tys.iter())
             .filter(|decl| !decl.ignore_for_traits)
             .map(|decl| {
-                let ty = fold_regions(tcx, decl.ty, |re, debruijn| {
+                let ty = fold_regions_uncached(tcx, decl.ty, |re, debruijn| {
                     assert_eq!(re, tcx.lifetimes.re_erased);
                     let var = ty::BoundVar::from_usize(vars.len());
                     vars.push(ty::BoundVariableKind::Region(ty::BoundRegionKind::Anon));

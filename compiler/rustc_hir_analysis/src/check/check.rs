@@ -21,7 +21,7 @@ use rustc_middle::ty::layout::{LayoutError, MAX_SIMD_LANES};
 use rustc_middle::ty::util::Discr;
 use rustc_middle::ty::{
     AdtDef, BottomUpFolder, GenericArgKind, RegionKind, TypeFoldable, TypeSuperVisitable,
-    TypeVisitable, TypeVisitableExt, fold_regions,
+    TypeVisitable, TypeVisitableExt, fold_regions_uncached,
 };
 use rustc_session::lint::builtin::UNINHABITED_STATIC;
 use rustc_trait_selection::error_reporting::InferCtxtErrorExt;
@@ -283,7 +283,7 @@ fn check_opaque_meets_bounds<'tcx>(
     // FIXME: Consider wrapping the hidden type in an existential `Binder` and instantiating it
     // here rather than using ReErased.
     let hidden_ty = tcx.type_of(def_id.to_def_id()).instantiate(tcx, args);
-    let hidden_ty = fold_regions(tcx, hidden_ty, |re, _dbi| match re.kind() {
+    let hidden_ty = fold_regions_uncached(tcx, hidden_ty, |re, _dbi| match re.kind() {
         ty::ReErased => infcx.next_region_var(RegionVariableOrigin::MiscVariable(span)),
         _ => re,
     });

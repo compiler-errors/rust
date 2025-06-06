@@ -53,6 +53,7 @@ use rustc_index::{Idx, IndexVec};
 use thin_vec::ThinVec;
 use tracing::{debug, instrument};
 
+use crate::data_structures::DelayedMap;
 use crate::inherent::*;
 use crate::visit::{TypeVisitable, TypeVisitableExt as _};
 use crate::{self as ty, Interner, TypeFlags};
@@ -457,7 +458,7 @@ where
 ///////////////////////////////////////////////////////////////////////////
 // Region folder
 
-pub fn fold_regions<I: Interner, T>(
+pub fn fold_regions_uncached<I: Interner, T>(
     cx: I,
     value: T,
     f: impl FnMut(I::Region, ty::DebruijnIndex) -> I::Region,
@@ -465,7 +466,7 @@ pub fn fold_regions<I: Interner, T>(
 where
     T: TypeFoldable<I>,
 {
-    value.fold_with(&mut RegionFolder::new(cx, f))
+    value.fold_with(&mut UncachedRegionFolder::new(cx, f))
 }
 
 /// Folds over the substructure of a type, visiting its component
@@ -475,7 +476,7 @@ where
 /// new bound regions which are not visited by this visitors as
 /// they are not free; only regions that occur free will be
 /// visited by `fld_r`.
-pub struct RegionFolder<I, F> {
+pub struct UncachedRegionFolder<I, F> {
     cx: I,
 
     /// Stores the index of a binder *just outside* the stuff we have
@@ -489,14 +490,14 @@ pub struct RegionFolder<I, F> {
     fold_region_fn: F,
 }
 
-impl<I, F> RegionFolder<I, F> {
+impl<I, F> UncachedRegionFolder<I, F> {
     #[inline]
-    pub fn new(cx: I, fold_region_fn: F) -> RegionFolder<I, F> {
-        RegionFolder { cx, current_index: ty::INNERMOST, fold_region_fn }
+    pub fn new(cx: I, fold_region_fn: F) -> UncachedRegionFolder<I, F> {
+        UncachedRegionFolder { cx, current_index: ty::INNERMOST, fold_region_fn }
     }
 }
 
-impl<I, F> TypeFolder<I> for RegionFolder<I, F>
+impl<I, F> TypeFolder<I> for UncachedRegionFolder<I, F>
 where
     I: Interner,
     F: FnMut(I::Region, ty::DebruijnIndex) -> I::Region,
@@ -533,6 +534,114 @@ where
             t.super_fold_with(self)
         } else {
             t
+        }
+    }
+
+    fn fold_const(&mut self, ct: I::Const) -> I::Const {
+        if ct.has_type_flags(
+            TypeFlags::HAS_FREE_REGIONS | TypeFlags::HAS_RE_BOUND | TypeFlags::HAS_RE_ERASED,
+        ) {
+            ct.super_fold_with(self)
+        } else {
+            ct
+        }
+    }
+
+    fn fold_predicate(&mut self, p: I::Predicate) -> I::Predicate {
+        if p.has_type_flags(
+            TypeFlags::HAS_FREE_REGIONS | TypeFlags::HAS_RE_BOUND | TypeFlags::HAS_RE_ERASED,
+        ) {
+            p.super_fold_with(self)
+        } else {
+            p
+        }
+    }
+}
+
+pub fn fold_regions<I: Interner, T>(
+    cx: I,
+    value: T,
+    f: impl FnMut(I::Region, ty::DebruijnIndex) -> I::Region,
+) -> T
+where
+    T: TypeFoldable<I>,
+{
+    value.fold_with(&mut RegionFolder::new(cx, f))
+}
+
+/// Folds over the substructure of a type, visiting its component
+/// types and all regions that occur *free* within it.
+///
+/// That is, function pointer types and trait object can introduce
+/// new bound regions which are not visited by this visitors as
+/// they are not free; only regions that occur free will be
+/// visited by `fld_r`.
+pub struct RegionFolder<I: Interner, F> {
+    cx: I,
+
+    /// Stores the index of a binder *just outside* the stuff we have
+    /// visited. So this begins as INNERMOST; when we pass through a
+    /// binder, it is incremented (via `shift_in`).
+    current_index: ty::DebruijnIndex,
+
+    /// Callback invokes for each free region. The `DebruijnIndex`
+    /// points to the binder *just outside* the ones we have passed
+    /// through.
+    fold_region_fn: F,
+
+    /// This cache only tracks the `DebruijnIndex` and assumes that it does not matter
+    /// for the delegate how often its methods get used.
+    cache: DelayedMap<(ty::DebruijnIndex, I::Ty), I::Ty>,
+}
+
+impl<I: Interner, F> RegionFolder<I, F> {
+    #[inline]
+    pub fn new(cx: I, fold_region_fn: F) -> RegionFolder<I, F> {
+        RegionFolder { cx, current_index: ty::INNERMOST, fold_region_fn, cache: Default::default() }
+    }
+}
+
+impl<I, F> TypeFolder<I> for RegionFolder<I, F>
+where
+    I: Interner,
+    F: FnMut(I::Region, ty::DebruijnIndex) -> I::Region,
+{
+    fn cx(&self) -> I {
+        self.cx
+    }
+
+    fn fold_binder<T: TypeFoldable<I>>(&mut self, t: ty::Binder<I, T>) -> ty::Binder<I, T> {
+        self.current_index.shift_in(1);
+        let t = t.super_fold_with(self);
+        self.current_index.shift_out(1);
+        t
+    }
+
+    #[instrument(skip(self), level = "debug", ret)]
+    fn fold_region(&mut self, r: I::Region) -> I::Region {
+        match r.kind() {
+            ty::ReBound(debruijn, _) if debruijn < self.current_index => {
+                debug!(?self.current_index, "skipped bound region");
+                r
+            }
+            _ => {
+                debug!(?self.current_index, "folding free region");
+                (self.fold_region_fn)(r, self.current_index)
+            }
+        }
+    }
+
+    fn fold_ty(&mut self, t: I::Ty) -> I::Ty {
+        if !t.has_type_flags(
+            TypeFlags::HAS_FREE_REGIONS | TypeFlags::HAS_RE_BOUND | TypeFlags::HAS_RE_ERASED,
+        ) {
+            t
+        } else if let Some(&t) = self.cache.get(&(self.current_index, t)) {
+            t
+        } else {
+            let res = t.super_fold_with(self);
+            assert!(self.cache.insert((self.current_index, t), res));
+            res
         }
     }
 

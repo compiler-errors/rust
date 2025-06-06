@@ -4,7 +4,7 @@
 use rustc_index::bit_set::GrowableBitSet;
 use rustc_type_ir::inherent::*;
 use rustc_type_ir::solve::GoalSource;
-use rustc_type_ir::{self as ty, Interner, TypingMode, fold_regions};
+use rustc_type_ir::{self as ty, Interner, TypingMode, fold_regions_uncached};
 
 use crate::delegate::SolverDelegate;
 use crate::solve::{Certainty, EvalCtxt, Goal, NoSolution, QueryResult, inspect};
@@ -123,10 +123,11 @@ where
                     .unwrap_or_else(|| {
                         let actual =
                             cx.type_of_opaque_hir_typeck(def_id).instantiate(cx, opaque_ty.args);
-                        let actual = fold_regions(cx, actual, |re, _dbi| match re.kind() {
-                            ty::ReErased => self.next_region_var(),
-                            _ => re,
-                        });
+                        let actual =
+                            fold_regions_uncached(cx, actual, |re, _dbi| match re.kind() {
+                                ty::ReErased => self.next_region_var(),
+                                _ => re,
+                            });
                         actual
                     });
                 self.eq(goal.param_env, expected, actual)?;
@@ -152,7 +153,7 @@ where
                 // FIXME: Actually use a proper binder here instead of relying on `ReErased`.
                 //
                 // This is also probably unsound or sth :shrug:
-                let actual = fold_regions(cx, actual, |re, _dbi| match re.kind() {
+                let actual = fold_regions_uncached(cx, actual, |re, _dbi| match re.kind() {
                     ty::ReErased => self.next_region_var(),
                     _ => re,
                 });
