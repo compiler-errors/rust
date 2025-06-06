@@ -54,7 +54,7 @@ impl<'tcx> InferCtxt<'tcx> {
         };
 
         debug!(?next_universe);
-        self.tcx.replace_bound_vars_uncached(binder, delegate)
+        self.tcx.replace_bound_vars(binder, delegate)
     }
 
     /// Replaces all bound variables (lifetimes, types, and constants) bound by

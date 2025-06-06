@@ -485,7 +485,7 @@ impl<'tcx> HirTyLowerer<'tcx> for ItemCtxt<'tcx> {
                                 second: format!(
                                     "{}::",
                                     // Replace the existing lifetimes with a new named lifetime.
-                                    self.tcx.instantiate_bound_regions_uncached(
+                                    self.tcx.instantiate_bound_regions(
                                         poly_trait_ref,
                                         |_| {
                                             ty::Region::new_early_param(self.tcx, ty::EarlyParamRegion {

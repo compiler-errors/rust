@@ -878,14 +878,13 @@ impl<'tcx> BorrowckInferCtxt<'tcx> {
     where
         T: TypeFoldable<TyCtxt<'tcx>>,
     {
-        let (value, _map) = self.tcx.instantiate_bound_regions(value, |br| {
+        self.tcx.instantiate_bound_regions(value, |br| {
             debug!(?br);
             let kind = ty::LateParamRegionKind::from_bound(br.var, br.kind);
             let liberated_region =
                 ty::Region::new_late_param(self.tcx, all_outlive_scope.to_def_id(), kind);
             ty::Region::new_var(self.tcx, indices.to_region_vid(liberated_region))
-        });
-        value
+        })
     }
 }
 

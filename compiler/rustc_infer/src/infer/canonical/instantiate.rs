@@ -75,6 +75,6 @@ where
             },
         };
 
-        tcx.replace_escaping_bound_vars_uncached(value, delegate)
+        tcx.replace_escaping_bound_vars(value, delegate)
     }
 }

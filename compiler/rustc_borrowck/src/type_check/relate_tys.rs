@@ -192,7 +192,7 @@ impl<'a, 'b, 'tcx> NllTypeRelating<'a, 'b, 'tcx> {
                 },
             };
 
-            infcx.tcx.replace_bound_vars_uncached(binder, delegate)
+            infcx.tcx.replace_bound_vars(binder, delegate)
         };
 
         debug!(?value);
@@ -230,7 +230,7 @@ impl<'a, 'b, 'tcx> NllTypeRelating<'a, 'b, 'tcx> {
             },
         };
 
-        let replaced = infcx.tcx.replace_bound_vars_uncached(binder, delegate);
+        let replaced = infcx.tcx.replace_bound_vars(binder, delegate);
         debug!(?replaced);
 
         replaced

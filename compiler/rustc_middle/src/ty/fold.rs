@@ -197,7 +197,7 @@ impl<'tcx> TyCtxt<'tcx> {
     ///
     /// This method only replaces late bound regions. Any types or
     /// constants bound by `value` will cause an ICE.
-    pub fn instantiate_bound_regions<T, F>(
+    pub fn instantiate_bound_regions_with_map<T, F>(
         self,
         value: Binder<'tcx, T>,
         mut fld_r: F,
@@ -208,11 +208,11 @@ impl<'tcx> TyCtxt<'tcx> {
     {
         let mut region_map = FxIndexMap::default();
         let real_fld_r = |br: ty::BoundRegion| *region_map.entry(br).or_insert_with(|| fld_r(br));
-        let value = self.instantiate_bound_regions_uncached(value, real_fld_r);
+        let value = self.instantiate_bound_regions(value, real_fld_r);
         (value, region_map)
     }
 
-    pub fn instantiate_bound_regions_uncached<T, F>(
+    pub fn instantiate_bound_regions<T, F>(
         self,
         value: Binder<'tcx, T>,
         mut replace_regions: F,
@@ -238,7 +238,7 @@ impl<'tcx> TyCtxt<'tcx> {
     /// Replaces all escaping bound vars. The `fld_r` closure replaces escaping
     /// bound regions; the `fld_t` closure replaces escaping bound types and the `fld_c`
     /// closure replaces escaping bound consts.
-    pub fn replace_escaping_bound_vars_uncached<T: TypeFoldable<TyCtxt<'tcx>>>(
+    pub fn replace_escaping_bound_vars<T: TypeFoldable<TyCtxt<'tcx>>>(
         self,
         value: T,
         delegate: impl BoundVarReplacerDelegate<'tcx>,
@@ -254,12 +254,12 @@ impl<'tcx> TyCtxt<'tcx> {
     /// Replaces all types or regions bound by the given `Binder`. The `fld_r`
     /// closure replaces bound regions, the `fld_t` closure replaces bound
     /// types, and `fld_c` replaces bound constants.
-    pub fn replace_bound_vars_uncached<T: TypeFoldable<TyCtxt<'tcx>>>(
+    pub fn replace_bound_vars<T: TypeFoldable<TyCtxt<'tcx>>>(
         self,
         value: Binder<'tcx, T>,
         delegate: impl BoundVarReplacerDelegate<'tcx>,
     ) -> T {
-        self.replace_escaping_bound_vars_uncached(value.skip_binder(), delegate)
+        self.replace_escaping_bound_vars(value.skip_binder(), delegate)
     }
 
     /// Replaces any late-bound regions bound in `value` with
@@ -272,7 +272,7 @@ impl<'tcx> TyCtxt<'tcx> {
     where
         T: TypeFoldable<TyCtxt<'tcx>>,
     {
-        self.instantiate_bound_regions_uncached(value, |br| {
+        self.instantiate_bound_regions(value, |br| {
             let kind = ty::LateParamRegionKind::from_bound(br.var, br.kind);
             ty::Region::new_late_param(self, all_outlive_scope, kind)
         })
@@ -283,7 +283,7 @@ impl<'tcx> TyCtxt<'tcx> {
         T: TypeFoldable<TyCtxt<'tcx>>,
     {
         let shift_bv = |bv: ty::BoundVar| bv + bound_vars;
-        self.replace_escaping_bound_vars_uncached(
+        self.replace_escaping_bound_vars(
             value,
             FnMutDelegate {
                 regions: &mut |r: ty::BoundRegion| {
@@ -311,7 +311,7 @@ impl<'tcx> TyCtxt<'tcx> {
     where
         T: TypeFoldable<TyCtxt<'tcx>>,
     {
-        self.instantiate_bound_regions(value, |_| self.lifetimes.re_erased).0
+        self.instantiate_bound_regions(value, |_| self.lifetimes.re_erased)
     }
 
     /// Anonymize all bound variables in `value`, this is mostly used to improve caching.
@@ -354,7 +354,7 @@ impl<'tcx> TyCtxt<'tcx> {
 
         let mut map = Default::default();
         let delegate = Anonymize { tcx: self, map: &mut map };
-        let inner = self.replace_escaping_bound_vars_uncached(value.skip_binder(), delegate);
+        let inner = self.replace_escaping_bound_vars(value.skip_binder(), delegate);
         let bound_vars = self.mk_bound_variable_kinds_from_iter(map.into_values());
         Binder::bind_with_vars(inner, bound_vars)
     }

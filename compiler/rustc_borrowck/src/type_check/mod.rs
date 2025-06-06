@@ -781,7 +781,7 @@ impl<'a, 'tcx> Visitor<'tcx> for TypeChecker<'a, 'tcx> {
                         return;
                     }
                 };
-                let (unnormalized_sig, map) = tcx.instantiate_bound_regions(sig, |br| {
+                let (unnormalized_sig, map) = tcx.instantiate_bound_regions_with_map(sig, |br| {
                     use crate::renumber::RegionCtxt;
 
                     let region_ctxt_fn = || {

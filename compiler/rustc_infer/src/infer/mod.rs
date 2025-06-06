@@ -1188,7 +1188,7 @@ impl<'tcx> InferCtxt<'tcx> {
             }
         }
         let delegate = ToFreshVars { args };
-        self.tcx.replace_bound_vars_uncached(value, delegate)
+        self.tcx.replace_bound_vars(value, delegate)
     }
 
     /// See the [`region_constraints::RegionConstraintCollector::verify_generic_bound`] method.
