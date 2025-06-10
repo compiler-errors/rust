@@ -26,6 +26,14 @@ where
     I: Interner,
 {
     pub(in crate::solve) fn enter(self, f: impl FnOnce(&mut EvalCtxt<'_, D>) -> T) -> T {
+        self.enter_hack(true, f)
+    }
+
+    pub(in crate::solve) fn enter_noop(self, f: impl FnOnce(&mut EvalCtxt<'_, D>) -> T) -> T {
+        self.enter_hack(false, f)
+    }
+
+    fn enter_hack(self, keep_probe: bool, f: impl FnOnce(&mut EvalCtxt<'_, D>) -> T) -> T {
         let ProbeCtxt { ecx: outer, probe_kind, _result } = self;
 
         let delegate = outer.delegate;
@@ -42,7 +50,7 @@ where
             nested_goals: outer.nested_goals.clone(),
             origin_span: outer.origin_span,
             tainted: outer.tainted,
-            inspect: outer.inspect.take_and_enter_probe(),
+            inspect: outer.inspect.take_and_enter_probe_if(keep_probe),
         };
         let r = nested.delegate.probe(|| {
             let r = f(&mut nested);

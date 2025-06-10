@@ -942,7 +942,7 @@ where
                 source_projection.item_def_id() == target_projection.item_def_id()
                     && ecx
                         .probe(|_| ProbeKind::ProjectionCompatibility)
-                        .enter(|ecx| -> Result<_, NoSolution> {
+                        .enter_noop(|ecx| -> Result<_, NoSolution> {
                             ecx.enter_forall(target_projection, |ecx, target_projection| {
                                 let source_projection =
                                     ecx.instantiate_binder_with_infer(source_projection);

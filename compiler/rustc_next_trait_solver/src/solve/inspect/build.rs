@@ -220,10 +220,14 @@ impl<D: SolverDelegate<Interner = I>, I: Interner> ProofTreeBuilder<D> {
         self.state.as_deref_mut()
     }
 
-    pub(crate) fn take_and_enter_probe(&mut self) -> ProofTreeBuilder<D> {
-        let mut nested = ProofTreeBuilder { state: self.state.take(), _infcx: PhantomData };
-        nested.enter_probe();
-        nested
+    pub(crate) fn take_and_enter_probe_if(&mut self, hack: bool) -> ProofTreeBuilder<D> {
+        if hack {
+            let mut nested = ProofTreeBuilder { state: self.state.take(), _infcx: PhantomData };
+            nested.enter_probe();
+            nested
+        } else {
+            ProofTreeBuilder::new_noop()
+        }
     }
 
     pub(crate) fn finalize(self) -> Option<inspect::GoalEvaluation<I>> {

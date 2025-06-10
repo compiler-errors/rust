@@ -34,7 +34,7 @@ where
             ty::AliasTermKind::ProjectionTy | ty::AliasTermKind::ProjectionConst => {
                 let trait_ref = goal.predicate.alias.trait_ref(cx);
                 let (_, proven_via) =
-                    self.probe(|_| ProbeKind::ShadowedEnvProbing).enter(|ecx| {
+                    self.probe(|_| ProbeKind::ShadowedEnvProbing).enter_noop(|ecx| {
                         let trait_goal: Goal<I, ty::TraitPredicate<I>> = goal.with(cx, trait_ref);
                         ecx.compute_trait_goal(trait_goal)
                     })?;
