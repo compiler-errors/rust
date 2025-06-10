@@ -622,6 +622,10 @@ impl<I: Interner, T: TypeFoldable<I>> ty::EarlyBinder<I, T> {
     where
         A: SliceLike<Item = I::GenericArg>,
     {
+        // Nothing to fold.
+        if !cfg!(debug_assertions) && args.is_empty() {
+            return self.value;
+        }
         let mut folder = ArgFolder { cx, args: args.as_slice(), binders_passed: 0 };
         self.value.fold_with(&mut folder)
     }
