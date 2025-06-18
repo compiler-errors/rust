@@ -123,16 +123,15 @@ where
                 // uplifting its nested goals. This is the case if the `shallow_certainty` is
                 // `Certainty::Yes`.
                 (CurrentGoalKind::NormalizesTo, Certainty::Yes) => {
-                    let goals = std::mem::take(&mut self.nested_goals);
                     // As we return all ambiguous nested goals, we can ignore the certainty
                     // returned by `self.try_evaluate_added_goals()`.
-                    if goals.is_empty() {
+                    if self.nested_goals.is_empty() {
                         assert!(matches!(goals_certainty, Certainty::Yes));
                     }
                     (
                         Certainty::Yes,
                         NestedNormalizationGoals(
-                            goals.into_iter().map(|(s, g, _)| (s, g)).collect(),
+                            self.nested_goals.take().into_iter().map(|(s, g, _)| (s, g)).collect(),
                         ),
                     )
                 }

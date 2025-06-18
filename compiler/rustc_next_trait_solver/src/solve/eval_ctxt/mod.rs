@@ -1,9 +1,9 @@
-use std::mem;
 use std::ops::ControlFlow;
 
+use derive_where::derive_where;
 #[cfg(feature = "nightly")]
 use rustc_macros::HashStable_NoContext;
-use rustc_type_ir::data_structures::{HashMap, HashSet, ensure_sufficient_stack};
+use rustc_type_ir::data_structures::{HashMap, HashSet, IndexMap, ensure_sufficient_stack};
 use rustc_type_ir::fast_reject::DeepRejectCtxt;
 use rustc_type_ir::inherent::*;
 use rustc_type_ir::relate::Relate;
@@ -117,7 +117,7 @@ where
 
     pub(super) search_graph: &'a mut SearchGraph<D>,
 
-    nested_goals: Vec<(GoalSource, Goal<I, I::Predicate>, Option<GoalStalledOn<I>>)>,
+    nested_goals: NestedGoals<I>,
 
     pub(super) origin_span: I::Span,
 
@@ -130,6 +130,45 @@ where
     tainted: Result<(), NoSolution>,
 
     pub(super) inspect: ProofTreeBuilder<D>,
+}
+
+#[derive_where(Default, Clone; I: Interner)]
+struct NestedGoals<I: Interner> {
+    nested_goals: IndexMap<(GoalSource, Goal<I, I::Predicate>), Option<GoalStalledOn<I>>>,
+}
+
+impl<I: Interner> NestedGoals<I> {
+    fn push(
+        &mut self,
+        source: GoalSource,
+        goal: Goal<I, I::Predicate>,
+        stalled_on: Option<GoalStalledOn<I>>,
+    ) {
+        let old_stalled_on = self.nested_goals.entry((source, goal)).or_default();
+        if old_stalled_on.is_none() {
+            *old_stalled_on = stalled_on;
+        }
+    }
+
+    fn extend(
+        &mut self,
+        iter: impl IntoIterator<Item = (GoalSource, Goal<I, I::Predicate>, Option<GoalStalledOn<I>>)>,
+    ) {
+        for (s, g, st) in iter {
+            self.push(s, g, st);
+        }
+    }
+
+    fn take(
+        &mut self,
+    ) -> impl IntoIterator<Item = (GoalSource, Goal<I, I::Predicate>, Option<GoalStalledOn<I>>)> + use<I>
+    {
+        std::mem::take(&mut self.nested_goals).into_iter().map(|((s, g), st)| (s, g, st))
+    }
+
+    fn is_empty(&self) -> bool {
+        self.nested_goals.is_empty()
+    }
 }
 
 #[derive(PartialEq, Eq, Debug, Hash, Clone, Copy)]
@@ -682,12 +721,12 @@ where
         let cx = self.cx();
         // If this loop did not result in any progress, what's our final certainty.
         let mut unchanged_certainty = Some(Certainty::Yes);
-        for (source, goal, stalled_on) in mem::take(&mut self.nested_goals) {
+        for (source, goal, stalled_on) in self.nested_goals.take() {
             if let Some(certainty) = self.delegate.compute_goal_fast_path(goal, self.origin_span) {
                 match certainty {
                     Certainty::Yes => {}
                     Certainty::Maybe(_) => {
-                        self.nested_goals.push((source, goal, None));
+                        self.nested_goals.push(source, goal, None);
                         unchanged_certainty = unchanged_certainty.map(|c| c.and(certainty));
                     }
                 }
@@ -760,7 +799,7 @@ where
                 match certainty {
                     Certainty::Yes => {}
                     Certainty::Maybe(_) => {
-                        self.nested_goals.push((source, with_resolved_vars, stalled_on));
+                        self.nested_goals.push(source, with_resolved_vars, stalled_on);
                         unchanged_certainty = unchanged_certainty.map(|c| c.and(certainty));
                     }
                 }
@@ -774,7 +813,7 @@ where
                 match certainty {
                     Certainty::Yes => {}
                     Certainty::Maybe(_) => {
-                        self.nested_goals.push((source, goal, stalled_on));
+                        self.nested_goals.push(source, goal, stalled_on);
                         unchanged_certainty = unchanged_certainty.map(|c| c.and(certainty));
                     }
                 }
@@ -793,12 +832,11 @@ where
         self.delegate.cx()
     }
 
-    #[instrument(level = "debug", skip(self))]
     pub(super) fn add_goal(&mut self, source: GoalSource, mut goal: Goal<I, I::Predicate>) {
         goal.predicate =
             goal.predicate.fold_with(&mut ReplaceAliasWithInfer::new(self, source, goal.param_env));
         self.inspect.add_goal(self.delegate, self.max_input_universe, source, goal);
-        self.nested_goals.push((source, goal, None));
+        self.nested_goals.push(source, goal, None);
     }
 
     #[instrument(level = "trace", skip(self, goals))]
