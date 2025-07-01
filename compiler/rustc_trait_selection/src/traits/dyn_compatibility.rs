@@ -10,6 +10,7 @@ use rustc_errors::FatalError;
 use rustc_hir::def_id::DefId;
 use rustc_hir::{self as hir, LangItem};
 use rustc_middle::query::Providers;
+use rustc_middle::span_bug;
 use rustc_middle::ty::{
     self, EarlyBinder, GenericArgs, Ty, TyCtxt, TypeFoldable, TypeFolder, TypeSuperFoldable,
     TypeSuperVisitable, TypeVisitable, TypeVisitableExt, TypeVisitor, TypingMode, Upcast,
@@ -824,8 +825,34 @@ fn contains_illegal_impl_trait_in_trait<'tcx>(
     let ty = tcx.liberate_late_bound_regions(fn_def_id, ty);
 
     if tcx.asyncness(fn_def_id).is_async() {
-        // Rendering the error as a separate `async-specific` message is better.
-        Some(MethodViolationCode::AsyncFn)
+        // FIXME(async_fn_in_dyn_trait): Think of a better way to unify these code paths
+        // to issue an appropriate feature suggestion when users try to use AFIDT.
+        // Obviously we must only do this once AFIDT is finished enough to actually be usable.
+        if tcx.features().async_fn_in_dyn_trait() {
+            let ty::Alias(ty::Projection, proj) = *ty.kind() else {
+                span_bug!(
+                    tcx.def_span(fn_def_id),
+                    "expected async fn in trait to return an RPITIT"
+                );
+            };
+            assert!(tcx.is_impl_trait_in_trait(proj.def_id));
+
+            // FIXME(async_fn_in_dyn_trait): We should check that this bound is legal too,
+            // and stop relying on `async fn` in the definition.
+            for bound in tcx.item_bounds(proj.def_id).instantiate(tcx, proj.args) {
+                if let Some(violation) = bound
+                    .visit_with(&mut IllegalRpititVisitor { tcx, allowed: Some(proj) })
+                    .break_value()
+                {
+                    return Some(violation);
+                }
+            }
+
+            None
+        } else {
+            // Rendering the error as a separate `async-specific` message is better.
+            Some(MethodViolationCode::AsyncFn)
+        }
     } else {
         ty.visit_with(&mut IllegalRpititVisitor { tcx, allowed: None }).break_value()
     }
@@ -853,10 +880,26 @@ impl<'tcx> TypeVisitor<TyCtxt<'tcx>> for IllegalRpititVisitor<'tcx> {
     }
 }
 
+/// Is this trait allowed to provide a built-in implementation for `impl Trait for dyn Trait`?
+///
+/// This is true for all dyn-compatible traits on stable Rust, but we must also disqualify
+/// any traits that have `async fn` even if that function is otherwise dyn-compatible, because
+/// it's impossible to provide a built-in impl that satisfies the signature.
+///
+/// Keep this in sync with the carve-out in [`contains_illegal_impl_trait_in_trait`].
+fn is_builtin_dyn_eligible<'tcx>(tcx: TyCtxt<'tcx>, trait_def_id: DefId) -> bool {
+    elaborate::supertrait_def_ids(tcx, trait_def_id).all(|trait_def_id| {
+        tcx.associated_items(trait_def_id)
+            .in_definition_order()
+            .all(|item| !item.is_method() || !tcx.asyncness(item.def_id).is_async())
+    })
+}
+
 pub(crate) fn provide(providers: &mut Providers) {
     *providers = Providers {
         dyn_compatibility_violations,
         is_dyn_compatible,
+        is_builtin_dyn_eligible,
         generics_require_sized_self,
         ..*providers
     };

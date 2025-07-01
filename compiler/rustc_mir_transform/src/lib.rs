@@ -215,6 +215,7 @@ pub fn provide(providers: &mut Providers) {
         mir_coroutine_witnesses: coroutine::mir_coroutine_witnesses,
         optimized_mir,
         is_mir_available,
+        is_synthetic_mir: |_, _| false,
         is_ctfe_mir_available: is_mir_available,
         mir_callgraph_cyclic: inline::cycle::mir_callgraph_cyclic,
         mir_inliner_callees: inline::cycle::mir_inliner_callees,

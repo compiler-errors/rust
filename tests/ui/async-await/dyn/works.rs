@@ -1,9 +1,10 @@
 //@ aux-build:block-on.rs
 //@ edition: 2021
-//@ known-bug: #133119
+//@ run-fail
 
 #![allow(refining_impl_trait)]
 #![feature(async_fn_in_dyn_trait)]
+//~^ WARN the feature `async_fn_in_dyn_trait` is incomplete
 
 extern crate block_on;
 

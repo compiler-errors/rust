@@ -896,7 +896,11 @@ impl<'cx, 'tcx> SelectionContext<'cx, 'tcx> {
             "assemble_candidates_from_object_ty",
         );
 
-        if !self.tcx().trait_def(obligation.predicate.def_id()).implement_via_object {
+        let trait_def_id = obligation.predicate.def_id();
+        if !self.tcx().trait_def(trait_def_id).implement_via_object {
+            return;
+        }
+        if !self.tcx().is_builtin_dyn_eligible(trait_def_id) {
             return;
         }
 
@@ -906,7 +910,7 @@ impl<'cx, 'tcx> SelectionContext<'cx, 'tcx> {
                 let self_ty = placeholder_trait_predicate.self_ty();
                 let principal_trait_ref = match self_ty.kind() {
                     ty::Dynamic(data, ..) => {
-                        if data.auto_traits().any(|did| did == obligation.predicate.def_id()) {
+                        if data.auto_traits().any(|did| did == trait_def_id) {
                             debug!(
                                 "assemble_candidates_from_object_ty: matched builtin bound, \
                              pushing candidate"

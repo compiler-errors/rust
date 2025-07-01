@@ -1038,6 +1038,7 @@ rustc_queries! {
         desc { |tcx| "collecting associated items or fields of `{}`", tcx.def_path_str(key) }
         cache_on_disk_if { key.is_local() }
         separate_provide_extern
+        feedable
     }
 
     /// Maps from a trait/impl item to the trait/impl item "descriptor".
@@ -1105,6 +1106,7 @@ rustc_queries! {
         desc { |tcx| "computing trait implemented by `{}`", tcx.def_path_str(impl_id) }
         cache_on_disk_if { impl_id.is_local() }
         separate_provide_extern
+        feedable
     }
 
     /// Given an `impl_def_id`, return true if the self type is guaranteed to be unsized due
@@ -1159,6 +1161,7 @@ rustc_queries! {
         cache_on_disk_if { key.is_local() }
         separate_provide_extern
         cycle_delay_bug
+        feedable
     }
 
     /// Performs lint checking for the module.
@@ -1552,6 +1555,12 @@ rustc_queries! {
         cache_on_disk_if { key.is_local() }
         separate_provide_extern
     }
+    // Whether the body owner is synthetic, which in this case means it does not correspond to
+    // meaningful HIR. This is currently used to skip over MIR borrowck.
+    query is_synthetic_mir(key: LocalDefId) -> bool {
+        desc { |tcx| "checking if item must be borrow-checked: `{}`", tcx.def_path_str(key) }
+        feedable
+    }
 
     query own_existential_vtable_entries(
         key: DefId
@@ -1613,6 +1622,9 @@ rustc_queries! {
     }
     query is_dyn_compatible(trait_id: DefId) -> bool {
         desc { |tcx| "checking if trait `{}` is dyn-compatible", tcx.def_path_str(trait_id) }
+    }
+    query is_builtin_dyn_eligible(trait_id: DefId) -> bool {
+        desc { |tcx| "checking if trait `{}` is eligible for a built-in impl", tcx.def_path_str(trait_id) }
     }
 
     /// Gets the ParameterEnvironment for a given item; this environment
@@ -1858,6 +1870,7 @@ rustc_queries! {
     query check_well_formed(key: LocalDefId) -> Result<(), ErrorGuaranteed> {
         desc { |tcx| "checking that `{}` is well-formed", tcx.def_path_str(key) }
         return_result_from_ensure_ok
+        feedable
     }
 
     query enforce_impl_non_lifetime_params_are_constrained(key: LocalDefId) -> Result<(), ErrorGuaranteed> {

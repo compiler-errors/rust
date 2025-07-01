@@ -657,6 +657,10 @@ impl<'tcx> Interner for TyCtxt<'tcx> {
         self.is_dyn_compatible(trait_def_id)
     }
 
+    fn trait_is_builtin_dyn_eligible(self, trait_def_id: DefId) -> bool {
+        self.is_builtin_dyn_eligible(trait_def_id)
+    }
+
     fn trait_is_fundamental(self, def_id: DefId) -> bool {
         self.trait_def(def_id).is_fundamental
     }
@@ -1792,12 +1796,6 @@ impl<'tcx> TyCtxt<'tcx> {
             self.coroutine_kind(def_id),
             Some(hir::CoroutineKind::Desugared(hir::CoroutineDesugaring::Async, _))
         )
-    }
-
-    // Whether the body owner is synthetic, which in this case means it does not correspond to
-    // meaningful HIR. This is currently used to skip over MIR borrowck.
-    pub fn is_synthetic_mir(self, def_id: impl Into<DefId>) -> bool {
-        matches!(self.def_kind(def_id.into()), DefKind::SyntheticCoroutineBody)
     }
 
     /// Returns `true` if the node pointed to by `def_id` is a general coroutine that implements `Coroutine`.

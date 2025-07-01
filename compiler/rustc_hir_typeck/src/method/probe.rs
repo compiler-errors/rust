@@ -1795,7 +1795,7 @@ impl<'a, 'tcx> ProbeContext<'a, 'tcx> {
         }
     }
 
-    #[instrument(level = "trace", skip(self, possibly_unsatisfied_predicates), ret)]
+    #[instrument(level = "debug", skip(self, possibly_unsatisfied_predicates), ret)]
     fn consider_probe(
         &self,
         self_ty: Ty<'tcx>,
@@ -1862,6 +1862,7 @@ impl<'a, 'tcx> ProbeContext<'a, 'tcx> {
                         if self_ty.is_array() && !method_name.span.at_least_rust_2021() {
                             let trait_def = self.tcx.trait_def(poly_trait_ref.def_id());
                             if trait_def.skip_array_during_method_dispatch {
+                                debug!("skipped due to edition hack");
                                 return ProbeResult::NoMatch;
                             }
                         }
@@ -1873,6 +1874,7 @@ impl<'a, 'tcx> ProbeContext<'a, 'tcx> {
                         {
                             let trait_def = self.tcx.trait_def(poly_trait_ref.def_id());
                             if trait_def.skip_boxed_slice_during_method_dispatch {
+                                debug!("skipped due to edition hack");
                                 return ProbeResult::NoMatch;
                             }
                         }
@@ -1896,6 +1898,7 @@ impl<'a, 'tcx> ProbeContext<'a, 'tcx> {
                                 && self.infcx.can_define_opaque_ty(alias_ty.def_id)
                                 && !xform_self_ty.is_ty_var() =>
                         {
+                            debug!("skipped due to opaque incompleteness");
                             return ProbeResult::NoMatch;
                         }
                         _ => match ocx.relate(
@@ -1924,6 +1927,7 @@ impl<'a, 'tcx> ProbeContext<'a, 'tcx> {
                     {
                         ocx.register_obligation(obligation);
                     } else {
+                        debug!("predicate does not hold");
                         result = ProbeResult::NoMatch;
                         if let Ok(Some(candidate)) = self.select_trait_candidate(trait_ref) {
                             for nested_obligation in candidate.nested_obligations() {
@@ -1940,7 +1944,30 @@ impl<'a, 'tcx> ProbeContext<'a, 'tcx> {
 
                     trait_predicate = Some(trait_ref.upcast(self.tcx));
                 }
-                ObjectCandidate(poly_trait_ref) | WhereClauseCandidate(poly_trait_ref) => {
+                ObjectCandidate(poly_trait_ref) => {
+                    if self.tcx.features().async_fn_in_dyn_trait()
+                        && !self.tcx.is_builtin_dyn_eligible(poly_trait_ref.def_id())
+                    {
+                        return ProbeResult::NoMatch;
+                    }
+                    let trait_ref = self.instantiate_binder_with_fresh_vars(
+                        self.span,
+                        BoundRegionConversionTime::FnCall,
+                        poly_trait_ref,
+                    );
+                    (xform_self_ty, xform_ret_ty) =
+                        self.xform_self_ty(probe.item, trait_ref.self_ty(), trait_ref.args);
+                    xform_self_ty = ocx.normalize(cause, self.param_env, xform_self_ty);
+                    match ocx.relate(cause, self.param_env, self.variance(), self_ty, xform_self_ty)
+                    {
+                        Ok(()) => {}
+                        Err(err) => {
+                            debug!("--> cannot relate self-types {:?}", err);
+                            return ProbeResult::NoMatch;
+                        }
+                    }
+                }
+                WhereClauseCandidate(poly_trait_ref) => {
                     let trait_ref = self.instantiate_binder_with_fresh_vars(
                         self.span,
                         BoundRegionConversionTime::FnCall,
@@ -1984,6 +2011,7 @@ impl<'a, 'tcx> ProbeContext<'a, 'tcx> {
 
             // Evaluate those obligations to see if they might possibly hold.
             for error in ocx.select_where_possible() {
+                debug!("predicate does not hold: {error:?}");
                 result = ProbeResult::NoMatch;
                 let nested_predicate = self.resolve_vars_if_possible(error.obligation.predicate);
                 if let Some(trait_predicate) = trait_predicate
@@ -2018,12 +2046,14 @@ impl<'a, 'tcx> ProbeContext<'a, 'tcx> {
                 match ocx.relate(cause, self.param_env, self.variance(), xform_ret_ty, return_ty) {
                     Ok(()) => {}
                     Err(_) => {
+                        debug!("skipped due to bad return type");
                         result = ProbeResult::BadReturnType;
                     }
                 }
 
                 // Evaluate those obligations to see if they might possibly hold.
                 for error in ocx.select_where_possible() {
+                    debug!("predicate does not hold: {error:?}");
                     result = ProbeResult::NoMatch;
                     possibly_unsatisfied_predicates.push((
                         error.obligation.predicate,
@@ -2040,6 +2070,7 @@ impl<'a, 'tcx> ProbeContext<'a, 'tcx> {
             // `tests/ui/methods/leak-check-disquality.rs` for a simple example of when this
             // may happen.
             if let Err(_) = self.leak_check(outer_universe, Some(snapshot)) {
+                debug!("predicate does not hold due to leak check");
                 result = ProbeResult::NoMatch;
             }
 

@@ -748,7 +748,9 @@ where
         };
 
         // Do not consider built-in object impls for dyn-incompatible types.
-        if bounds.principal_def_id().is_some_and(|def_id| !cx.trait_is_dyn_compatible(def_id)) {
+        if bounds.principal_def_id().is_some_and(|def_id| {
+            !cx.trait_is_dyn_compatible(def_id) || !cx.trait_is_builtin_dyn_eligible(def_id)
+        }) {
             return;
         }
 

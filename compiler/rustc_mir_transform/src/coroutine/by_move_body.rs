@@ -245,6 +245,7 @@ pub(crate) fn coroutine_by_move_body_def_id<'tcx>(
     body_def.type_of(ty::EarlyBinder::bind(by_move_coroutine_ty));
 
     body_def.mir_built(tcx.arena.alloc(Steal::new(by_move_body)));
+    body_def.is_synthetic_mir(true);
 
     body_def.def_id().to_def_id()
 }
