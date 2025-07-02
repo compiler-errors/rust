@@ -153,6 +153,13 @@ impl<'tcx> rustc_next_trait_solver::delegate::SolverDelegate for SolverDelegate<
                     None
                 }
             }
+            ty::PredicateKind::Clause(ty::ClauseKind::ConstArgHasType(arg, _)) => {
+                if self.shallow_resolve_const(arg).is_ct_infer() {
+                    Some(Certainty::AMBIGUOUS)
+                } else {
+                    None
+                }
+            }
             _ => None,
         }
     }
