@@ -3478,6 +3478,11 @@ impl VisibilityKind {
     pub fn is_pub(&self) -> bool {
         matches!(self, VisibilityKind::Public)
     }
+
+    /// Is this an explicit pub marker, such as `pub` or `pub(in path)`?
+    pub fn is_explicit(&self) -> bool {
+        matches!(self, VisibilityKind::Public | VisibilityKind::Restricted { .. })
+    }
 }
 
 /// Field definition in a struct, variant or union.

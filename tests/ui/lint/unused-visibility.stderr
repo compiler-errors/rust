@@ -1,0 +1,35 @@
+error: unnecessary visibility marker on unnamed const
+  --> $DIR/unused-visibility.rs:5:1
+   |
+LL | pub const _: i32 = 0;
+   | ---^^^^^^^^^^^^^^^^^^
+   | |
+   | visibility on an unnamed constant is not necessary since it cannot be imported
+   | help: remove the unnecessary visibility keyword
+   |
+note: the lint level is defined here
+  --> $DIR/unused-visibility.rs:3:9
+   |
+LL | #![deny(unused_visibility)]
+   |         ^^^^^^^^^^^^^^^^^
+
+error: unnecessary visibility marker on unnamed const
+  --> $DIR/unused-visibility.rs:8:1
+   |
+LL | pub(crate) const _: i32 = 1;
+   | ----------^^^^^^^^^^^^^^^^^^
+   | |
+   | visibility on an unnamed constant is not necessary since it cannot be imported
+   | help: remove the unnecessary visibility keyword
+
+error: unnecessary visibility marker on unnamed const
+  --> $DIR/unused-visibility.rs:11:1
+   |
+LL | pub(in self) const _: i32 = 2;
+   | ------------^^^^^^^^^^^^^^^^^^
+   | |
+   | visibility on an unnamed constant is not necessary since it cannot be imported
+   | help: remove the unnecessary visibility keyword
+
+error: aborting due to 3 previous errors
+

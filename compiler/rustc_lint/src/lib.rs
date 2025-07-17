@@ -169,6 +169,7 @@ early_lint_methods!(
             UnusedParens: UnusedParens::default(),
             UnusedBraces: UnusedBraces,
             UnusedImportBraces: UnusedImportBraces,
+            UnusedVisibility: UnusedVisibility,
             UnsafeCode: UnsafeCode,
             SpecialModuleName: SpecialModuleName,
             AnonymousParameters: AnonymousParameters,
@@ -308,6 +309,7 @@ fn register_builtins(store: &mut LintStore) {
         UNUSED_LABELS,
         UNUSED_PARENS,
         UNUSED_BRACES,
+        UNUSED_VISIBILITY,
         REDUNDANT_SEMICOLONS,
         MAP_UNIT_FN
     );

@@ -3373,3 +3373,12 @@ impl Subdiagnostic for MismatchedLifetimeSyntaxesSuggestion {
         }
     }
 }
+
+#[derive(LintDiagnostic)]
+#[diag(lint_unused_visibility)]
+pub(crate) struct UnusedVisibility {
+    #[label]
+    pub span: Span,
+    #[suggestion(code = "", applicability = "machine-applicable")]
+    pub suggestion: Span,
+}

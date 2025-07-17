@@ -1750,3 +1750,39 @@ impl<'tcx> LateLintPass<'tcx> for UnusedAllocation {
         }
     }
 }
+
+declare_lint! {
+    /// The `unused_visibility` lint detects unnamed consts with unnecessary
+    /// visibility modifiers.
+    ///
+    /// ### Example
+    ///
+    /// ```rust
+    /// pub const _: i32 = 0;
+    /// ```
+    ///
+    /// {{produces}}
+    ///
+    /// ### Explanation
+    ///
+    /// Unnamed constants cannot be referenced, and so their visibility is never used.
+    pub UNUSED_VISIBILITY,
+    Warn,
+    "detects unnecessary visibility modifiers on unnamed const items"
+}
+
+declare_lint_pass!(UnusedVisibility => [UNUSED_VISIBILITY]);
+
+impl EarlyLintPass for UnusedVisibility {
+    fn check_item(&mut self, cx: &EarlyContext<'_>, item: &ast::Item) {
+        if let ast::ItemKind::Const(const_) = &item.kind {
+            if const_.ident.name == kw::Underscore && item.vis.kind.is_explicit() {
+                cx.emit_span_lint(
+                    UNUSED_VISIBILITY,
+                    item.span,
+                    crate::lints::UnusedVisibility { span: item.span, suggestion: item.vis.span },
+                );
+            }
+        }
+    }
+}
