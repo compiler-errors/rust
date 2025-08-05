@@ -123,7 +123,8 @@ impl<'f, 'tcx> Coerce<'f, 'tcx> {
 
     fn unify_raw(&self, a: Ty<'tcx>, b: Ty<'tcx>) -> InferResult<'tcx, Ty<'tcx>> {
         debug!("unify(a: {:?}, b: {:?}, use_lub: {})", a, b, self.use_lub);
-        self.commit_if_ok(|_| {
+        let universe = self.infcx.universe();
+        self.commit_if_ok(|snapshot| {
             let at = self.at(&self.cause, self.fcx.param_env);
 
             let res = if self.use_lub {
@@ -136,7 +137,7 @@ impl<'f, 'tcx> Coerce<'f, 'tcx> {
             // In the new solver, lazy norm may allow us to shallowly equate
             // more types, but we emit possibly impossible-to-satisfy obligations.
             // Filter these cases out to make sure our coercion is more accurate.
-            match res {
+            let ok = match res {
                 Ok(InferOk { value, obligations }) if self.next_trait_solver() => {
                     let ocx = ObligationCtxt::new(self);
                     ocx.register_obligations(obligations);
@@ -147,7 +148,11 @@ impl<'f, 'tcx> Coerce<'f, 'tcx> {
                     }
                 }
                 res => res,
-            }
+            }?;
+
+            self.infcx.leak_check(universe, Some(snapshot))?;
+
+            Ok(ok)
         })
     }
 
@@ -835,9 +840,7 @@ impl<'f, 'tcx> Coerce<'f, 'tcx> {
     ) -> CoerceResult<'tcx> {
         debug_assert!(self.shallow_resolve(b) == b);
 
-        self.commit_if_ok(|snapshot| {
-            let outer_universe = self.infcx.universe();
-
+        self.commit_if_ok(|_| {
             let result = if let ty::FnPtr(_, hdr_b) = b.kind()
                 && fn_ty_a.safety().is_safe()
                 && hdr_b.safety.is_unsafe()
@@ -857,14 +860,6 @@ impl<'f, 'tcx> Coerce<'f, 'tcx> {
                     None => self.unify(a, b),
                 }
             };
-
-            // FIXME(#73154): This is a hack. Currently LUB can generate
-            // unsolvable constraints. Additionally, it returns `a`
-            // unconditionally, even when the "LUB" is `b`. In the future, we
-            // want the coerced type to be the actual supertype of these two,
-            // but for now, we want to just error to ensure we don't lock
-            // ourselves into a specific behavior with NLL.
-            self.leak_check(outer_universe, Some(snapshot))?;
 
             result
         })
